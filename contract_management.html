@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Quản lý Hợp đồng dịch vụ</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --primary-blue:#0f172a;
+      --accent-blue:#3b82f6;
+      --bg-light:#f8fafc;
+      --card-white:#ffffff;
+      --text-main:#334155;
+      --text-muted:#64748b;
+      --border-color:#e2e8f0;
+
+      --status-draft-bg:#f1f5f9; --status-draft-color:#334155;
+      --status-active-bg:#d1fae5; --status-active-color:#059669;
+      --status-expired-bg:#ffedd5; --status-expired-color:#c2410c;
+      --status-terminated-bg:#fee2e2; --status-terminated-color:#b91c1c;
+      --shadow: 0 1px 3px rgba(0,0,0,.06);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;font-family:'Inter',sans-serif;background:var(--bg-light);color:var(--text-main)}
+    .page{min-height:100vh;padding:1.5rem 2rem}
+    .header-row{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:1rem}
+    .header-left h1{font-size:1.4rem;font-weight:700;margin:0}
+    .header-left .desc{font-size:.85rem;color:var(--text-muted);margin:.35rem 0 0}
+    .pill{
+      display:inline-flex;align-items:center;gap:.4rem;
+      padding:.25rem .55rem;border-radius:999px;font-size:.75rem;font-weight:600;
+      border:1px solid var(--border-color);background:#fff;color:var(--text-main);
+    }
+
+    .filter-panel{background:var(--card-white);border:1px solid var(--border-color);border-radius:12px;padding:1rem;margin-bottom:1rem;box-shadow:var(--shadow)}
+    .filter-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem}
+    .filter-group{display:flex;flex-direction:column;font-size:.8rem}
+    .filter-group label{color:var(--text-muted);font-size:.75rem;margin-bottom:.35rem}
+    .filter-group input,.filter-group select{
+      padding:.45rem .6rem;border:1px solid var(--border-color);border-radius:8px;background:var(--card-white);
+      color:var(--text-main);font-size:.85rem
+    }
+    .filter-group input:focus,.filter-group select:focus{outline:none;border-color:var(--accent-blue)}
+    .filter-actions{display:flex;gap:.75rem;margin-top:1rem;flex-wrap:wrap}
+
+    .btn{
+      padding:.45rem .9rem;border-radius:10px;font-size:.85rem;cursor:pointer;display:inline-flex;align-items:center;gap:.45rem;
+      border:1px solid transparent;user-select:none;white-space:nowrap
+    }
+    .btn-primary{background:var(--accent-blue);color:#fff;border-color:var(--accent-blue)}
+    .btn-primary:hover{background:rgba(59,130,246,.85)}
+    .btn-secondary{background:var(--card-white);color:var(--text-main);border-color:var(--border-color)}
+    .btn-secondary:hover{background:#f1f5f9}
+    .btn-disabled{opacity:.55;cursor:not-allowed}
+
+    .action-bar{display:flex;justify-content:flex-end;gap:.75rem;flex-wrap:wrap;margin-bottom:1rem}
+    .action-bar input[type="text"]{min-width:240px;padding:.45rem .6rem;border:1px solid var(--border-color);border-radius:10px}
+
+    .card{background:var(--card-white);border:1px solid var(--border-color);border-radius:12px;padding:1rem;box-shadow:var(--shadow)}
+    table{width:100%;border-collapse:collapse;font-size:.85rem}
+    thead th{padding:.65rem .6rem;color:var(--text-muted);font-weight:700;border-bottom:1px solid var(--border-color);text-align:left}
+    tbody td{padding:.65rem .6rem;border-bottom:1px solid var(--border-color);vertical-align:middle}
+    tbody tr:hover{background:#f8fafc}
+    a{color:var(--accent-blue);text-decoration:none}
+    a:hover{text-decoration:underline}
+
+    .status-pill{display:inline-block;padding:.22rem .55rem;border-radius:999px;font-size:.75rem;font-weight:700}
+    .status-draft{background:var(--status-draft-bg);color:var(--status-draft-color)}
+    .status-active{background:var(--status-active-bg);color:var(--status-active-color)}
+    .status-expired{background:var(--status-expired-bg);color:var(--status-expired-color)}
+    .status-terminated{background:var(--status-terminated-bg);color:var(--status-terminated-color)}
+
+    .actions i{margin-right:.55rem;cursor:pointer;color:var(--accent-blue)}
+    .actions i:hover{color:rgba(59,130,246,.85)}
+    .actions i:last-child{margin-right:0}
+
+    .pagination{display:flex;justify-content:flex-end;gap:.5rem;margin-top:1rem;flex-wrap:wrap}
+    .pagination button{padding:.35rem .6rem;border:1px solid var(--border-color);border-radius:8px;background:var(--card-white);cursor:pointer}
+    .pagination button.active{background:var(--accent-blue);border-color:var(--accent-blue);color:#fff}
+    .hint{font-size:.78rem;color:var(--text-muted)}
+
+    /* Multi-select dropdown */
+    .multi-select{position:relative;display:flex;align-items:center;border:1px solid var(--border-color);border-radius:10px;background:var(--card-white);padding:.45rem .6rem;cursor:pointer;min-height:2.7rem}
+    .multi-select .selected-options{flex:1;font-size:.85rem;color:var(--text-main);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .multi-select .dropdown-icon{margin-left:.5rem;color:var(--text-muted);font-size:.8rem}
+    .multi-select.open{border-color:var(--accent-blue)}
+    .multi-select .options-list{
+      position:absolute;top:calc(100% + .25rem);left:0;right:0;background:var(--card-white);
+      border:1px solid var(--border-color);border-radius:12px;box-shadow:0 10px 25px rgba(2,6,23,.10);
+      padding:.45rem;z-index:50;display:none;max-height:220px;overflow:auto
+    }
+    .multi-select.open .options-list{display:block}
+    .multi-select .options-list label{display:flex;align-items:center;gap:.55rem;font-size:.85rem;color:var(--text-main);padding:.35rem .35rem;border-radius:10px;cursor:pointer}
+    .multi-select .options-list label:hover{background:#f1f5f9}
+    .multi-select .options-list input{margin:0}
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="header-row">
+      <div class="header-left">
+        <h1>Quản lý Hợp đồng dịch vụ</h1>
+        <p class="desc">Theo dõi trạng thái &amp; hiệu lực hợp đồng</p>
+      </div>
+      <div style="display:flex; gap:.6rem; align-items:center; flex-wrap:wrap;">
+        <span class="pill"><i class="fa-regular fa-circle-check"></i> Rule: Opportunity Won → Quotation Approved → Contract</span>
+      </div>
+    </div>
+
+    <div class="filter-panel">
+      <div class="filter-grid">
+        <div class="filter-group">
+          <label for="filterKeyword">Keyword</label>
+          <input id="filterKeyword" type="text" placeholder="Mã hợp đồng / KH / Opportunity...">
+        </div>
+
+        <div class="filter-group">
+          <label for="filterCustomer">Customer</label>
+          <select id="filterCustomer">
+            <option value="">Tất cả</option>
+            <option>ABC Trading</option>
+            <option>DEF Logistics</option>
+            <option>Shop MNO</option>
+            <option>XYZ Retail</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="filterSales">Sales</label>
+          <select id="filterSales">
+            <option value="">Tất cả</option>
+            <option>Nguyễn Văn A</option>
+            <option>Lê Thị B</option>
+            <option>Trần Văn C</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label>Contract Status</label>
+          <div class="multi-select" id="statusDropdown" title="Chọn nhiều trạng thái">
+            <div class="selected-options">Tất cả</div>
+            <div class="dropdown-icon"><i class="fas fa-chevron-down"></i></div>
+            <div class="options-list">
+              <label><input type="checkbox" value="draft"> Draft</label>
+              <label><input type="checkbox" value="active"> Active</label>
+              <label><input type="checkbox" value="expired"> Expired</label>
+              <label><input type="checkbox" value="terminated"> Terminated</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <label for="expiryFrom">Expiry range (từ)</label>
+          <input id="expiryFrom" type="date">
+        </div>
+
+        <div class="filter-group">
+          <label for="expiryTo">Expiry range (đến)</label>
+          <input id="expiryTo" type="date">
+        </div>
+
+        <div class="filter-group">
+          <label for="filterAutoRenew">Auto Renew</label>
+          <select id="filterAutoRenew">
+            <option value="">Tất cả</option>
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label class="hint">Gợi ý</label>
+          <div class="hint">“Sắp hết hạn” = Status Active + Expiry range</div>
+        </div>
+      </div>
+
+      <div class="filter-actions">
+        <button class="btn btn-primary" id="applyFilter"><i class="fas fa-filter"></i> Apply</button>
+        <button class="btn btn-secondary" id="resetFilter"><i class="fas fa-rotate-left"></i> Reset</button>
+      </div>
+    </div>
+
+    <div class="action-bar">
+      <button class="btn btn-primary" id="createContractBtn" title="Chỉ tạo khi vào từ Opportunity Won + Quotation Approved">
+        <i class="fas fa-plus"></i> Tạo hợp đồng
+      </button>
+      <button class="btn btn-secondary" id="exportBtn"><i class="fas fa-file-excel"></i> Export</button>
+      <input type="text" id="quickSearch" placeholder="Search...">
+    </div>
+
+    <div class="card">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:60px;">#</th>
+            <th>Mã hợp đồng</th>
+            <th>Khách hàng</th>
+            <th>Opportunity</th>
+            <th>Báo giá</th>
+            <th>Giá trị</th>
+            <th>Hiệu lực từ</th>
+            <th>Hiệu lực đến</th>
+            <th>Trạng thái</th>
+            <th>Auto Renew</th>
+            <th>Sales</th>
+            <th style="width:160px;">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="contractTableBody"></tbody>
+      </table>
+
+      <div class="pagination" id="pagination"></div>
+    </div>
+  </div>
+
+  <script>
+    const contracts = [
+      { code:'CT-001', customer:'ABC Trading', opportunity:'Opp #005', quotation:'Q-003',
+        value: 3800000000, start:'2025-10-01', end:'2026-09-30', status:'active', auto_renew:true, sales:'Nguyễn Văn A'
+      },
+      { code:'CT-002', customer:'DEF Logistics', opportunity:'Opp #004', quotation:'Q-002',
+        value: 1200000000, start:'2025-09-15', end:'2025-12-31', status:'draft', auto_renew:false, sales:'Lê Thị B'
+      },
+      { code:'CT-003', customer:'Shop MNO', opportunity:'Opp #003', quotation:'Q-006',
+        value: 600000000, start:'2025-07-01', end:'2025-09-30', status:'expired', auto_renew:true, sales:'Trần Văn C'
+      },
+      { code:'CT-004', customer:'XYZ Retail', opportunity:'Opp #010', quotation:'Q-010',
+        value: 900000000, start:'2025-08-20', end:'2026-08-19', status:'terminated', auto_renew:false, sales:'Lê Thị B'
+      }
+    ];
+
+    let filteredData = [...contracts];
+    const rowsPerPage = 10;
+    let currentPage = 1;
+
+    function formatCurrency(val){
+      return new Intl.NumberFormat('vi-VN',{style:'currency',currency:'VND'}).format(val);
+    }
+    function fmtDate(d){
+      if(!d) return '';
+      const [y,m,day]=d.split('-');
+      return `${day}/${m}/${y}`;
+    }
+    function statusPill(status){
+      const label = status.charAt(0).toUpperCase()+status.slice(1);
+      return `<span class="status-pill status-${status}">${label}</span>`;
+    }
+
+    function renderTable(){
+      const tbody = document.getElementById('contractTableBody');
+      tbody.innerHTML = '';
+      const start = (currentPage-1)*rowsPerPage;
+      const end = start+rowsPerPage;
+      const pageData = filteredData.slice(start,end);
+
+      pageData.forEach((c, idx) => {
+        const stt = start + idx + 1;
+        const allowEdit = c.status === 'draft';
+        const allowActivate = c.status === 'draft';
+        const allowRenew = c.status === 'active';
+        const allowTerminate = c.status === 'active';
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${stt}</td>
+          <td><a href="contract_detail.html?code=${encodeURIComponent(c.code)}">${c.code}</a></td>
+          <td><a href="customer_detail.html">${c.customer}</a></td>
+          <td><a href="opportunity_detail.html">${c.opportunity}</a></td>
+          <td><a href="quotation_detail.html?code=${encodeURIComponent(c.quotation)}">${c.quotation}</a></td>
+          <td>${formatCurrency(c.value)}</td>
+          <td>${fmtDate(c.start)}</td>
+          <td>${fmtDate(c.end)}</td>
+          <td>${statusPill(c.status)}</td>
+          <td>${c.auto_renew ? 'Yes' : 'No'}</td>
+          <td>${c.sales}</td>
+          <td class="actions">
+            <i class="fas fa-eye" title="View" onclick="viewContract('${c.code}')"></i>
+            ${allowEdit ? `<i class="fas fa-edit" title="Edit (Draft)" onclick="editContract('${c.code}')"></i>` : ''}
+            ${allowActivate ? `<i class="fas fa-play" title="Activate" onclick="activateContract('${c.code}')"></i>` : ''}
+            ${allowRenew ? `<i class="fas fa-arrows-rotate" title="Renew" onclick="renewContract('${c.code}')"></i>` : ''}
+            ${allowTerminate ? `<i class="fas fa-ban" title="Terminate" onclick="terminateContract('${c.code}')"></i>` : ''}
+            <i class="fas fa-file-pdf" title="Download PDF" onclick="downloadPDF('${c.code}')"></i>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      renderPagination();
+    }
+
+    function renderPagination(){
+      const totalPages = Math.ceil(filteredData.length / rowsPerPage) || 1;
+      const pagination = document.getElementById('pagination');
+      pagination.innerHTML = '';
+      for(let i=1;i<=totalPages;i++){
+        const btn = document.createElement('button');
+        btn.textContent = i;
+        if(i===currentPage) btn.classList.add('active');
+        btn.addEventListener('click', ()=>{ currentPage=i; renderTable(); });
+        pagination.appendChild(btn);
+      }
+    }
+
+    function getSelectedStatuses(){
+      return Array.from(document.querySelectorAll('#statusDropdown .options-list input:checked')).map(cb=>cb.value);
+    }
+
+    function applyFilters(){
+      const kw = (document.getElementById('filterKeyword').value || '').toLowerCase().trim();
+      const customer = document.getElementById('filterCustomer').value;
+      const sales = document.getElementById('filterSales').value;
+      const statuses = getSelectedStatuses();
+      const expiryFrom = document.getElementById('expiryFrom').value;
+      const expiryTo = document.getElementById('expiryTo').value;
+      const autoRenew = document.getElementById('filterAutoRenew').value;
+
+      filteredData = contracts.filter(c => {
+        if(kw){
+          const blob = `${c.code} ${c.customer} ${c.opportunity} ${c.quotation}`.toLowerCase();
+          if(!blob.includes(kw)) return false;
+        }
+        if(customer && c.customer !== customer) return false;
+        if(sales && c.sales !== sales) return false;
+        if(statuses.length && !statuses.includes(c.status)) return false;
+        if(autoRenew !== ''){
+          const bool = autoRenew === 'true';
+          if(c.auto_renew !== bool) return false;
+        }
+        if(expiryFrom && c.end < expiryFrom) return false;
+        if(expiryTo && c.end > expiryTo) return false;
+        return true;
+      });
+
+      currentPage = 1;
+      renderTable();
+    }
+
+    function resetFilters(){
+      document.getElementById('filterKeyword').value='';
+      document.getElementById('filterCustomer').value='';
+      document.getElementById('filterSales').value='';
+      document.getElementById('expiryFrom').value='';
+      document.getElementById('expiryTo').value='';
+      document.getElementById('filterAutoRenew').value='';
+      const dd = document.getElementById('statusDropdown');
+      dd.querySelectorAll('input[type="checkbox"]').forEach(cb=>cb.checked=false);
+      dd.querySelector('.selected-options').textContent='Tất cả';
+      dd.classList.remove('open');
+
+      filteredData = [...contracts];
+      currentPage=1;
+      renderTable();
+    }
+
+    function initMultiSelect(id){
+      const dd = document.getElementById(id);
+      if(!dd) return;
+      const selectedEl = dd.querySelector('.selected-options');
+
+      dd.addEventListener('click', (e)=>{
+        if(!e.target.closest('.options-list')) dd.classList.toggle('open');
+      });
+      document.addEventListener('click', (ev)=>{
+        if(!dd.contains(ev.target)) dd.classList.remove('open');
+      });
+
+      function updateSelected(){
+        const labels = Array.from(dd.querySelectorAll('.options-list input:checked'))
+          .map(cb => cb.parentElement.textContent.trim());
+        selectedEl.textContent = labels.length ? labels.join(', ') : 'Tất cả';
+      }
+      dd.querySelectorAll('.options-list input').forEach(cb => cb.addEventListener('change', updateSelected));
+      updateSelected();
+    }
+
+    // Rule demo: create enabled only if query has from_opp + won=1 + quotation_approved=1
+    function initCreateButtonRule(){
+      const btn = document.getElementById('createContractBtn');
+      const p = new URLSearchParams(window.location.search);
+      const fromOpp = p.get('from_opp');
+      const won = p.get('won') === '1';
+      const qApproved = p.get('quotation_approved') === '1';
+
+      if(fromOpp && won && qApproved){
+        btn.classList.remove('btn-disabled');
+        btn.addEventListener('click', ()=>{
+          const customer = p.get('customer') || 'ABC Trading';
+          const quotation = p.get('quotation') || 'Q-003';
+          window.location.href =
+            `contract_create.html?from_opp=${encodeURIComponent(fromOpp)}&won=1&quotation_approved=1&customer=${encodeURIComponent(customer)}&quotation=${encodeURIComponent(quotation)}`;
+        });
+      }else{
+        btn.classList.add('btn-disabled');
+        btn.addEventListener('click', ()=>alert('Chỉ tạo Contract khi vào từ Opportunity Won + Quotation Approved (demo).'));
+      }
+    }
+
+    // Row actions (demo)
+    function viewContract(code){ window.location.href = `contract_detail.html?code=${encodeURIComponent(code)}`; }
+    function editContract(code){ window.location.href = `contract_create.html?edit=${encodeURIComponent(code)}`; }
+    function activateContract(code){ alert('Activate ' + code + ' (demo).'); }
+    function renewContract(code){ alert('Renew ' + code + ' (demo).'); }
+    function terminateContract(code){ alert('Terminate ' + code + ' (demo).'); }
+    function downloadPDF(code){ alert('Download PDF ' + code + ' (demo).'); }
+
+    function quickSearch(){
+      const v = (document.getElementById('quickSearch').value || '').toLowerCase().trim();
+      filteredData = contracts.filter(c => {
+        const blob = `${c.code} ${c.customer} ${c.opportunity} ${c.quotation} ${c.sales}`.toLowerCase();
+        return blob.includes(v);
+      });
+      currentPage=1;
+      renderTable();
+    }
+
+    document.addEventListener('DOMContentLoaded', ()=>{
+      initMultiSelect('statusDropdown');
+      initCreateButtonRule();
+      renderTable();
+
+      document.getElementById('applyFilter').addEventListener('click', applyFilters);
+      document.getElementById('resetFilter').addEventListener('click', resetFilters);
+      document.getElementById('quickSearch').addEventListener('input', quickSearch);
+      document.getElementById('exportBtn').addEventListener('click', ()=>alert('Export (demo)'));
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,1315 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tạo Pricing Rule</title>
+
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --primary-blue:#0f172a;
+      --accent-blue:#3b82f6;
+      --bg-light:#f8fafc;
+      --card-white:#ffffff;
+      --text-main:#334155;
+      --text-muted:#64748b;
+      --border-color:#e2e8f0;
+      --shadow: 0 1px 3px rgba(0,0,0,.06);
+
+      --success:#10b981;
+      --danger:#ef4444;
+      --warning:#f59e0b;
+
+      --chip-bg:#eff6ff;
+      --chip-bd:#bfdbfe;
+      --chip-tx:#1d4ed8;
+    }
+
+    *{box-sizing:border-box}
+    body{margin:0;font-family:'Inter',sans-serif;background:var(--bg-light);color:var(--text-main)}
+    .page{min-height:100vh;padding:1.5rem 2rem}
+    @media (max-width: 900px){ .page{padding:1rem 1rem} }
+
+    .header-row{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:.75rem}
+    .header-left h1{font-size:1.4rem;font-weight:700;margin:0}
+    .header-left .desc{font-size:.85rem;color:var(--text-muted);margin:.35rem 0 0}
+    .back-button{
+      background: var(--border-color);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      border-radius:10px;
+      padding:0.45rem 0.85rem;
+      font-size:0.85rem;
+      display:inline-flex;
+      align-items:center;
+      gap:0.5rem;
+      text-decoration:none;
+      cursor:pointer;
+      user-select:none;
+    }
+    .back-button:hover{background:var(--accent-blue);color:#fff;border-color:var(--accent-blue)}
+
+    .pill{
+      display:inline-flex;align-items:center;gap:.4rem;
+      padding:.25rem .55rem;border-radius:999px;font-size:.75rem;font-weight:600;
+      border:1px solid var(--border-color);background:#fff;color:var(--text-main);
+      white-space:nowrap;
+    }
+
+    .btn{
+      padding:.45rem .9rem;border-radius:10px;font-size:.85rem;cursor:pointer;display:inline-flex;align-items:center;gap:.45rem;
+      border:1px solid transparent;user-select:none;white-space:nowrap
+    }
+    .btn-secondary{background:var(--card-white);color:var(--text-main);border-color:var(--border-color)}
+    .btn-secondary:hover{background:#f1f5f9}
+    .btn-primary{background:var(--accent-blue);color:#fff;border-color:var(--accent-blue)}
+    .btn-primary:hover{opacity:.92}
+    .btn-danger{background:#fee2e2;color:#b91c1c;border-color:#fecaca}
+    .btn-danger:hover{background:#fecaca}
+    .btn-ghost{background:transparent;color:var(--text-main);border-color:transparent}
+    .btn-ghost:hover{background:#f1f5f9;border-color:#f1f5f9}
+
+    .toolbar{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin:.75rem 0 1rem}
+    .toolbar-left,.toolbar-right{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+
+    .card{background:var(--card-white);border:1px solid var(--border-color);border-radius:12px;padding:1rem;box-shadow:var(--shadow)}
+    .grid{display:grid;grid-template-columns: 1.2fr .8fr;gap:1rem;align-items:start}
+    @media (max-width: 1100px){ .grid{grid-template-columns:1fr} }
+
+    .section-title{display:flex;align-items:center;justify-content:space-between;margin:0 0 .75rem}
+    .section-title h3{margin:0;font-size:1rem;font-weight:900}
+    .hint{font-size:.78rem;color:var(--text-muted);line-height:1.45}
+    .divider{height:1px;background:var(--border-color);margin: .9rem 0}
+
+    .tabs{display:flex;gap:.6rem;flex-wrap:wrap;margin:.25rem 0 1rem}
+    .tab{padding:.55rem .9rem;border:1px solid var(--border-color);background:var(--card-white);border-radius:10px;cursor:pointer;font-weight:800;font-size:.85rem;color:var(--text-main);user-select:none}
+    .tab.active{border-color:var(--accent-blue);background:#eff6ff;color:var(--accent-blue)}
+    .tab-panel{display:none}
+    .tab-panel.active{display:block}
+
+    .form{display:grid;grid-template-columns: 1fr 1fr;gap:.85rem}
+    @media (max-width: 900px){ .form{grid-template-columns: 1fr} }
+    .field{display:flex;flex-direction:column;gap:.35rem}
+    .field label{font-size:.75rem;color:var(--text-muted);font-weight:800}
+    .req::after{content:" *";color:var(--danger);font-weight:900}
+    .input, select, textarea{
+      width:100%;
+      background:#fff;
+      border:1px solid var(--border-color);
+      border-radius:10px;
+      padding:.55rem .65rem;
+      font-size:.85rem;
+      outline:none;
+    }
+    textarea{min-height:86px;resize:vertical}
+    .input:focus, select:focus, textarea:focus{border-color: rgba(59,130,246,.55); box-shadow: 0 0 0 3px rgba(59,130,246,.12)}
+    .inline{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap}
+    .toggle{
+      display:inline-flex;gap:.45rem;align-items:center;
+      border:1px solid var(--border-color);border-radius:999px;padding:.25rem;
+      background:#fff;
+    }
+    .toggle button{
+      border:0;background:transparent;padding:.35rem .65rem;border-radius:999px;
+      font-weight:800;font-size:.78rem;color:var(--text-muted);cursor:pointer;
+    }
+    .toggle button.active{background:#eff6ff;color:var(--accent-blue)}
+    .chip{
+      display:inline-flex;align-items:center;gap:.4rem;
+      padding:.25rem .55rem;border-radius:999px;font-size:.75rem;font-weight:800;
+      border:1px solid var(--chip-bd);background:var(--chip-bg);color:var(--chip-tx);
+    }
+    .chip .x{cursor:pointer;color:rgba(29,78,216,.8)}
+    .chip .x:hover{color:rgba(29,78,216,1)}
+
+    .multi-select{
+      position:relative;
+      border:1px solid var(--border-color);
+      border-radius:10px;
+      padding:.55rem .65rem;
+      cursor:pointer;
+      user-select:none;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:.6rem;
+      background:#fff;
+    }
+    .multi-select .selected-options{
+      font-size:.85rem;color:var(--text-main);
+      overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+    }
+    .multi-select .dropdown-icon{color:var(--text-muted);font-size:.85rem}
+    .options-list{
+      position:absolute;
+      top:calc(100% + 8px);
+      left:0;
+      width:100%;
+      background:#fff;
+      border:1px solid var(--border-color);
+      border-radius:12px;
+      box-shadow: var(--shadow);
+      padding:.45rem;
+      display:none;
+      z-index:50;
+      max-height:220px;
+      overflow:auto;
+    }
+    .multi-select.open .options-list{display:block}
+    .options-list label{
+      display:flex;align-items:center;gap:.55rem;
+      padding:.55rem .55rem;
+      border-radius:10px;
+      cursor:pointer;
+      font-size:.85rem;
+      color:var(--text-main);
+    }
+    .options-list label:hover{background:#f8fafc}
+    .options-list input{transform: translateY(1px);}
+
+    .table-wrap{border:1px solid var(--border-color);border-radius:12px;overflow:auto}
+    table{width:100%;border-collapse:collapse;font-size:.85rem;min-width:880px}
+    thead th{padding:.65rem .6rem;color:var(--text-muted);font-weight:900;border-bottom:1px solid var(--border-color);text-align:left;background:#fbfdff;position:sticky;top:0;z-index:1}
+    tbody td{padding:.6rem .6rem;border-bottom:1px solid var(--border-color);vertical-align:middle}
+    tbody tr:hover{background:#f8fafc}
+    .mini{padding:.45rem .55rem;border-radius:10px;border:1px solid var(--border-color);font-size:.85rem;outline:none;width:100%}
+    .mini:focus{border-color: rgba(59,130,246,.55); box-shadow: 0 0 0 3px rgba(59,130,246,.12)}
+    .actions i{margin-right:.55rem;cursor:pointer;color:var(--accent-blue)}
+    .actions i:hover{color:rgba(59,130,246,.85)}
+    .actions i:last-child{margin-right:0}
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}
+
+    .sticky{position:sticky;top:1rem}
+    .kv{display:flex;justify-content:space-between;gap:1rem;margin:.35rem 0}
+    .kv .k{color:var(--text-muted);font-size:.78rem;font-weight:800}
+    .kv .v{font-size:.82rem;font-weight:800;text-align:right}
+    .preview-box{
+      border:1px dashed rgba(59,130,246,.45);
+      background:#eff6ff;
+      border-radius:12px;
+      padding:.75rem;
+      color:#0b3a97;
+      font-size:.85rem;
+      line-height:1.45;
+    }
+    .warn{
+      border:1px solid rgba(245,158,11,.35);
+      background:rgba(245,158,11,.10);
+      border-radius:12px;
+      padding:.75rem;
+      color:#7c4a03;
+      font-size:.83rem;
+      line-height:1.45;
+    }
+
+    /* Scope summary mini-card */
+    .scope-summary{
+      border:1px solid var(--border-color);
+      border-radius:12px;
+      padding:.75rem;
+      background:#fff;
+    }
+    .scope-summary .title{font-weight:900;margin-bottom:.5rem}
+    .scope-summary .row{display:flex;justify-content:space-between;gap:1rem;margin:.25rem 0}
+    .scope-summary .row .k{font-size:.78rem;color:var(--text-muted);font-weight:800}
+    .scope-summary .row .v{font-size:.82rem;font-weight:800;text-align:right}
+  </style>
+</head>
+
+<body>
+  <div class="page">
+
+    <div class="header-row">
+      <div style="display:flex;gap:1rem;align-items:flex-start;flex-wrap:wrap;">
+        <a class="back-button" id="btnBack"><i class="fas fa-arrow-left"></i> Quay lại</a>
+        <div class="header-left">
+          <h1>Tạo Pricing Rule</h1>
+          <p class="desc">Set giá theo từng <b>khách hàng</b>, <b>nhóm khách hàng</b>, <b>vùng/zone</b>, <b>dịch vụ</b> và thời gian hiệu lực.</p>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;">
+        <span class="pill"><i class="fa-regular fa-file"></i> Trạng thái: <b id="pillStatus">Draft</b></span>
+        <span class="pill"><i class="fa-solid fa-code-branch"></i> Version: <b id="pillVersion">v1</b></span>
+        <span class="pill"><i class="fa-regular fa-clock"></i> Now: <span id="nowText">--/--/---- --:--</span></span>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <span class="pill"><i class="fa-solid fa-shield"></i> Duplicate check: <b>ON</b></span>
+        <span class="pill"><i class="fa-solid fa-diagram-project"></i> Priority: <b>Customer</b> → Segment → Zone</span>
+      </div>
+      <div class="toolbar-right">
+        <button class="btn btn-secondary" id="btnSaveDraft"><i class="fa-regular fa-floppy-disk"></i> Lưu nháp</button>
+        <button class="btn btn-primary" id="btnSubmit"><i class="fa-solid fa-check"></i> Submit</button>
+        <button class="btn btn-danger" id="btnCancel"><i class="fa-solid fa-xmark"></i> Hủy</button>
+      </div>
+    </div>
+
+    <div class="grid">
+
+      <div class="card">
+        <div class="tabs" id="tabsBar">
+          <!-- inline onclick = ALWAYS works even when embedded -->
+          <div class="tab active" data-tab="info" onclick="showPricingTab('info')">1) Rule Info</div>
+          <div class="tab" data-tab="scope" onclick="showPricingTab('scope')">2) Scope</div>
+          <div class="tab" data-tab="pricing" onclick="showPricingTab('pricing')">3) Pricing Lines</div>
+          <div class="tab" data-tab="extras" onclick="showPricingTab('extras')">4) Surcharges & Discounts</div>
+          <div class="tab" data-tab="validity" onclick="showPricingTab('validity')">5) Validity & Version</div>
+          <div class="tab" data-tab="review" onclick="showPricingTab('review')">6) Review</div>
+        </div>
+
+        <!-- INFO -->
+        <div class="tab-panel active" id="tab-info">
+          <div class="section-title">
+            <h3>Rule Info</h3>
+            <span class="hint">Mã rule có thể auto-generate theo Service + Segment + Zone + Version.</span>
+          </div>
+
+          <div class="form">
+            <div class="field">
+              <label class="req">Rule Code</label>
+              <input class="input mono" id="ruleCode" placeholder="VD: PM-EXP-001" value="PM-EXP-NEW"/>
+              <div class="hint">Gợi ý: bấm “Generate” để tạo theo pattern.</div>
+              <div class="inline">
+                <button class="btn btn-secondary" type="button" id="btnGen"><i class="fa-solid fa-wand-magic-sparkles"></i> Generate</button>
+                <span class="pill"><i class="fa-regular fa-circle-question"></i> Unique</span>
+              </div>
+            </div>
+
+            <div class="field">
+              <label class="req">Pricing Type</label>
+              <select id="pricingType">
+                <option value="weight_slab">Weight Slab (theo bậc cân nặng)</option>
+                <option value="zone_rate">Zone Rate (theo zone)</option>
+                <option value="flat_fee">Flat Fee (đồng giá)</option>
+                <option value="custom_formula">Custom Formula (công thức)</option>
+              </select>
+              <div class="hint">Pricing Type quyết định cấu trúc bảng Pricing Lines.</div>
+            </div>
+
+            <div class="field">
+              <label class="req">Service</label>
+              <select id="service">
+                <option value="">-- Chọn dịch vụ --</option>
+                <option>Express</option>
+                <option>Economy</option>
+                <option>Same-day</option>
+                <option>International</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Status</label>
+              <div class="toggle" id="statusToggle">
+                <button type="button" class="active" data-val="draft">Draft</button>
+                <button type="button" data-val="active">Active</button>
+                <button type="button" data-val="disabled">Disabled</button>
+              </div>
+              <div class="hint">Draft: chưa áp dụng. Active: có thể được chọn khi Submit.</div>
+            </div>
+
+            <div class="field" style="grid-column:1/-1">
+              <label>Description</label>
+              <textarea id="desc" placeholder="Mô tả rule: phạm vi áp dụng, rationale, notes..."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- SCOPE -->
+        <div class="tab-panel" id="tab-scope">
+          <div class="section-title">
+            <h3>Scope</h3>
+            <span class="hint">Có thể set theo từng khách hàng, nhóm khách hàng, vùng/zone, dịch vụ…</span>
+          </div>
+
+          <div class="warn">
+            <b>Rule precedence gợi ý (ưu tiên áp dụng):</b><br>
+            1) Customer cụ thể → 2) Customer Group/Segment → 3) Zone/Lane → 4) Default Service<br>
+            (Khi conflict: ưu tiên rule có <b>priority</b> cao hơn hoặc <b>effective</b> mới hơn)
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="scope-summary" id="scopeSummary">
+            <div class="title"><i class="fa-solid fa-bullseye"></i> Scope Summary</div>
+            <div class="row"><div class="k">Apply To</div><div class="v" id="ssApply">Segment</div></div>
+            <div class="row"><div class="k">Target</div><div class="v" id="ssTarget">Enterprise</div></div>
+            <div class="row"><div class="k">Priority</div><div class="v" id="ssPrio">50</div></div>
+            <div class="row"><div class="k">Zone/Lane</div><div class="v" id="ssZone">Any</div></div>
+            <div class="row"><div class="k">Origin → Dest</div><div class="v" id="ssOD">All → All</div></div>
+            <div class="row"><div class="k">Tags</div><div class="v" id="ssTags">none</div></div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="form">
+            <div class="field">
+              <label>Apply To</label>
+              <select id="applyTo">
+                <option value="customer">Từng khách hàng (Customer)</option>
+                <option value="group">Nhóm khách hàng (Customer Group)</option>
+                <option value="segment" selected>Segment (SMB/Enterprise/...)</option>
+                <option value="all">Tất cả khách hàng</option>
+              </select>
+              <div class="hint">Chọn phạm vi chính. Bạn vẫn có thể thêm điều kiện phụ ở dưới.</div>
+            </div>
+
+            <div class="field">
+              <label>Priority</label>
+              <select id="priority">
+                <option value="100">100 (Customer)</option>
+                <option value="70">70 (Group)</option>
+                <option value="50" selected>50 (Segment)</option>
+                <option value="10">10 (Default)</option>
+              </select>
+              <div class="hint">Số càng lớn càng ưu tiên khi conflict.</div>
+            </div>
+
+            <div class="field" id="customerField" style="display:none;">
+              <label class="req">Customer</label>
+              <select id="customer">
+                <option value="">-- Chọn khách hàng --</option>
+                <option>ABC Trading</option>
+                <option>XYZ Logistics</option>
+                <option>Soho SMB</option>
+              </select>
+              <div class="hint">Dùng khi Apply To = Customer.</div>
+            </div>
+
+            <div class="field" id="groupField" style="display:none;">
+              <label class="req">Customer Group</label>
+              <select id="customerGroup">
+                <option value="">-- Chọn nhóm --</option>
+                <option>Key Account</option>
+                <option>Retail</option>
+                <option>Wholesale</option>
+              </select>
+              <div class="hint">Dùng khi Apply To = Customer Group.</div>
+            </div>
+
+            <div class="field" id="segmentField">
+              <label class="req">Segment</label>
+              <select id="segment">
+                <option value="">-- Chọn segment --</option>
+                <option selected>Enterprise</option>
+                <option>SMB</option>
+                <option>Retail</option>
+                <option>Key Account</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Zone / Lane</label>
+              <input class="input" id="zone" placeholder="VD: HCM → HN, Zone 1, VN-NORTH..."/>
+              <div class="hint">Có thể để trống nếu rule áp cho mọi zone của service.</div>
+            </div>
+
+            <div class="field">
+              <label>Origin region (optional)</label>
+              <select id="origin">
+                <option value="">Tất cả</option>
+                <option>VN-SOUTH</option>
+                <option>VN-NORTH</option>
+                <option>VN-CENTRAL</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Destination region (optional)</label>
+              <select id="dest">
+                <option value="">Tất cả</option>
+                <option>VN-SOUTH</option>
+                <option>VN-NORTH</option>
+                <option>VN-CENTRAL</option>
+              </select>
+            </div>
+
+            <div class="field" style="grid-column:1/-1">
+              <label>Tags (optional)</label>
+              <div class="inline">
+                <input class="input" id="tagInput" placeholder="Nhập tag và Enter (VD: cod, fragile, ecom)..." style="max-width:420px"/>
+                <span class="hint">Tag dùng để match rule theo thuộc tính đơn hàng.</span>
+              </div>
+              <div class="inline" id="tagChips" style="margin-top:.45rem; gap:.45rem;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PRICING -->
+        <div class="tab-panel" id="tab-pricing">
+          <div class="section-title">
+            <h3>Pricing Lines</h3>
+            <div class="inline">
+              <button class="btn btn-secondary" id="btnAddLine" type="button"><i class="fa-solid fa-plus"></i> Add line</button>
+              <button class="btn btn-secondary" id="btnLoadTpl" type="button"><i class="fa-solid fa-table"></i> Load template</button>
+            </div>
+          </div>
+          <p class="hint" style="margin-top:0;">
+            Với <b>Weight Slab</b>: mỗi dòng = 1 khoảng cân nặng. Với <b>Zone Rate</b>: mỗi dòng = 1 zone/điều kiện.
+          </p>
+
+          
+          <div class="table-wrap">
+            <table id="linesTable">
+              <thead id="linesHead"></thead>
+              <tbody id="linesBody"></tbody>
+            </table>
+          </div>
+
+
+          <div class="divider"></div>
+          <div class="hint">
+            Gợi ý: base price có thể áp “per kg”, “per shipment”, hoặc “per zone” tùy Pricing Type.
+          </div>
+        </div>
+
+        <!-- EXTRAS -->
+        <div class="tab-panel" id="tab-extras">
+          <div class="section-title">
+            <h3>Surcharges &amp; Discounts</h3>
+            <span class="hint">Thiết lập phụ phí/chiết khấu theo điều kiện (COD, remote area, oversize, volume...).</span>
+          </div>
+
+          <div class="form">
+            <div class="field">
+              <label>Fuel surcharge</label>
+              <div class="inline">
+                <input class="input" id="fuelPct" placeholder="VD: 8" style="max-width:120px"/>
+                <span class="pill">%</span>
+                <span class="hint">Áp % trên Base Price</span>
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Remote area fee</label>
+              <div class="inline">
+                <input class="input" id="remoteFee" placeholder="VD: 15000" style="max-width:160px"/>
+                <span class="pill">VND</span>
+                <span class="hint">Áp nếu postcode thuộc remote list</span>
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Discount type</label>
+              <select id="discountType">
+                <option value="">Không áp</option>
+                <option value="pct">%</option>
+                <option value="amount">Số tiền</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Discount value</label>
+              <input class="input" id="discountValue" placeholder="VD: 5 hoặc 20000"/>
+            </div>
+
+            <div class="field" style="grid-column:1/-1">
+              <label>Extra conditions (multi)</label>
+              <div class="multi-select" id="condDropdown">
+                <div class="selected-options">Không có</div>
+                <div class="dropdown-icon"><i class="fas fa-chevron-down"></i></div>
+                <div class="options-list">
+                  <label><input type="checkbox" value="cod"> COD</label>
+                  <label><input type="checkbox" value="fragile"> Fragile</label>
+                  <label><input type="checkbox" value="oversize"> Oversize</label>
+                  <label><input type="checkbox" value="insurance"> Insurance</label>
+                  <label><input type="checkbox" value="remote_postcode"> Remote postcode</label>
+                  <label><input type="checkbox" value="peak_season"> Peak season</label>
+                </div>
+              </div>
+              <div class="hint">Hệ thống sẽ match điều kiện từ shipment/order.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- VALIDITY -->
+        <div class="tab-panel" id="tab-validity">
+          <div class="section-title">
+            <h3>Validity &amp; Versioning</h3>
+            <span class="hint">Quản lý effective date và renew/duplicate theo version.</span>
+          </div>
+
+          <div class="form">
+            <div class="field">
+              <label class="req">Effective From</label>
+              <input class="input" id="effectiveFrom" type="date" value="2026-01-01"/>
+            </div>
+
+            <div class="field">
+              <label>Effective To</label>
+              <input class="input" id="effectiveTo" type="date"/>
+              <div class="hint">Để trống = vô thời hạn (đến khi có version mới).</div>
+            </div>
+
+            <div class="field">
+              <label>Version</label>
+              <select id="version">
+                <option>v1</option>
+                <option>v2</option>
+                <option>v3</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Renew strategy</label>
+              <select id="renew">
+                <option value="duplicate">Duplicate to new version</option>
+                <option value="amend">Amend current (audit strict)</option>
+              </select>
+              <div class="hint">Khuyến nghị: Duplicate để audit tốt.</div>
+            </div>
+
+            <div class="field" style="grid-column:1/-1">
+              <label>Conflict policy</label>
+              <select id="conflictPolicy">
+                <option value="block" selected>Block submit if conflict</option>
+                <option value="warn">Warn only</option>
+                <option value="override">Allow override by priority</option>
+              </select>
+              <div class="hint">Conflict = trùng key (Service + Scope + Zone) và overlap thời gian hiệu lực.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- REVIEW -->
+        <div class="tab-panel" id="tab-review">
+          <div class="section-title">
+            <h3>Review</h3>
+            <span class="hint">Kiểm tra tóm tắt trước khi Submit.</span>
+          </div>
+
+          <div class="preview-box" id="reviewBox">
+            (Chọn / nhập dữ liệu để hệ thống dựng preview)
+          </div>
+
+          <div class="divider"></div>
+          <div class="inline">
+            <button class="btn btn-secondary" id="btnValidate" type="button"><i class="fa-solid fa-circle-check"></i> Validate</button>
+            <button class="btn btn-secondary" id="btnDetectConflict" type="button"><i class="fa-solid fa-triangle-exclamation"></i> Detect conflict</button>
+            <button class="btn btn-primary" id="btnGoSubmit" type="button"><i class="fa-solid fa-check"></i> Submit</button>
+          </div>
+          <p class="hint" style="margin:.6rem 0 0;">
+            Validate kiểm tra required fields + logic cơ bản. Detect conflict kiểm tra trùng key + overlap effective.
+          </p>
+        </div>
+      </div>
+
+      <aside class="card sticky">
+        <div class="section-title">
+          <h3>Quick Preview</h3>
+          <button class="btn btn-ghost" id="btnRefreshPreview" type="button"><i class="fa-solid fa-rotate"></i></button>
+        </div>
+
+        <div class="kv"><div class="k">Rule</div><div class="v mono" id="pvCode">PM-EXP-NEW</div></div>
+        <div class="kv"><div class="k">Service</div><div class="v" id="pvService">—</div></div>
+        <div class="kv"><div class="k">Apply To</div><div class="v" id="pvApply">Segment</div></div>
+        <div class="kv"><div class="k">Target</div><div class="v" id="pvTarget">Enterprise</div></div>
+        <div class="kv"><div class="k">Zone</div><div class="v" id="pvZone">—</div></div>
+        <div class="kv"><div class="k">Type</div><div class="v" id="pvType">Weight Slab</div></div>
+        <div class="kv"><div class="k">Effective</div><div class="v mono" id="pvEff">2026-01-01 → ∞</div></div>
+
+        <div class="divider"></div>
+
+        <div class="hint" style="font-weight:900;margin-bottom:.45rem;">Checklist</div>
+        <div class="hint" id="checklist">
+          • Rule Code<br>
+          • Service<br>
+          • Scope target (Customer/Group/Segment)<br>
+          • Pricing lines >= 1<br>
+          • Effective From
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="preview-box" id="calcPreview">
+          <b>Pricing breakdown (demo)</b><br>
+          Base: (lines...)<br>
+          Fuel: —<br>
+          Remote: —<br>
+          Discount: —<br>
+        </div>
+
+        <div class="divider"></div>
+
+        <button class="btn btn-secondary" style="width:100%;justify-content:center" id="btnOpenTest" type="button">
+          <i class="fa-solid fa-flask"></i> Test pricing (demo)
+        </button>
+      </aside>
+
+    </div>
+  </div>
+
+  <script>
+    // ========== GLOBAL TAB SWITCHER (inline onclick calls this) ==========
+    // Works even if page is injected/iframes/SPA, because it's global and does not rely on DOMContentLoaded.
+    window.showPricingTab = function(name){
+      try{
+        const tabs = document.querySelectorAll('.tab[data-tab]');
+        const panels = document.querySelectorAll('.tab-panel[id^="tab-"]');
+
+        tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+        panels.forEach(p => p.classList.toggle('active', p.id === ('tab-' + name)));
+
+        // update hash for deep-linking (optional, safe)
+        if (location.hash !== '#' + name) {
+          history.replaceState(null, '', '#' + name);
+        }
+
+        // refresh side preview/review whenever tab changes
+        refreshPreview();
+        refreshReview();
+      }catch(err){
+        console.error('showPricingTab error', err);
+      }
+    };
+
+    // ========== SAFE BOOT (runs even if DOM already loaded) ==========
+    function boot(){
+      // Set time label
+      setNow();
+
+      // Back
+      const btnBack = document.getElementById('btnBack');
+      if (btnBack){
+        btnBack.addEventListener('click', () => {
+          if (window.history.length > 1) window.history.back();
+          else window.location.href = "pricing_matrix.html";
+        });
+      }
+
+      // Status toggle
+      initStatusToggle();
+
+      // Scope UI
+      initScopeUI();
+
+      // Tags
+      initTags();
+
+      // Conditions multi
+      initCondDropdown();
+
+      // Pricing lines
+      initLines();
+
+      // Generate code
+      initGenerate();
+
+      // Buttons
+      initButtons();
+
+      // Watch changes -> preview
+      initWatchers();
+
+      // Activate tab by hash (info/scope/pricing/extras/validity/review)
+      const hash = (location.hash || '').replace('#','').trim();
+      const valid = ['info','scope','pricing','extras','validity','review'];
+      showPricingTab(valid.includes(hash) ? hash : 'info');
+
+      // Initial render
+      refreshPreview();
+      refreshReview();
+      refreshScopeSummary();
+    }
+
+    function bootWhenReady(){
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', boot, { once:true });
+      } else {
+        boot();
+      }
+    }
+    bootWhenReady();
+
+    // ========== Helpers ==========
+    function pad2(n){ return (n<10?'0':'')+n; }
+    function setNow(){
+      const d = new Date();
+      const txt = `${pad2(d.getDate())}/${pad2(d.getMonth()+1)}/${d.getFullYear()} ${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+      const el = document.getElementById("nowText");
+      if (el) el.textContent = txt;
+    }
+
+    function initStatusToggle(){
+      const statusToggle = document.getElementById("statusToggle");
+      if (!statusToggle) return;
+      const btns = statusToggle.querySelectorAll("button[data-val]");
+      btns.forEach(b => b.addEventListener("click", () => {
+        btns.forEach(x => x.classList.toggle("active", x === b));
+        const v = b.dataset.val;
+        const pill = document.getElementById("pillStatus");
+        if (pill) pill.textContent = v.charAt(0).toUpperCase()+v.slice(1);
+        refreshPreview(); refreshReview();
+      }));
+    }
+
+    function initScopeUI(){
+      const applyTo = document.getElementById("applyTo");
+      if (!applyTo) return;
+      applyTo.addEventListener("change", updateScopeUI);
+      updateScopeUI(); // initial
+    }
+
+    function updateScopeUI(){
+      const applyTo = document.getElementById("applyTo");
+      const v = applyTo ? applyTo.value : 'segment';
+      const customerField = document.getElementById("customerField");
+      const groupField = document.getElementById("groupField");
+      const segmentField = document.getElementById("segmentField");
+
+      if (customerField) customerField.style.display = (v === "customer") ? "flex" : "none";
+      if (groupField) groupField.style.display = (v === "group") ? "flex" : "none";
+      if (segmentField) segmentField.style.display = (v === "segment") ? "flex" : "none";
+
+      const pr = document.getElementById("priority");
+      if (pr){
+        if (v === "customer") pr.value = "100";
+        if (v === "group") pr.value = "70";
+        if (v === "segment") pr.value = "50";
+        if (v === "all") pr.value = "10";
+      }
+
+      refreshScopeSummary();
+      refreshPreview(); refreshReview();
+    }
+
+    // Tags
+    let tags = new Set();
+    function initTags(){
+      const tagInput = document.getElementById("tagInput");
+      const tagChips = document.getElementById("tagChips");
+      if (!tagInput || !tagChips) return;
+
+      tagInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter"){
+          e.preventDefault();
+          const v = (tagInput.value || "").trim().toLowerCase();
+          if (!v) return;
+          tags.add(v);
+          tagInput.value = "";
+          renderTags();
+          refreshScopeSummary();
+          refreshPreview(); refreshReview();
+        }
+      });
+
+      function renderTags(){
+        tagChips.innerHTML = "";
+        Array.from(tags).forEach(t => {
+          const el = document.createElement("span");
+          el.className = "chip";
+          el.innerHTML = `${t} <span class="x" title="Remove">✕</span>`;
+          el.querySelector(".x").addEventListener("click", () => {
+            tags.delete(t);
+            renderTags();
+            refreshScopeSummary();
+            refreshPreview(); refreshReview();
+          });
+          tagChips.appendChild(el);
+        });
+      }
+      window.renderTags = renderTags;
+      renderTags();
+    }
+
+    // Conditions dropdown
+    function initCondDropdown(){
+      const dd = document.getElementById("condDropdown");
+      if (!dd) return;
+      const selected = dd.querySelector(".selected-options");
+      const checks = dd.querySelectorAll('input[type="checkbox"]');
+
+      function updateText(){
+        const checked = Array.from(checks).filter(x => x.checked).map(x => x.parentElement.textContent.trim());
+        if (selected) selected.textContent = checked.length ? checked.join(", ") : "Không có";
+        refreshPreview(); refreshReview();
+      }
+
+      dd.addEventListener("click", (e) => {
+        if (e.target.closest(".options-list")) return;
+        dd.classList.toggle("open");
+      });
+      checks.forEach(c => c.addEventListener("change", updateText));
+      updateText();
+
+      document.addEventListener("click", (e) => {
+        if (!dd.contains(e.target)) dd.classList.remove("open");
+      });
+    }
+
+    // Pricing lines (schema-based; changes with Pricing Type)
+    let lines = [];
+    let currentSchema = null;
+
+    const SCHEMAS = {
+      weight_slab: {
+        name: "Weight Slab",
+        columns: [
+          { key:"from", label:"From", width:110, type:"number", placeholder:"0" },
+          { key:"to", label:"To", width:110, type:"number", placeholder:"2" },
+          { key:"uom", label:"UOM", width:120, type:"select", options:["kg","g"] },
+          { key:"price", label:"Base Price", width:150, type:"number", placeholder:"35000" },
+          { key:"currency", label:"Currency", width:140, type:"select", options:["VND","USD","SGD"] },
+          { key:"cond", label:"Condition (optional)", width:null, type:"text", placeholder:"VD: COD only..." },
+          { key:"prio", label:"Priority", width:110, type:"number", placeholder:"50" }
+        ],
+        defaults: () => ([
+          {from:"0", to:"2", uom:"kg", price:"35000", currency:"VND", cond:"", prio:"50"},
+          {from:"2", to:"5", uom:"kg", price:"55000", currency:"VND", cond:"", prio:"50"},
+          {from:"5", to:"10", uom:"kg", price:"85000", currency:"VND", cond:"", prio:"50"},
+        ])
+      },
+
+      zone_rate: {
+        name: "Zone Rate",
+        columns: [
+          { key:"zone", label:"Zone/Lane", width:220, type:"text", placeholder:"VD: Zone 1 hoặc HCM→HN" },
+          { key:"min_w", label:"Min Weight", width:120, type:"number", placeholder:"0" },
+          { key:"max_w", label:"Max Weight", width:120, type:"number", placeholder:"2" },
+          { key:"uom", label:"UOM", width:120, type:"select", options:["kg","g"] },
+          { key:"price", label:"Rate", width:150, type:"number", placeholder:"35000" },
+          { key:"currency", label:"Currency", width:140, type:"select", options:["VND","USD","SGD"] },
+          { key:"cond", label:"Condition (optional)", width:null, type:"text", placeholder:"VD: service_level=..." },
+          { key:"prio", label:"Priority", width:110, type:"number", placeholder:"50" }
+        ],
+        defaults: () => ([
+          {zone:"Zone 1", min_w:"0", max_w:"2", uom:"kg", price:"35000", currency:"VND", cond:"", prio:"50"},
+          {zone:"Zone 2", min_w:"0", max_w:"2", uom:"kg", price:"42000", currency:"VND", cond:"", prio:"50"},
+          {zone:"Zone 1", min_w:"2", max_w:"5", uom:"kg", price:"55000", currency:"VND", cond:"", prio:"50"},
+        ])
+      },
+
+      flat_fee: {
+        name: "Flat Fee",
+        columns: [
+          { key:"fee", label:"Fee", width:160, type:"number", placeholder:"50000" },
+          { key:"currency", label:"Currency", width:140, type:"select", options:["VND","USD","SGD"] },
+          { key:"unit", label:"Per", width:160, type:"select", options:["shipment","kg","bill"] },
+          { key:"min_order", label:"Min Order (optional)", width:180, type:"number", placeholder:"0" },
+          { key:"cond", label:"Condition (optional)", width:null, type:"text", placeholder:"VD: only COD" },
+          { key:"prio", label:"Priority", width:110, type:"number", placeholder:"50" }
+        ],
+        defaults: () => ([
+          {fee:"50000", currency:"VND", unit:"shipment", min_order:"0", cond:"", prio:"50"}
+        ])
+      },
+
+      custom_formula: {
+        name: "Custom Formula",
+        columns: [
+          { key:"formula", label:"Formula", width:null, type:"textarea", placeholder:"VD: base + fuel_pct*base + remote_fee" },
+          { key:"currency", label:"Currency", width:140, type:"select", options:["VND","USD","SGD"] },
+          { key:"cond", label:"Condition (optional)", width:null, type:"text", placeholder:"VD: insurance=true" },
+          { key:"prio", label:"Priority", width:110, type:"number", placeholder:"50" }
+        ],
+        defaults: () => ([
+          {formula:"base_price + (fuel_pct/100)*base_price + remote_fee", currency:"VND", cond:"", prio:"50"}
+        ])
+      }
+    };
+
+    function getPricingTypeKey(){
+      return document.getElementById("pricingType")?.value || "weight_slab";
+    }
+
+    function buildHead(schema){
+      const head = document.getElementById("linesHead");
+      if (!head) return;
+
+      const ths = schema.columns.map(c => {
+        const w = c.width ? ` style="width:${c.width}px;"` : "";
+        return `<th${w}>${c.label}</th>`;
+      }).join("");
+      head.innerHTML = `<tr>${ths}<th style="width:110px;">Actions</th></tr>`;
+    }
+
+    function cellInput(col, value, idx){
+      const v = (value ?? "");
+      const common = `data-k="${col.key}" data-i="${idx}"`;
+
+      if (col.type === "select"){
+        const opts = col.options.map(o => `<option ${String(v)===String(o)?"selected":""}>${o}</option>`).join("");
+        return `<select class="mini" ${common}>${opts}</select>`;
+      }
+      if (col.type === "textarea"){
+        // keep it compact inside table
+        const ph = col.placeholder ? `placeholder="${col.placeholder}"` : "";
+        return `<textarea class="mini" ${ph} ${common} style="min-height:56px;">${String(v)}</textarea>`;
+      }
+      const type = col.type === "number" ? "number" : "text";
+      const ph = col.placeholder ? `placeholder="${col.placeholder}"` : "";
+      return `<input class="mini" type="${type}" ${ph} value="${String(v)}" ${common}/>`;
+    }
+
+    function renderLines(){
+      const body = document.getElementById("linesBody");
+      if (!body || !currentSchema) return;
+
+      body.innerHTML = "";
+      lines.forEach((l, idx) => {
+        const tds = currentSchema.columns.map(col => `<td>${cellInput(col, l[col.key], idx)}</td>`).join("");
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          ${tds}
+          <td class="actions">
+            <i class="fa-regular fa-trash-can" title="Remove" data-act="rm" data-i="${idx}"></i>
+            <i class="fa-regular fa-copy" title="Duplicate" data-act="dup" data-i="${idx}"></i>
+          </td>
+        `;
+        body.appendChild(tr);
+      });
+    }
+
+    function setSchema(typeKey, preserve=false){
+      const schema = SCHEMAS[typeKey] || SCHEMAS.weight_slab;
+      currentSchema = schema;
+      window.__schemaName = schema.name;
+      buildHead(schema);
+
+      if (!preserve){
+        lines = schema.defaults();
+      } else {
+        // best-effort preserve common keys between schemas
+        const prev = lines || [];
+        let newLines = schema.defaults();
+
+        if (prev.length){
+          const commonKeys = new Set(schema.columns.map(c=>c.key));
+          const n = Math.min(prev.length, newLines.length);
+          for (let i=0;i<n;i++){
+            const merged = {...newLines[i]};
+            Object.keys(prev[i]).forEach(k=>{
+              if (commonKeys.has(k)) merged[k] = prev[i][k];
+              // minimal mapping between schemas
+              if (typeKey === "flat_fee" && k === "price") merged["fee"] = prev[i][k];
+              if (typeKey === "zone_rate" && k === "from") merged["min_w"] = prev[i][k];
+              if (typeKey === "zone_rate" && k === "to") merged["max_w"] = prev[i][k];
+              if (typeKey === "weight_slab" && k === "min_w") merged["from"] = prev[i][k];
+              if (typeKey === "weight_slab" && k === "max_w") merged["to"] = prev[i][k];
+            });
+            newLines[i] = merged;
+          }
+        }
+        lines = newLines;
+      }
+
+      renderLines();
+      refreshPreview(); refreshReview();
+    }
+
+    function addLine(){
+      if (!currentSchema) setSchema(getPricingTypeKey(), false);
+      const one = currentSchema.defaults()[0] || {};
+      lines.push(JSON.parse(JSON.stringify(one)));
+      renderLines(); refreshPreview(); refreshReview();
+    }
+
+    function loadTemplate(){
+      setSchema(getPricingTypeKey(), false);
+    }
+
+    function initLines(){
+      const body = document.getElementById("linesBody");
+      if (!body) return;
+
+      // initial schema by current pricing type
+      setSchema(getPricingTypeKey(), false);
+
+      // row edit
+      function writeValue(el){
+        const i = Number(el.dataset.i);
+        const k = el.dataset.k;
+        if (!lines[i]) return;
+        lines[i][k] = el.value;
+        refreshPreview(); refreshReview();
+      }
+
+      body.addEventListener("input", (e) => {
+        const el = e.target.closest("[data-k]");
+        if (el) writeValue(el);
+      });
+
+      body.addEventListener("change", (e) => {
+        const el = e.target.closest("[data-k]");
+        if (el) writeValue(el);
+      });
+
+      // actions
+      body.addEventListener("click", (e) => {
+        const icon = e.target.closest("i[data-act]");
+        if (!icon) return;
+        const act = icon.dataset.act;
+        const i = Number(icon.dataset.i);
+        if (!lines[i]) return;
+        if (act === "rm"){
+          lines.splice(i,1);
+          renderLines(); refreshPreview(); refreshReview();
+        }
+        if (act === "dup"){
+          const copy = JSON.parse(JSON.stringify(lines[i]));
+          lines.splice(i+1, 0, copy);
+          renderLines(); refreshPreview(); refreshReview();
+        }
+      });
+
+      // buttons
+      const btnAdd = document.getElementById("btnAddLine");
+      if (btnAdd) btnAdd.addEventListener("click", () => addLine());
+      const btnTpl = document.getElementById("btnLoadTpl");
+      if (btnTpl) btnTpl.addEventListener("click", () => loadTemplate());
+
+      // pricing type change -> switch schema + preserve best-effort
+      const pt = document.getElementById("pricingType");
+      if (pt){
+        pt.addEventListener("change", () => {
+          setSchema(getPricingTypeKey(), true);
+        });
+      }
+
+      // expose for review/preview
+      window.__lines = () => lines;
+    }
+
+    // Generate code
+    function initGenerate(){
+      const btn = document.getElementById("btnGen");
+      if (!btn) return;
+      btn.addEventListener("click", () => {
+        const svc = document.getElementById("service").value || "GEN";
+        const seg = (document.getElementById("segment") ? document.getElementById("segment").value : "ALL") || "ALL";
+        const zone = (document.getElementById("zone").value || "ANY").replace(/\s+/g,"").slice(0,6).toUpperCase();
+        const ver = document.getElementById("version").value || "v1";
+        const code = `PM-${svc.substring(0,3).toUpperCase()}-${seg.substring(0,3).toUpperCase()}-${zone}-${ver.toUpperCase()}`;
+        document.getElementById("ruleCode").value = code;
+        refreshPreview(); refreshReview();
+      });
+    }
+
+    // Buttons
+    function initButtons(){
+      const btnSave = document.getElementById("btnSaveDraft");
+      if (btnSave) btnSave.addEventListener("click", () => alert("TODO: Save draft (demo)"));
+
+      const btnSubmit = document.getElementById("btnSubmit");
+      if (btnSubmit) btnSubmit.addEventListener("click", () => {
+        const errs = validateBasic();
+        if (errs.length) return alert("Không thể Submit:\n- " + errs.join("\n- "));
+        // set status active visually
+        const toggle = document.getElementById("statusToggle");
+        if (toggle){
+          const btns = toggle.querySelectorAll("button[data-val]");
+          btns.forEach(b => b.classList.toggle("active", b.dataset.val === "active"));
+        }
+        const pill = document.getElementById("pillStatus");
+        if (pill) pill.textContent = "Active";
+        alert("TODO: Submit (demo).");
+      });
+
+      const btnCancel = document.getElementById("btnCancel");
+      if (btnCancel) btnCancel.addEventListener("click", () => {
+        if (confirm("Hủy tạo rule? Dữ liệu chưa lưu sẽ mất.")){
+          if (window.history.length > 1) window.history.back();
+          else window.location.href = "pricing_matrix.html";
+        }
+      });
+
+      const btnValidate = document.getElementById("btnValidate");
+      if (btnValidate) btnValidate.addEventListener("click", () => {
+        const errs = validateBasic();
+        if (errs.length) alert("Validate failed:\n- " + errs.join("\n- "));
+        else alert("Validate OK (demo).");
+      });
+
+      const btnDetect = document.getElementById("btnDetectConflict");
+      if (btnDetect) btnDetect.addEventListener("click", () => alert("TODO: Detect conflict (demo)."));
+
+      const btnGoSubmit = document.getElementById("btnGoSubmit");
+      if (btnGoSubmit) btnGoSubmit.addEventListener("click", () => {
+        const btn = document.getElementById("btnSubmit");
+        if (btn) btn.click();
+      });
+
+      const btnRefresh = document.getElementById("btnRefreshPreview");
+      if (btnRefresh) btnRefresh.addEventListener("click", () => { refreshPreview(); refreshReview(); refreshScopeSummary(); });
+
+      const btnOpenTest = document.getElementById("btnOpenTest");
+      if (btnOpenTest) btnOpenTest.addEventListener("click", () => alert("TODO: Test pricing modal (demo)."));
+    }
+
+    // Watchers
+    function initWatchers(){
+      const ids = [
+        "ruleCode","pricingType","service","desc",
+        "applyTo","customer","customerGroup","segment","zone","origin","dest","priority",
+        "effectiveFrom","effectiveTo","version","renew","conflictPolicy",
+        "fuelPct","remoteFee","discountType","discountValue"
+      ];
+      ids.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener("change", () => { refreshScopeSummary(); refreshPreview(); refreshReview(); });
+        el.addEventListener("input", () => { refreshScopeSummary(); refreshPreview(); refreshReview(); });
+      });
+    }
+
+    // ===== Preview + Review =====
+    function getActiveStatus(){
+      const toggle = document.getElementById("statusToggle");
+      if (!toggle) return "draft";
+      const b = Array.from(toggle.querySelectorAll("button[data-val]")).find(x => x.classList.contains("active"));
+      return b ? b.dataset.val : "draft";
+    }
+
+    function getScopeTarget(){
+      const v = (document.getElementById("applyTo")?.value) || "segment";
+      if (v === "customer") return document.getElementById("customer")?.value || "—";
+      if (v === "group") return document.getElementById("customerGroup")?.value || "—";
+      if (v === "segment") return document.getElementById("segment")?.value || "—";
+      return "All customers";
+    }
+
+    function refreshScopeSummary(){
+      const applySel = document.getElementById("applyTo");
+      const applyText = applySel ? applySel.options[applySel.selectedIndex].text : "—";
+      const target = getScopeTarget();
+      const pr = document.getElementById("priority")?.value || "—";
+      const zone = (document.getElementById("zone")?.value || "").trim() || "Any";
+      const origin = document.getElementById("origin")?.value || "All";
+      const dest = document.getElementById("dest")?.value || "All";
+
+      const ssApply = document.getElementById("ssApply");
+      const ssTarget = document.getElementById("ssTarget");
+      const ssPrio = document.getElementById("ssPrio");
+      const ssZone = document.getElementById("ssZone");
+      const ssOD = document.getElementById("ssOD");
+      const ssTags = document.getElementById("ssTags");
+
+      if (ssApply) ssApply.textContent = applyText;
+      if (ssTarget) ssTarget.textContent = target;
+      if (ssPrio) ssPrio.textContent = pr;
+      if (ssZone) ssZone.textContent = zone;
+      if (ssOD) ssOD.textContent = `${origin} → ${dest}`;
+      if (ssTags) ssTags.textContent = tags.size ? Array.from(tags).join(", ") : "none";
+    }
+
+    function refreshPreview(){
+      const code = document.getElementById("ruleCode")?.value || "—";
+      const svc = document.getElementById("service")?.value || "—";
+      const applySel = document.getElementById("applyTo");
+      const applyText = applySel ? applySel.options[applySel.selectedIndex].text : "—";
+      const target = getScopeTarget();
+      const zone = (document.getElementById("zone")?.value || "").trim() || "—";
+
+      const pt = document.getElementById("pricingType");
+      const ptText = pt ? pt.options[pt.selectedIndex].text : "—";
+
+      const efFrom = document.getElementById("effectiveFrom")?.value || "—";
+      const efTo = document.getElementById("effectiveTo")?.value || "∞";
+
+      const fuel = (document.getElementById("fuelPct")?.value || "").trim();
+      const remote = (document.getElementById("remoteFee")?.value || "").trim();
+      const dt = document.getElementById("discountType")?.value || "";
+      const dv = (document.getElementById("discountValue")?.value || "").trim();
+
+      const lines = (window.__lines ? window.__lines() : []) || [];
+      const baseText = lines.length ? `${lines.length} line(s) configured${(window.__schemaName? " ("+window.__schemaName+")": "")}` : "—";
+
+      const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+      set("pvCode", code);
+      set("pvService", svc);
+      set("pvApply", applyText);
+      set("pvTarget", target);
+      set("pvZone", zone);
+      set("pvType", ptText);
+      set("pvEff", `${efFrom} → ${efTo}`);
+
+      const calc = document.getElementById("calcPreview");
+      if (calc){
+        const disc = dt ? (dt==="pct" ? `-${dv}%` : `-${(Number(dv||0)).toLocaleString("vi-VN")} VND`) : "—";
+        calc.innerHTML =
+          `<b>Pricing breakdown (demo)</b><br>
+           Base: ${baseText}<br>
+           Fuel: ${fuel ? "+"+fuel+"%" : "—"}<br>
+           Remote: ${remote ? "+"+Number(remote).toLocaleString("vi-VN")+" VND" : "—"}<br>
+           Discount: ${disc}<br>`;
+      }
+    }
+
+    function refreshReview(){
+      const code = (document.getElementById("ruleCode")?.value || "").trim();
+      const svc  = (document.getElementById("service")?.value || "").trim();
+      const ef   = (document.getElementById("effectiveFrom")?.value || "").trim();
+      const efTo = (document.getElementById("effectiveTo")?.value || "").trim() || "∞";
+      const status = getActiveStatus();
+      const pr = document.getElementById("priority")?.value || "—";
+      const zone = (document.getElementById("zone")?.value || "").trim() || "Any";
+
+      const condChecks = document.querySelectorAll('#condDropdown input[type="checkbox"]');
+      const conds = Array.from(condChecks).filter(x => x.checked).map(x => x.value);
+
+      const fuel = (document.getElementById("fuelPct")?.value || "").trim();
+      const remote = (document.getElementById("remoteFee")?.value || "").trim();
+      const dt = document.getElementById("discountType")?.value || "";
+      const dv = (document.getElementById("discountValue")?.value || "").trim();
+
+      const lines = (window.__lines ? window.__lines() : []) || [];
+      const ptVal = document.getElementById("pricingType")?.value || "—";
+
+      const review = document.getElementById("reviewBox");
+      if (review){
+        review.innerHTML = `
+          <b>${code || "—"}</b> (${String(status).toUpperCase()})<br>
+          • Service: <b>${svc || "—"}</b><br>
+          • Scope: <b>${(document.getElementById("applyTo")?.value || "—")}</b> → <b>${getScopeTarget()}</b><br>
+          • Zone/Lane: <b>${zone}</b><br>
+          • Priority: <b>${pr}</b><br>
+          • Effective: <b>${ef || "—"}</b> → <b>${efTo}</b><br>
+          • Pricing Type: <b>${ptVal}</b><br>
+          • Pricing Lines: <b>${lines.length}</b><br>
+          • Extras: Fuel=${fuel?fuel+"%":"—"}, Remote=${remote?remote+" VND":"—"}, Discount=${dt?dt+" "+dv:"—"}<br>
+          • Conditions: <b>${conds.length ? conds.join(", ") : "none"}</b><br>
+          • Tags: <b>${tags.size ? Array.from(tags).join(", ") : "none"}</b>
+        `;
+      }
+
+      const checklist = document.getElementById("checklist");
+      if (checklist){
+        const items = [];
+        items.push((code ? "✅" : "❌") + " Rule Code");
+        items.push((svc ? "✅" : "❌") + " Service");
+        const tgt = getScopeTarget();
+        items.push((tgt && tgt !== "—" ? "✅" : "❌") + " Scope target");
+        items.push((lines.length >= 1 ? "✅" : "❌") + " Pricing lines >= 1");
+        items.push((ef ? "✅" : "❌") + " Effective From");
+        checklist.innerHTML = items.map(x => "• " + x).join("<br>");
+      }
+
+      const pillV = document.getElementById("pillVersion");
+      const ver = document.getElementById("version")?.value || "v1";
+      if (pillV) pillV.textContent = ver;
+    }
+
+    function validateBasic(){
+      const errs = [];
+      if (!(document.getElementById("ruleCode")?.value || "").trim()) errs.push("Rule Code is required");
+      if (!(document.getElementById("service")?.value || "").trim()) errs.push("Service is required");
+      if (!(document.getElementById("effectiveFrom")?.value || "").trim()) errs.push("Effective From is required");
+
+      const lines = (window.__lines ? window.__lines() : []) || [];
+      if (!lines.length) errs.push("Pricing Lines must have at least 1 line");
+
+      const ap = document.getElementById("applyTo")?.value || "segment";
+      if (ap === "customer" && !(document.getElementById("customer")?.value)) errs.push("Customer is required");
+      if (ap === "group" && !(document.getElementById("customerGroup")?.value)) errs.push("Customer Group is required");
+      if (ap === "segment" && !(document.getElementById("segment")?.value)) errs.push("Segment is required");
+
+      return errs;
+    }
+  </script>
+</body>
+</html>

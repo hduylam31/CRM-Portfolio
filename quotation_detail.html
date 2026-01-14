@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chi tiết Báo giá - ABC Trading</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary-blue:#0f172a;
+      --accent-blue:#3b82f6;
+      --bg-light:#f8fafc;
+      --card-white:#ffffff;
+      --text-main:#334155;
+      --text-muted:#64748b;
+      --border-color:#e2e8f0;
+      --success:#10b981;
+      --warning:#f59e0b;
+      --danger:#ef4444;
+    }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:'Inter', sans-serif; background:var(--bg-light); color:var(--text-main); }
+    html, body { height:100%; }
+    .page { min-height:100vh; padding:1.5rem 2rem; }
+    /* Header */
+    .header-row { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1.2rem; }
+    .header-left { display:flex; align-items:center; gap:1rem; }
+    .back-button {
+      background: var(--border-color);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 0.4rem 0.8rem;
+      font-size: 0.8rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .back-button:hover { background: var(--accent-blue); color:#fff; border-color: var(--accent-blue); }
+    h1 { font-size:1.4rem; font-weight:700; margin:0; }
+    .desc { font-size:0.85rem; color:var(--text-muted); margin-top:0.3rem; }
+    /* Summary card */
+    .summary-card {
+      background:var(--card-white);
+      border:1px solid var(--border-color);
+      border-radius:12px;
+      padding:1rem;
+      margin-bottom:1.5rem;
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(200px,1fr));
+      gap:1rem;
+    }
+    .summary-item { display:flex; flex-direction:column; font-size:0.85rem; }
+    .summary-item .label { color:var(--text-muted); font-size:0.75rem; }
+    .summary-item .value { font-weight:600; margin-top:0.1rem; }
+    /* Tabs */
+    .tabs { display:flex; gap:1rem; margin-bottom:1rem; }
+    .tab {
+      padding:0.6rem 1rem;
+      border:1px solid var(--border-color);
+      border-radius:8px;
+      background:var(--card-white);
+      font-size:0.85rem;
+      font-weight:600;
+      cursor:pointer;
+      color:var(--text-main);
+    }
+    .tab.active { border-color:var(--accent-blue); background:#eff6ff; color:var(--accent-blue); }
+    /* Card */
+    .card { background:var(--card-white); border:1px solid var(--border-color); border-radius:12px; padding:1rem; margin-bottom:1.5rem; }
+    .card h3 { font-size:1rem; font-weight:600; margin-bottom:0.8rem; }
+    /* Tables */
+    table { width:100%; border-collapse:collapse; font-size:0.8rem; }
+    th, td { padding:0.55rem; border-bottom:1px solid var(--border-color); text-align:left; }
+    th { color:var(--text-muted); font-weight:600; position:sticky; top:0; background:var(--card-white); z-index:1; }
+    /* Timeline */
+    .timeline { list-style:none; padding-left:0; margin:0; }
+    .timeline li { position:relative; padding-left:1.5rem; margin-bottom:1rem; font-size:0.85rem; }
+    .timeline li::before {
+      content:'';
+      width:8px;
+      height:8px;
+      background:var(--accent-blue);
+      border-radius:50%;
+      position:absolute;
+      left:0;
+      top:0.35rem;
+    }
+    .timeline .date { font-size:0.75rem; color:var(--text-muted); margin-bottom:0.2rem; }
+    /* Status pill styling reused */
+    .status-pill { display:inline-block; padding:0.2rem 0.6rem; border-radius:6px; font-size:0.75rem; font-weight:600; }
+    .status-draft { background:#f1f5f9; color:#334155; }
+    .status-sent { background:#dbeafe; color:#1d4ed8; }
+    .status-approved { background:#d1fae5; color:#059669; }
+    .status-rejected { background:#fee2e2; color:#b91c1c; }
+    .status-expired { background:#ffedd5; color:#c2410c; }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="header-row">
+      <div class="header-left">
+        <a href="quotation_management.html" class="back-button"><i class="fas fa-arrow-left"></i> <span>Quay lại</span></a>
+        <div>
+          <h1>Chi tiết Báo giá - Q-001</h1>
+          <p class="desc">Báo giá chi tiết cho khách hàng ABC Trading</p>
+        </div>
+      </div>
+    </div>
+    <!-- Summary -->
+    <div class="summary-card">
+      <div class="summary-item">
+        <span class="label">Quotation Code</span>
+        <span class="value">Q-001</span>
+      </div>
+      <div class="summary-item">
+        <span class="label">Status</span>
+        <span class="value"><span class="status-pill status-draft">Draft</span></span>
+      </div>
+      <div class="summary-item">
+        <span class="label">Customer</span>
+        <span class="value"><a href="customer_detail_abc.html">ABC Trading</a></span>
+      </div>
+      <div class="summary-item">
+        <span class="label">Total Amount</span>
+        <span class="value">2.500.000.000 đ</span>
+      </div>
+      <div class="summary-item">
+        <span class="label">Valid Until</span>
+        <span class="value">10/09/2025</span>
+      </div>
+      <div class="summary-item">
+        <span class="label">Sales Owner</span>
+        <span class="value">Nguyễn Văn A</span>
+      </div>
+    </div>
+    <!-- Tabs -->
+    <div class="tabs">
+      <div class="tab active" data-tab="detail">Chi tiết</div>
+      <div class="tab" data-tab="customer">Khách &amp; Cơ hội</div>
+      <div class="tab" data-tab="history">Approval &amp; History</div>
+      <div class="tab" data-tab="attachments">Attachments</div>
+    </div>
+    <!-- Tab Contents -->
+    <!-- Detail Tab -->
+    <div id="detailTab" class="tab-content">
+      <div class="card">
+        <h3>Danh sách line item</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Dịch vụ</th>
+              <th>Nguồn</th>
+              <th>Điểm đi</th>
+              <th>Điểm đến</th>
+              <th>Trọng lượng (kg)</th>
+              <th>Giá gốc</th>
+              <th>Phụ phí nhiên liệu</th>
+              <th>Phụ phí vùng xa</th>
+              <th>Chiết khấu</th>
+              <th>Tổng dòng</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Express</td>
+              <td>Hà Nội</td>
+              <td>Hà Nội</td>
+              <td>TP. Hồ Chí Minh</td>
+              <td>10</td>
+              <td>1.000.000 đ</td>
+              <td>100.000 đ</td>
+              <td>0 đ</td>
+              <td>0%</td>
+              <td>1.100.000 đ</td>
+            </tr>
+            <tr>
+              <td>Economy</td>
+              <td>TP. Hồ Chí Minh</td>
+              <td>TP. Hồ Chí Minh</td>
+              <td>Đà Nẵng</td>
+              <td>5</td>
+              <td>800.000 đ</td>
+              <td>80.000 đ</td>
+              <td>0 đ</td>
+              <td>0%</td>
+              <td>880.000 đ</td>
+            </tr>
+          </tbody>
+        </table>
+        <div style="margin-top:1rem; font-size:0.85rem;">
+          <div>Subtotal: 1.980.000 đ</div>
+          <div>VAT (10%): 198.000 đ</div>
+          <div><strong>Grand Total: 2.178.000 đ</strong></div>
+        </div>
+      </div>
+    </div>
+    <!-- Customer & Opportunity Tab -->
+    <div id="customerTab" class="tab-content" style="display:none;">
+      <div class="card">
+        <h3>Customer &amp; Opportunity</h3>
+        <table>
+          <tbody>
+            <tr>
+              <td style="font-weight:600; width:200px;">Customer</td>
+              <td><a href="customer_detail_abc.html">ABC Trading</a></td>
+            </tr>
+            <tr>
+              <td style="font-weight:600;">Opportunity</td>
+              <td><a href="opportunity_detail.html">Opp #001</a></td>
+            </tr>
+            <tr>
+              <td style="font-weight:600;">Stage</td>
+              <td>Qualification</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <!-- History Tab -->
+    <div id="historyTab" class="tab-content" style="display:none;">
+      <div class="card">
+        <h3>Approval &amp; History</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Action</th>
+              <th>By</th>
+              <th>Time</th>
+              <th>Note</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Create</td>
+              <td>Nguyễn Văn A</td>
+              <td>01/09/2025 08:30</td>
+              <td>Tạo báo giá</td>
+            </tr>
+            <tr>
+              <td>Send</td>
+              <td>Nguyễn Văn A</td>
+              <td>02/09/2025 10:00</td>
+              <td>Gửi cho khách hàng</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <!-- Attachments Tab -->
+    <div id="attachmentsTab" class="tab-content" style="display:none;">
+      <div class="card">
+        <h3>Attachments</h3>
+        <p><a href="#">Quotation_Q-001.pdf</a> (PDF)</p>
+        <p><a href="#">Terms_and_Conditions.pdf</a> (PDF)</p>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Tab switching logic
+    document.addEventListener('DOMContentLoaded', function() {
+      const tabs = document.querySelectorAll('.tab');
+      tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          tabs.forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          const id = tab.getAttribute('data-tab');
+          document.getElementById('detailTab').style.display = (id === 'detail') ? '' : 'none';
+          document.getElementById('customerTab').style.display = (id === 'customer') ? '' : 'none';
+          document.getElementById('historyTab').style.display = (id === 'history') ? '' : 'none';
+          document.getElementById('attachmentsTab').style.display = (id === 'attachments') ? '' : 'none';
+        });
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chi tiết khách hàng - Shop XYZ</title>
+  <!-- External resources -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --primary-blue:#0f172a;
+      --accent-blue:#3b82f6;
+      --bg-light:#f8fafc;
+      --card-white:#ffffff;
+      --text-main:#334155;
+      --text-muted:#64748b;
+      --border-color:#e2e8f0;
+      --success:#10b981;
+      --warning:#f59e0b;
+      --danger:#ef4444;
+    }
+  /*
+   * This detail page no longer uses modal popups for actions or editing. All
+   * workflow buttons navigate to dedicated modules (vận đơn, bảng giá, Master Data,
+   * Accounting, Ticketing). Any remnants of modal styling from previous
+   * iterations have been intentionally omitted.
+   */
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:'Inter', sans-serif; background:var(--bg-light); color:var(--text-main); }
+    /* Ensure the page takes full viewport height to avoid gray gaps when embedded */
+    html, body { height: 100%; }
+    .page { min-height: 100vh; }
+    .page { padding:1.5rem 2rem; }
+    .page h1 { font-size:1.4rem; font-weight:700; margin:0; }
+    .page p.desc { font-size:0.85rem; color:var(--text-muted); margin:0.3rem 0 1.5rem 0; }
+    .grid-2 { display:grid; grid-template-columns:2fr 1fr; gap:1rem; margin-bottom:1.5rem; }
+    .grid-2-equal { display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1.5rem; }
+    .grid-3 { display:grid; grid-template-columns:repeat(3, 1fr); gap:1rem; margin-bottom:1.5rem; }
+    .card { background:var(--card-white); border:1px solid var(--border-color); border-radius:12px; padding:1rem; display:flex; flex-direction:column; }
+    .card h3 { font-size:1rem; font-weight:600; margin-bottom:0.8rem; }
+    .info-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:0.6rem 1rem; font-size:0.85rem; }
+    .info-grid div { display:flex; flex-direction:column; }
+    .info-grid span.label { color:var(--text-muted); font-size:0.75rem; }
+    .info-grid span.value { font-weight:600; }
+    .contact-table { width:100%; border-collapse:collapse; font-size:0.8rem; }
+    .contact-table th, .contact-table td { padding:0.4rem; text-align:left; border-bottom:1px solid var(--border-color); }
+    .contact-table th { color:var(--text-muted); font-weight:600; }
+
+    /* Button group and action buttons */
+    .button-group {
+      display:flex;
+      gap:0.5rem;
+    }
+    .action-button {
+      background:var(--accent-blue);
+      color:#fff;
+      border:none;
+      border-radius:8px;
+      padding:0.5rem 1rem;
+      font-size:0.8rem;
+      cursor:pointer;
+    }
+    .action-button:hover {
+      background:rgba(59,130,246,0.8);
+    }
+    /* Modal styles */
+    .modal-overlay {
+      position:fixed;
+      top:0;
+      left:0;
+      width:100%;
+      height:100%;
+      background:rgba(0,0,0,0.4);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:100;
+    }
+    .modal {
+      background:var(--card-white);
+      border-radius:10px;
+      padding:1.5rem;
+      max-width:600px;
+      width:90%;
+      box-shadow:0 10px 25px rgba(0,0,0,0.1);
+    }
+    .modal-header {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:1rem;
+    }
+    .modal-header h2 { margin:0; font-size:1.2rem; }
+    .close-modal {
+      font-size:1.4rem;
+      cursor:pointer;
+      color:var(--text-muted);
+    }
+    .modal-content {
+      display:flex;
+      flex-direction:column;
+      gap:0.8rem;
+      max-height:60vh;
+      overflow-y:auto;
+    }
+    .form-group {
+      display:flex;
+      flex-direction:column;
+      gap:0.3rem;
+      font-size:0.8rem;
+    }
+    .form-group label {
+      color:var(--text-muted);
+      font-size:0.75rem;
+    }
+    .form-group input,
+    .form-group select {
+      padding:0.5rem 0.6rem;
+      border:1px solid var(--border-color);
+      border-radius:6px;
+      font-size:0.85rem;
+      color:var(--text-main);
+      background:var(--card-white);
+    }
+    .form-group input:focus,
+    .form-group select:focus {
+      outline:none;
+      border-color:var(--accent-blue);
+    }
+    .modal-actions {
+      display:flex;
+      justify-content:flex-end;
+      gap:0.8rem;
+      margin-top:1rem;
+    }
+    .modal-actions button {
+      padding:0.5rem 1rem;
+      border:none;
+      border-radius:6px;
+      font-size:0.85rem;
+      cursor:pointer;
+    }
+    .cancel-btn {
+      background:var(--border-color);
+      color:var(--text-main);
+    }
+    .save-btn {
+      background:var(--accent-blue);
+      color:#fff;
+    }
+    .cancel-btn:hover { background:#e2e8f0; }
+    .save-btn:hover { background:rgba(59,130,246,0.8); }
+
+    /* Header row with title and edit button */
+    .header-row {
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:1rem;
+      margin-bottom:1.5rem;
+    }
+    .edit-button {
+      background:var(--accent-blue);
+      color:#fff;
+      border:none;
+      border-radius:8px;
+      padding:0.5rem 1rem;
+      font-size:0.8rem;
+      cursor:pointer;
+      align-self:flex-start;
+    }
+    .edit-button:hover {
+      background:rgba(59,130,246,0.8);
+    }
+
+    /* Back button style for navigation */
+    .back-button {
+      background: var(--border-color);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 0.4rem 0.8rem;
+      font-size: 0.8rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .back-button i {
+      font-size: 0.85rem;
+    }
+    .back-button:hover {
+      background: var(--accent-blue);
+      color: #fff;
+      border-color: var(--accent-blue);
+    }
+    /* KPI cards */
+    .kpi-row { display:grid; grid-template-columns:repeat(4,1fr); gap:1rem; margin-bottom:1.5rem; }
+    .kpi-card { background:var(--card-white); border:1px solid var(--border-color); border-radius:12px; padding:1rem; display:flex; flex-direction:column; justify-content:space-between; }
+    .kpi-card .title { font-size:0.75rem; color:var(--text-muted); }
+    .kpi-card .value { font-size:1.4rem; font-weight:800; margin:0.3rem 0; }
+    .kpi-card .trend { font-size:0.75rem; }
+    .kpi-card .trend.up { color:var(--success); }
+    .kpi-card .trend.down { color:var(--danger); }
+    /* Charts and tables */
+    .chart-container { flex:1; position:relative; height:260px; }
+    .chart-container canvas { width:100% !important; height:100% !important; }
+    .donut-chart-container { height:200px !important; }
+    .table-wrapper { flex:1; overflow-y:auto; }
+    table { width:100%; border-collapse:collapse; font-size:0.8rem; }
+    th, td { padding:0.5rem; border-bottom:1px solid var(--border-color); text-align:left; }
+    th { font-weight:600; color:var(--text-muted); position:sticky; top:0; background:var(--card-white); z-index:1; }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="header-row">
+      <a href="customer_360.html" class="back-button">
+        <i class="fas fa-arrow-left"></i>
+        <span>Quay lại</span>
+      </a>
+      <div>
+        <h1>Shop XYZ</h1>
+        <p class="desc">Chi tiết thông tin khách hàng và thống kê vận chuyển</p>
+      </div>
+      <div class="button-group">
+        <a href="master_data_form.html" class="action-button">Chỉnh sửa</a>
+        <a href="shipment_module.html" class="action-button">Tạo vận đơn</a>
+        <a href="price_list_rules.html" class="action-button">Tạo bảng giá riêng</a>
+        <a href="accounting.html" class="action-button">Tạo hóa đơn</a>
+        <a href="ticketing.html" class="action-button">Tạo ticket</a>
+      </div>
+    </div>
+
+    <!-- General info and contacts -->
+    <div class="grid-2">
+      <div class="card">
+        <h3>Thông tin chung</h3>
+        <div class="info-grid">
+          <div><span class="label">Tên khách hàng</span><span class="value">Shop XYZ</span></div>
+          <div><span class="label">Mã số thuế</span><span class="value">0309876543</span></div>
+          <div><span class="label">Loại khách</span><span class="value">B2C</span></div>
+          <div><span class="label">Phân khúc</span><span class="value">SMB</span></div>
+          <div><span class="label">Hạn mức tín dụng</span><span class="value">1 tỉ VND</span></div>
+          <div><span class="label">Điều kiện thanh toán</span><span class="value">30 ngày</span></div>
+          <div><span class="label">Địa chỉ trụ sở</span><span class="value">123 Lê Lợi, Quận 1, TP. Hồ Chí Minh</span></div>
+          <div><span class="label">Địa chỉ kho</span><span class="value">Kho Quận 7</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Người liên hệ</h3>
+        <table class="contact-table">
+          <thead><tr><th>Họ tên</th><th>Chức vụ</th><th>Email</th><th>Điện thoại</th></tr></thead>
+          <tbody>
+            <tr><td>Phạm Văn D</td><td>Chủ cửa hàng</td><td>d.pham@xyzshop.com</td><td>0910 123 456</td></tr>
+            <tr><td>Đặng Thị E</td><td>Quản lý kho</td><td>e.dang@xyzshop.com</td><td>0911 234 567</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <!-- KPI summary -->
+    <!-- Master Data sections for deeper customer management -->
+    <div class="grid-3">
+      <div class="card">
+        <h3>Tài chính &amp; Thuế</h3>
+        <div class="info-grid">
+          <div><span class="label">Mã định danh nội bộ</span><span class="value">CUS-2026-002</span></div>
+          <div><span class="label">Tiền tệ</span><span class="value">VND</span></div>
+          <div><span class="label">Tài khoản ngân hàng</span><span class="value">Vietcombank 987654321 (CN HCM)</span></div>
+          <div><span class="label">Nhóm thuế</span><span class="value">Chịu thuế VAT</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Vận hành &amp; Logistics</h3>
+        <div class="info-grid">
+          <div><span class="label">Incoterms</span><span class="value">EXW</span></div>
+          <div><span class="label">Kho mặc định</span><span class="value">Kho Quận 7</span></div>
+          <div><span class="label">Lead Time</span><span class="value">2 ngày</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>CRM &amp; Marketing</h3>
+        <div class="info-grid">
+          <div><span class="label">Nguồn khách hàng</span><span class="value">Facebook</span></div>
+          <div><span class="label">Công ty mẹ</span><span class="value">Không</span></div>
+          <div><span class="label">Tags</span><span class="value">SMB, Thích tiết kiệm</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="kpi-row">
+      <div class="kpi-card">
+        <div class="title">Tổng số đơn</div>
+        <div class="value">1,800</div>
+        <div class="trend up">▲ 4.2%</div>
+      </div>
+      <div class="kpi-card">
+        <div class="title">Tổng doanh thu</div>
+        <div class="value">2.8B</div>
+        <div class="trend up">▲ 6.1%</div>
+      </div>
+      <div class="kpi-card">
+        <div class="title">Tần suất gửi TB</div>
+        <div class="value">3.2/ngày</div>
+        <div class="trend up">▲ 2.5%</div>
+      </div>
+      <div class="kpi-card">
+        <div class="title">Tuyến chính</div>
+        <div class="value">HCM – DN</div>
+        <div class="trend up">▲ 1.8%</div>
+      </div>
+    </div>
+    <!-- Charts: lịch sử gửi hàng, tuyến sử dụng và phân bổ dịch vụ -->
+    <div class="grid-3">
+      <div class="card">
+        <h3>Lịch sử gửi hàng</h3>
+        <div class="chart-container">
+          <canvas id="shipmentHistory"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Các tuyến thường sử dụng</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead><tr><th>Tuyến</th><th>#Đơn</th><th>Doanh thu</th><th>%On-time</th></tr></thead>
+            <tbody>
+              <tr><td>HCM – DN</td><td>750</td><td>1.2B</td><td>94%</td></tr>
+              <tr><td>HCM – CT</td><td>400</td><td>0.8B</td><td>92%</td></tr>
+              <tr><td>DN – NT</td><td>300</td><td>0.5B</td><td>90%</td></tr>
+              <tr><td>HCM – HP</td><td>200</td><td>0.4B</td><td>91%</td></tr>
+              <tr><td>DN – HN</td><td>150</td><td>0.3B</td><td>89%</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Phân bổ dịch vụ</h3>
+        <div class="chart-container donut-chart-container">
+          <canvas id="serviceDistribution"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ghi chú & Cảnh báo -->
+    <div class="card" style="margin-bottom:1.5rem;">
+      <h3>Ghi chú &amp; Cảnh báo</h3>
+      <p style="font-size:0.8rem; color:var(--text-muted);">
+        Hiện khách hàng còn nợ 2 hóa đơn gần đến hạn. Hợp đồng duy nhất sẽ hết hạn vào 31/12/2025. Nhắc nhở khách hàng gia hạn hợp đồng và thanh toán đúng hạn.
+      </p>
+    </div>
+
+    <!-- Contract and tariff information -->
+    <div class="grid-2-equal">
+      <div class="card">
+        <h3>Hợp đồng</h3>
+        <div class="table-wrapper" style="max-height:220px;">
+          <table>
+            <thead><tr><th>Mã hợp đồng</th><th>Ngày hiệu lực</th><th>Ngày hết hạn</th><th>Trạng thái</th></tr></thead>
+            <tbody>
+              <tr><td>HD-2025-005</td><td>01/01/2025</td><td>31/12/2025</td><td>Đang hiệu lực</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Bảng giá</h3>
+        <div class="table-wrapper" style="max-height:220px;">
+          <table>
+            <thead><tr><th>Tên bảng giá</th><th>Dịch vụ</th><th>Vùng áp dụng</th><th>Giá</th></tr></thead>
+            <tbody>
+              <tr><td>Giá Tiết kiệm</td><td>Tiết kiệm</td><td>HCM–DN</td><td>20,000 VND/kg</td></tr>
+              <tr><td>Giá COD nội tỉnh</td><td>COD</td><td>TP HCM</td><td>15,000 VND/kg</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Credit and invoices information -->
+    <div class="grid-2-equal">
+      <div class="card">
+        <h3>Tín dụng &amp; Công nợ</h3>
+        <div class="info-grid">
+          <div><span class="label">Hạn mức tín dụng</span><span class="value">1 tỉ VND</span></div>
+          <div><span class="label">Dư nợ hiện tại</span><span class="value">200M VND</span></div>
+          <div><span class="label">Số ngày được nợ</span><span class="value">30 ngày</span></div>
+          <div><span class="label">Trạng thái công nợ</span><span class="value">Đang theo dõi</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Hóa đơn &amp; COD</h3>
+        <div class="table-wrapper" style="max-height:220px;">
+          <table>
+            <thead><tr><th>#Hóa đơn</th><th>Ngày</th><th>Số tiền</th><th>Đến hạn</th><th>Trạng thái</th></tr></thead>
+            <tbody>
+              <tr><td>INV-X01</td><td>20/12/2025</td><td>80M VND</td><td>19/01/2026</td><td>Chưa thanh toán</td></tr>
+              <tr><td>INV-X02</td><td>25/11/2025</td><td>120M VND</td><td>25/12/2025</td><td>Chưa thanh toán</td></tr>
+              <tr><td>INV-X03</td><td>10/10/2025</td><td>50M VND</td><td>09/11/2025</td><td>Đã thanh toán</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phân quyền chỉnh sửa -->
+    <div class="card" style="margin-top:1.5rem;">
+      <h3>Phân quyền chỉnh sửa</h3>
+      <p style="font-size:0.8rem; margin-bottom:0.4rem;"><strong>Nhóm 1 – Thông tin liên hệ:</strong> Nhân viên Sales có quyền sửa Họ tên, chức vụ, số điện thoại, Email, Zalo/Facebook và thêm địa chỉ kho mới.</p>
+      <p style="font-size:0.8rem; margin-bottom:0.4rem;"><strong>Nhóm 2 – Thông tin giao dịch:</strong> Cần quyền Manager để chỉnh sửa Hạn mức tín dụng, Điều kiện thanh toán và Bảng giá áp dụng.</p>
+      <p style="font-size:0.8rem;"><strong>Nhóm 3 – Thông tin pháp lý:</strong> Cần quyền Kế toán để cập nhật Tên công ty trên hóa đơn VAT, Mã số thuế và Thông tin tài khoản ngân hàng thụ hưởng.</p>
+    </div>
+  </div>
+  <script>
+    if (window.Chart) {
+      Chart.defaults.animation = false;
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+      const ctx = document.getElementById('shipmentHistory').getContext('2d');
+      new Chart(ctx, {
+        type:'line',
+        data:{
+          labels:['Th1','Th2','Th3','Th4','Th5','Th6','Th7','Th8','Th9','Th10','Th11','Th12'],
+          datasets:[{
+            label:'Số đơn',
+            data:[150,180,190,210,220,240,250,270,290,310,330,350],
+            borderColor:getComputedStyle(document.documentElement).getPropertyValue('--accent-blue'),
+            backgroundColor:'rgba(59,130,246,0.15)',
+            tension:0.35,
+            fill:true
+          }]
+        },
+        options:{
+          responsive:true,
+          maintainAspectRatio:false,
+          plugins:{legend:{display:false}},
+          scales:{y:{beginAtZero:true}}
+        }
+      });
+
+      // Service distribution donut chart for Shop XYZ
+      const ctxService = document.getElementById('serviceDistribution').getContext('2d');
+      new Chart(ctxService, {
+        type:'doughnut',
+        data:{
+          labels:['Nhanh','Tiết kiệm','Hỏa tốc','COD'],
+          datasets:[{
+            data:[40,30,20,10],
+            backgroundColor:[
+              getComputedStyle(document.documentElement).getPropertyValue('--accent-blue'),
+              '#10b981',
+              '#f59e0b',
+              '#ef4444'
+            ],
+            borderWidth:1
+          }]
+        },
+        options:{
+          responsive:true,
+          maintainAspectRatio:false,
+          plugins:{legend:{position:'right'}},
+          cutout:'55%'
+        }
+      });
+
+      // Modal handling for shipment and price creation
+      const shipmentModal = document.getElementById('shipmentModal');
+      const priceModal = document.getElementById('priceModal');
+      const shipmentBtn = document.querySelector('.shipment-btn');
+      const priceBtn = document.querySelector('.price-btn');
+      const closeShipment = document.getElementById('closeShipmentModal');
+      const cancelShipment = document.getElementById('cancelShipment');
+      const saveShipment = document.getElementById('saveShipment');
+      const closePrice = document.getElementById('closePriceModal');
+      const cancelPrice = document.getElementById('cancelPrice');
+      const savePrice = document.getElementById('savePrice');
+      function openModal(modal) { modal.style.display = 'flex'; }
+      function closeModal(modal) { modal.style.display = 'none'; }
+      if (shipmentBtn) shipmentBtn.addEventListener('click', () => openModal(shipmentModal));
+      if (priceBtn) priceBtn.addEventListener('click', () => openModal(priceModal));
+      if (closeShipment) closeShipment.addEventListener('click', () => closeModal(shipmentModal));
+      if (cancelShipment) cancelShipment.addEventListener('click', () => closeModal(shipmentModal));
+      if (closePrice) closePrice.addEventListener('click', () => closeModal(priceModal));
+      if (cancelPrice) cancelPrice.addEventListener('click', () => closeModal(priceModal));
+      if (saveShipment) saveShipment.addEventListener('click', () => {
+        alert('Vận đơn demo đã được tạo!');
+        closeModal(shipmentModal);
+      });
+      if (savePrice) savePrice.addEventListener('click', () => {
+        alert('Bảng giá demo đã được tạo!');
+        closeModal(priceModal);
+      });
+      // Close modal when clicking outside content
+      if (shipmentModal) shipmentModal.addEventListener('click', (e) => { if (e.target === shipmentModal) closeModal(shipmentModal); });
+      if (priceModal) priceModal.addEventListener('click', (e) => { if (e.target === priceModal) closeModal(priceModal); });
+
+      // ================== Edit detail modal logic ==================
+      const editDetailModal = document.getElementById('editDetailModal');
+      const closeEditDetailModalBtn = document.getElementById('closeEditDetailModal');
+      const cancelEditDetailBtn = document.getElementById('cancelEditDetail');
+      const saveEditDetailBtn = document.getElementById('saveEditDetail');
+      // Form inputs for editing customer detail
+      const detailName = document.getElementById('detailName');
+      const detailTax = document.getElementById('detailTax');
+      const detailType = document.getElementById('detailType');
+      const detailSegment = document.getElementById('detailSegment');
+      const detailCredit = document.getElementById('detailCredit');
+      const detailPayment = document.getElementById('detailPayment');
+      const detailAddress = document.getElementById('detailAddress');
+      const detailWarehouse = document.getElementById('detailWarehouse');
+      const detailContactName = document.getElementById('detailContactName');
+      const detailContactEmail = document.getElementById('detailContactEmail');
+      const detailContactPhone = document.getElementById('detailContactPhone');
+
+      // Button to open edit modal
+      const editDetailBtn = document.querySelector('.edit-btn');
+      if (editDetailBtn) {
+        editDetailBtn.addEventListener('click', () => {
+          // Populate fields with current page values
+          detailName.value = document.querySelector('.header-row h1').textContent.trim();
+          const infoValues = document.querySelectorAll('.info-grid .value');
+          if (infoValues.length >= 8) {
+            detailTax.value = infoValues[1].textContent.trim();
+            detailType.value = infoValues[2].textContent.trim();
+            detailSegment.value = infoValues[3].textContent.trim();
+            detailCredit.value = infoValues[4].textContent.trim();
+            detailPayment.value = infoValues[5].textContent.trim();
+            detailAddress.value = infoValues[6].textContent.trim();
+            detailWarehouse.value = infoValues[7].textContent.trim();
+          }
+          const firstRow = document.querySelector('.contact-table tbody tr');
+          if (firstRow) {
+            const cells = firstRow.children;
+            detailContactName.value = cells[0].textContent.trim();
+            detailContactEmail.value = cells[2].textContent.trim();
+            detailContactPhone.value = cells[3].textContent.trim();
+          }
+          editDetailModal.style.display = 'flex';
+        });
+      }
+
+      function closeEditDetail() {
+        editDetailModal.style.display = 'none';
+      }
+      if (closeEditDetailModalBtn) closeEditDetailModalBtn.addEventListener('click', closeEditDetail);
+      if (cancelEditDetailBtn) cancelEditDetailBtn.addEventListener('click', closeEditDetail);
+      if (editDetailModal) editDetailModal.addEventListener('click', (e) => {
+        if (e.target === editDetailModal) closeEditDetail();
+      });
+      if (saveEditDetailBtn) {
+        saveEditDetailBtn.addEventListener('click', () => {
+          // Update header
+          document.querySelector('.header-row h1').textContent = detailName.value.trim();
+          // Update general info grid values
+          const infoVals = document.querySelectorAll('.info-grid .value');
+          if (infoVals.length >= 8) {
+            infoVals[0].textContent = detailName.value.trim();
+            infoVals[1].textContent = detailTax.value.trim();
+            infoVals[2].textContent = detailType.value.trim();
+            infoVals[3].textContent = detailSegment.value.trim();
+            infoVals[4].textContent = detailCredit.value.trim();
+            infoVals[5].textContent = detailPayment.value.trim();
+            infoVals[6].textContent = detailAddress.value.trim();
+            infoVals[7].textContent = detailWarehouse.value.trim();
+          }
+          // Update contact first row
+          const firstRow2 = document.querySelector('.contact-table tbody tr');
+          if (firstRow2) {
+            const cells2 = firstRow2.children;
+            cells2[0].textContent = detailContactName.value.trim();
+            cells2[2].textContent = detailContactEmail.value.trim();
+            cells2[3].textContent = detailContactPhone.value.trim();
+          }
+          closeEditDetail();
+          alert('Thông tin khách hàng đã được cập nhật (tạm thời).');
+        });
+      }
+    });
+  </script>
+</body>
+</html>

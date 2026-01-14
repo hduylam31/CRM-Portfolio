@@ -1,0 +1,67 @@
+. Phân hệ Chính & Báo cáo
+
+index.html: Trang chủ/Tổng quan hệ thống. 
+
+
+bi_dashboard.html: Dashboard báo cáo thông minh (BI Dashboard). 
+
+2. Phân hệ Sales & Khách hàng
+
+customer_360.html: Quản lý hồ sơ khách hàng 360º. 
+
+
+leads_opportunities.html: Quản lý khách hàng tiềm năng (Lead) và Cơ hội bán hàng. 
+
+
+quotation_management.html: Công cụ tạo và quản lý báo giá vận chuyển. 
+
+
+sales_performance.html: Theo dõi hiệu suất bán hàng và tính toán hoa hồng. 
+
+3. Phân hệ Hợp đồng & Bảng giá
+
+contract_management.html: Quản lý vòng đời hợp đồng dịch vụ. 
+
+
+pricing_matrix.html: Cấu hình ma trận giá cước và các loại phụ phí động. 
+
+4. Phân hệ Vận hành (Operations)
+
+orders_monitoring.html: Giám sát trạng thái đơn hàng và vận đơn thời gian thực. 
+
+
+dispatch_drivers.html: Điều phối xe, quản lý tài xế nội bộ và đối tác 3PL. 
+
+
+incidents_alerts.html: Theo dõi, cảnh báo và xử lý sự cố vận hành. 
+
+5. Phân hệ CSKH & Marketing
+
+ticketing.html: Quản lý yêu cầu hỗ trợ (Ticket) và khiếu nại khách hàng. 
+
+
+segmentation.html: Phân khúc khách hàng dựa trên hành vi và sản lượng. 
+
+
+automation_zns.html: Tự động hóa chăm sóc khách hàng qua Zalo ZNS. 
+
+6. Phân hệ Tài chính & COD
+
+credit_ar.html: Kiểm soát hạn mức tín dụng và theo dõi công nợ phải thu. 
+
+
+cod_management.html: Quản lý dòng tiền thu hộ COD từ tài xế/đối tác. 
+
+
+cod_reconciliation.html: Đối soát tự động và thanh toán COD cho khách gửi. 
+
+
+e_invoice.html: Phát hành và quản lý hóa đơn điện tử VAT. 
+
+7. Phân hệ Quản trị
+
+user_roles.html: Quản lý tài khoản người dùng và phân quyền vai trò (Role-based). 
+
+
+settings.html: Cấu hình các tham số hệ thống.
+

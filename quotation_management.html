@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản lý Báo giá</title>
+  <!-- External resources -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary-blue:#0f172a;
+      --accent-blue:#3b82f6;
+      --bg-light:#f8fafc;
+      --card-white:#ffffff;
+      --text-main:#334155;
+      --text-muted:#64748b;
+      --border-color:#e2e8f0;
+      /* Status colors */
+      --status-draft-bg:#f1f5f9;
+      --status-draft-color:#334155;
+      --status-sent-bg:#dbeafe;
+      --status-sent-color:#1d4ed8;
+      --status-approved-bg:#d1fae5;
+      --status-approved-color:#059669;
+      --status-rejected-bg:#fee2e2;
+      --status-rejected-color:#b91c1c;
+      --status-expired-bg:#ffedd5;
+      --status-expired-color:#c2410c;
+    }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:'Inter', sans-serif; background:var(--bg-light); color:var(--text-main); }
+    /* Page container fills viewport when embedded */
+    html, body { height:100%; }
+    .page { min-height:100vh; padding:1.5rem 2rem; }
+    /* Header */
+    .header-row {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
+      gap:1rem;
+      margin-bottom:1rem;
+    }
+    .header-left { display:flex; flex-direction:column; }
+    .header-left h1 { font-size:1.4rem; font-weight:700; margin:0; }
+    .header-left .desc { font-size:0.85rem; color:var(--text-muted); margin-top:0.3rem; }
+    /* Filter panel */
+    .filter-panel {
+      background:var(--card-white);
+      border:1px solid var(--border-color);
+      border-radius:12px;
+      padding:1rem;
+      margin-bottom:1rem;
+    }
+    .filter-grid {
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));
+      gap:1rem;
+    }
+    .filter-group { display:flex; flex-direction:column; font-size:0.8rem; }
+    .filter-group label { color:var(--text-muted); font-size:0.75rem; margin-bottom:0.3rem; }
+    .filter-group input,
+    .filter-group select { padding:0.45rem 0.6rem; border:1px solid var(--border-color); border-radius:6px; background:var(--card-white); color:var(--text-main); font-size:0.85rem; }
+    /* For multi-select filters: allow multiple selection but keep compact height with scroll */
+    .filter-group select[multiple] {
+      height:2.7rem;
+      min-height:2.7rem;
+      overflow-y:auto;
+    }
+
+    /* Multi-select dropdown for status */
+    .multi-select {
+      position: relative;
+      display: flex;
+      align-items: center;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      background: var(--card-white);
+      padding: 0.45rem 0.6rem;
+      cursor: pointer;
+      min-height: 2.7rem;
+    }
+    .multi-select .selected-options {
+      flex: 1;
+      font-size: 0.8rem;
+      color: var(--text-main);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .multi-select .dropdown-icon {
+      margin-left: 0.5rem;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+    }
+    .multi-select.open {
+      border-color: var(--accent-blue);
+    }
+    .multi-select .options-list {
+      position: absolute;
+      top: calc(100% + 0.2rem);
+      left: 0;
+      right: 0;
+      background: var(--card-white);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      padding: 0.4rem;
+      z-index: 50;
+      display: none;
+    }
+    .multi-select.open .options-list {
+      display: block;
+    }
+    .multi-select .options-list label {
+      display: flex;
+      align-items: center;
+      font-size: 0.8rem;
+      color: var(--text-main);
+      padding: 0.3rem 0;
+      cursor: pointer;
+    }
+    .multi-select .options-list label input {
+      margin-right: 0.4rem;
+    }
+    .filter-group input:focus,
+    .filter-group select:focus { outline:none; border-color:var(--accent-blue); }
+    /* Status toggle chips */
+    .status-toggle {
+      display:flex;
+      flex-wrap:wrap;
+      gap:0.5rem;
+    }
+    .status-toggle input {
+      display:none;
+    }
+    .status-toggle span {
+      display:inline-block;
+      padding:0.35rem 0.8rem;
+      border:1px solid var(--border-color);
+      border-radius:16px;
+      background:var(--card-white);
+      color:var(--text-main);
+      font-size:0.75rem;
+      cursor:pointer;
+      transition:background 0.2s, color 0.2s, border-color 0.2s;
+    }
+    .status-toggle input:checked + span {
+      background:var(--accent-blue);
+      color:#fff;
+      border-color:var(--accent-blue);
+    }
+    .filter-actions { display:flex; gap:1rem; margin-top:1rem; }
+    .filter-actions button {
+      padding:0.5rem 1rem;
+      border:none;
+      border-radius:8px;
+      font-size:0.8rem;
+      cursor:pointer;
+    }
+    .filter-actions .apply-btn { background:var(--accent-blue); color:#fff; }
+    .filter-actions .reset-btn { background:var(--border-color); color:var(--text-main); }
+    .filter-actions .apply-btn:hover { background:rgba(59,130,246,0.8); }
+    .filter-actions .reset-btn:hover { background:#e2e8f0; }
+    /* Action bar */
+    .action-bar {
+      display:flex;
+      justify-content:flex-end;
+      flex-wrap:wrap;
+      gap:1rem;
+      margin-bottom:1rem;
+    }
+    .action-bar .btn {
+      padding:0.45rem 0.9rem;
+      border-radius:8px;
+      font-size:0.8rem;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      gap:0.4rem;
+      border:none;
+    }
+    .btn-primary { background:var(--accent-blue); color:#fff; }
+    .btn-secondary { background:var(--border-color); color:var(--text-main); }
+    .btn-primary:hover { background:rgba(59,130,246,0.8); }
+    .btn-secondary:hover { background:#e2e8f0; }
+    .action-bar input[type="text"] { padding:0.45rem 0.6rem; border:1px solid var(--border-color); border-radius:6px; font-size:0.8rem; background:var(--card-white); color:var(--text-main); min-width:200px; }
+    .action-bar input:focus { outline:none; border-color:var(--accent-blue); }
+    /* Table */
+    .card { background:var(--card-white); border:1px solid var(--border-color); border-radius:12px; padding:1rem; }
+    table { width:100%; border-collapse:collapse; font-size:0.8rem; }
+    thead th { position:sticky; top:0; background:var(--card-white); z-index:1; padding:0.6rem; color:var(--text-muted); font-weight:600; border-bottom:1px solid var(--border-color); }
+    tbody td { padding:0.6rem; border-bottom:1px solid var(--border-color); }
+    tbody tr:hover { background:#f1f5f9; }
+    tbody a { color:var(--accent-blue); text-decoration:none; }
+    tbody a:hover { text-decoration:underline; }
+    .status-pill {
+      display:inline-block;
+      padding:0.2rem 0.6rem;
+      border-radius:6px;
+      font-size:0.75rem;
+      font-weight:600;
+    }
+    .status-draft { background:var(--status-draft-bg); color:var(--status-draft-color); }
+    .status-sent { background:var(--status-sent-bg); color:var(--status-sent-color); }
+    .status-approved { background:var(--status-approved-bg); color:var(--status-approved-color); }
+    .status-rejected { background:var(--status-rejected-bg); color:var(--status-rejected-color); }
+    .status-expired { background:var(--status-expired-bg); color:var(--status-expired-color); }
+    .actions i { margin-right:0.6rem; cursor:pointer; color:var(--accent-blue); }
+    .actions i:last-child { margin-right:0; }
+    .actions i:hover { color:rgba(59,130,246,0.8); }
+    /* Pagination */
+    .pagination { display:flex; justify-content:flex-end; gap:0.5rem; margin-top:1rem; }
+    .pagination button { padding:0.4rem 0.7rem; border:1px solid var(--border-color); border-radius:6px; background:var(--card-white); font-size:0.8rem; cursor:pointer; }
+    .pagination button.active { background:var(--accent-blue); color:#fff; border-color:var(--accent-blue); }
+    .pagination button:hover:not(.active) { background:#e2e8f0; }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="header-row">
+      <div class="header-left">
+        <h1>Quản lý Báo giá</h1>
+        <p class="desc">Danh sách tất cả báo giá đã tạo</p>
+      </div>
+    </div>
+    <!-- Filter panel -->
+    <div class="filter-panel">
+      <div class="filter-grid">
+        <div class="filter-group">
+          <label for="filterCode">Mã báo giá</label>
+          <input type="text" id="filterCode" placeholder="Tìm theo mã...">
+        </div>
+        <div class="filter-group">
+          <label for="filterCustomer">Khách hàng</label>
+          <select id="filterCustomer">
+            <option value="">Tất cả</option>
+            <option value="ABC Trading">ABC Trading</option>
+            <option value="Shop XYZ">Shop XYZ</option>
+            <option value="DEF Logistics">DEF Logistics</option>
+            <option value="MNO">MNO</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Cơ hội</label>
+          <!-- Custom multi-select dropdown for opportunity -->
+          <div class="multi-select" id="opportunityDropdown">
+            <div class="selected-options">Tất cả</div>
+            <div class="dropdown-icon"><i class="fas fa-chevron-down"></i></div>
+            <div class="options-list">
+              <label><input type="checkbox" value="Opp #001"> Opp #001</label>
+              <label><input type="checkbox" value="Opp #003"> Opp #003</label>
+              <label><input type="checkbox" value="Opp #004"> Opp #004</label>
+              <label><input type="checkbox" value="Opp #005"> Opp #005</label>
+            </div>
+          </div>
+        </div>
+        <div class="filter-group">
+          <label>Trạng thái</label>
+          <!-- Custom multi-select dropdown for statuses -->
+          <div class="multi-select" id="statusDropdown">
+            <div class="selected-options">Tất cả</div>
+            <div class="dropdown-icon"><i class="fas fa-chevron-down"></i></div>
+            <div class="options-list">
+              <label><input type="checkbox" value="draft"> Draft</label>
+              <label><input type="checkbox" value="sent"> Sent</label>
+              <label><input type="checkbox" value="approved"> Approved</label>
+              <label><input type="checkbox" value="rejected"> Rejected</label>
+              <label><input type="checkbox" value="expired"> Expired</label>
+            </div>
+          </div>
+        </div>
+        <div class="filter-group">
+          <label for="filterSales">Sales phụ trách</label>
+          <select id="filterSales">
+            <option value="">Tất cả</option>
+            <option value="Nguyễn Văn A">Nguyễn Văn A</option>
+            <option value="Lê Thị B">Lê Thị B</option>
+            <option value="Trần Văn C">Trần Văn C</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="filterCreatedFrom">Ngày tạo (từ)</label>
+          <input type="date" id="filterCreatedFrom">
+        </div>
+        <div class="filter-group">
+          <label for="filterCreatedTo">Ngày tạo (đến)</label>
+          <input type="date" id="filterCreatedTo">
+        </div>
+        <div class="filter-group">
+          <label for="filterValidFrom">Hạn đến (từ)</label>
+          <input type="date" id="filterValidFrom">
+        </div>
+        <div class="filter-group">
+          <label for="filterValidTo">Hạn đến (đến)</label>
+          <input type="date" id="filterValidTo">
+        </div>
+      </div>
+      <div class="filter-actions">
+        <button class="apply-btn" id="applyFilter">Apply</button>
+        <button class="reset-btn" id="resetFilter">Reset</button>
+      </div>
+    </div>
+    <!-- Action bar -->
+    <div class="action-bar">
+      <a href="quotation_create.html" class="btn btn-primary"><i class="fas fa-plus"></i> Tạo báo giá</a>
+      <button class="btn btn-secondary" id="exportBtn"><i class="fas fa-file-excel"></i> Export Excel</button>
+      <button class="btn btn-secondary" id="refreshBtn"><i class="fas fa-sync"></i> Refresh</button>
+      <input type="text" id="searchInput" placeholder="Tìm kiếm...">
+    </div>
+    <!-- Quotation list table -->
+    <div class="card">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Mã báo giá</th>
+            <th>Khách hàng</th>
+            <th>Cơ hội</th>
+            <th>Tổng tiền</th>
+            <th>Tiền tệ</th>
+            <th>Trạng thái</th>
+            <th>Sales</th>
+            <th>Ngày tạo</th>
+            <th>Hạn</th>
+            <th>Cập nhật</th>
+            <th>Hành động</th>
+          </tr>
+        </thead>
+        <tbody id="quotationTableBody">
+          <!-- Rows rendered by JS -->
+        </tbody>
+      </table>
+    </div>
+    <!-- Pagination (simple) -->
+    <div class="pagination" id="pagination"></div>
+  </div>
+  <script>
+    // Sample dataset of quotations
+    const quotations = [
+      {
+        code: 'Q-001', customer: 'ABC Trading', opportunity: 'Opp #001', amount: 2500000000, currency: 'VND', status: 'draft', sales: 'Nguyễn Văn A', created: '2025-09-01', valid: '2025-09-10', updated: '2025-09-03'
+      },
+      {
+        code: 'Q-002', customer: 'Shop XYZ', opportunity: 'Opp #003', amount: 1200000000, currency: 'VND', status: 'sent', sales: 'Lê Thị B', created: '2025-09-05', valid: '2025-09-15', updated: '2025-09-07'
+      },
+      {
+        code: 'Q-003', customer: 'DEF Logistics', opportunity: 'Opp #004', amount: 3800000000, currency: 'VND', status: 'approved', sales: 'Nguyễn Văn A', created: '2025-09-08', valid: '2025-09-20', updated: '2025-09-18'
+      },
+      {
+        code: 'Q-004', customer: 'MNO', opportunity: 'Opp #005', amount: 500000000, currency: 'VND', status: 'expired', sales: 'Trần Văn C', created: '2025-08-15', valid: '2025-08-25', updated: '2025-08-30'
+      },
+      {
+        code: 'Q-005', customer: 'ABC Trading', opportunity: 'Opp #002', amount: 800000000, currency: 'VND', status: 'rejected', sales: 'Nguyễn Văn A', created: '2025-09-12', valid: '2025-09-22', updated: '2025-09-19'
+      }
+    ];
+    // Current filtered and paginated data
+    let filteredData = [...quotations];
+    const rowsPerPage = 10;
+    let currentPage = 1;
+
+    function formatCurrency(val, currency) {
+      return new Intl.NumberFormat('vi-VN', { style: 'currency', currency }).format(val);
+    }
+    function renderTable() {
+      const tbody = document.getElementById('quotationTableBody');
+      tbody.innerHTML = '';
+      // Calculate pagination
+      const start = (currentPage - 1) * rowsPerPage;
+      const end = start + rowsPerPage;
+      const pageData = filteredData.slice(start, end);
+      pageData.forEach((item, index) => {
+        const tr = document.createElement('tr');
+        // Index cell
+        const stt = start + index + 1;
+        tr.innerHTML = `
+          <td>${stt}</td>
+          <td><a href="quotation_detail.html?code=${item.code}">${item.code}</a></td>
+          <td><a href="customer_detail.html">${item.customer}</a></td>
+          <td><a href="opportunity_detail.html">${item.opportunity}</a></td>
+          <td>${formatCurrency(item.amount, item.currency)}</td>
+          <td>${item.currency}</td>
+          <td><span class="status-pill status-${item.status}">${item.status.charAt(0).toUpperCase() + item.status.slice(1)}</span></td>
+          <td>${item.sales}</td>
+          <td>${item.created.split('-').reverse().join('/')}</td>
+          <td>${item.valid.split('-').reverse().join('/')}</td>
+          <td>${item.updated.split('-').reverse().join('/')}</td>
+          <td class="actions">
+            <i class="fas fa-eye" title="Xem" onclick="viewQuotation('${item.code}')"></i>
+            ${item.status === 'draft' ? `<i class="fas fa-edit" title="Chỉnh sửa" onclick="editQuotation('${item.code}')"></i><i class="fas fa-paper-plane" title="Send" onclick="sendQuotation('${item.code}')"></i>` : ''}
+            ${item.status !== 'draft' && item.status !== 'rejected' && item.status !== 'expired' ? `<i class="fas fa-download" title="Download PDF" onclick="downloadQuotation('${item.code}')"></i>` : ''}
+            ${item.status === 'draft' || item.status === 'sent' ? `<i class="fas fa-ban" title="Cancel" onclick="cancelQuotation('${item.code}')"></i>` : ''}
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+      renderPagination();
+    }
+    function renderPagination() {
+      const totalPages = Math.ceil(filteredData.length / rowsPerPage);
+      const pagination = document.getElementById('pagination');
+      pagination.innerHTML = '';
+      for (let i = 1; i <= totalPages; i++) {
+        const btn = document.createElement('button');
+        btn.textContent = i;
+        if (i === currentPage) btn.classList.add('active');
+        btn.addEventListener('click', () => {
+          currentPage = i;
+          renderTable();
+        });
+        pagination.appendChild(btn);
+      }
+    }
+    // Apply filters
+    function applyFilters() {
+      const codeVal = document.getElementById('filterCode').value.toLowerCase();
+      const customerVal = document.getElementById('filterCustomer').value;
+      // Collect selected opportunities from custom multi-select
+      const oppValues = Array.from(document.querySelectorAll('#opportunityDropdown .options-list input:checked')).map(cb => cb.value);
+      const salesVal = document.getElementById('filterSales').value;
+      // Collect selected statuses from custom multi-select for status
+      const statuses = Array.from(document.querySelectorAll('#statusDropdown .options-list input:checked')).map(cb => cb.value);
+      const cFrom = document.getElementById('filterCreatedFrom').value;
+      const cTo = document.getElementById('filterCreatedTo').value;
+      const vFrom = document.getElementById('filterValidFrom').value;
+      const vTo = document.getElementById('filterValidTo').value;
+      filteredData = quotations.filter(item => {
+        let ok = true;
+        if (codeVal && !item.code.toLowerCase().includes(codeVal)) ok = false;
+        if (customerVal && item.customer !== customerVal) ok = false;
+        // Filter by selected opportunities
+        if (oppValues.length && !oppValues.includes(item.opportunity)) ok = false;
+        // Filter by sales
+        if (salesVal && item.sales !== salesVal) ok = false;
+        // Filter by selected statuses
+        if (statuses.length && !statuses.includes(item.status)) ok = false;
+        if (cFrom && item.created < cFrom) ok = false;
+        if (cTo && item.created > cTo) ok = false;
+        if (vFrom && item.valid < vFrom) ok = false;
+        if (vTo && item.valid > vTo) ok = false;
+        return ok;
+      });
+      currentPage = 1;
+      renderTable();
+    }
+    function resetFilters() {
+      document.getElementById('filterCode').value = '';
+      document.getElementById('filterCustomer').value = '';
+      // Reset opportunity multi-select
+      const opportunityDropdown = document.getElementById('opportunityDropdown');
+      opportunityDropdown.querySelectorAll('.options-list input').forEach(cb => cb.checked = false);
+      opportunityDropdown.classList.remove('open');
+      opportunityDropdown.querySelector('.selected-options').textContent = 'Tất cả';
+      document.getElementById('filterSales').value = '';
+      // Reset status multi-select
+      const statusDropdown = document.getElementById('statusDropdown');
+      statusDropdown.querySelectorAll('.options-list input').forEach(cb => cb.checked = false);
+      statusDropdown.classList.remove('open');
+      statusDropdown.querySelector('.selected-options').textContent = 'Tất cả';
+      document.getElementById('filterCreatedFrom').value = '';
+      document.getElementById('filterCreatedTo').value = '';
+      document.getElementById('filterValidFrom').value = '';
+      document.getElementById('filterValidTo').value = '';
+      filteredData = [...quotations];
+      currentPage = 1;
+      renderTable();
+    }
+
+    // Toggle selected class on status checkboxes
+    document.addEventListener('DOMContentLoaded', function() {
+
+      // Multi-select dropdown for opportunities
+      const opportunityDropdown = document.getElementById('opportunityDropdown');
+      if (opportunityDropdown) {
+        const selectedElOpp = opportunityDropdown.querySelector('.selected-options');
+        opportunityDropdown.addEventListener('click', function(e) {
+          if (!e.target.closest('.options-list')) {
+            this.classList.toggle('open');
+          }
+        });
+        document.addEventListener('click', function(ev) {
+          if (!opportunityDropdown.contains(ev.target)) {
+            opportunityDropdown.classList.remove('open');
+          }
+        });
+        function updateOppSelected() {
+          const selectedLabels = Array.from(opportunityDropdown.querySelectorAll('.options-list input:checked')).map(cb => cb.parentElement.textContent.trim());
+          selectedElOpp.textContent = selectedLabels.length ? selectedLabels.join(', ') : 'Tất cả';
+        }
+        opportunityDropdown.querySelectorAll('.options-list input').forEach(function(cb) {
+          cb.addEventListener('change', updateOppSelected);
+        });
+        updateOppSelected();
+      }
+      // Multi-select dropdown for statuses
+      const statusDropdown = document.getElementById('statusDropdown');
+      if (statusDropdown) {
+        const selectedElStatus = statusDropdown.querySelector('.selected-options');
+        statusDropdown.addEventListener('click', function(e) {
+          if (!e.target.closest('.options-list')) {
+            this.classList.toggle('open');
+          }
+        });
+        document.addEventListener('click', function(ev) {
+          if (!statusDropdown.contains(ev.target)) {
+            statusDropdown.classList.remove('open');
+          }
+        });
+        function updateStatusSelected() {
+          const selectedLabels = Array.from(statusDropdown.querySelectorAll('.options-list input:checked')).map(cb => cb.parentElement.textContent.trim());
+          selectedElStatus.textContent = selectedLabels.length ? selectedLabels.join(', ') : 'Tất cả';
+        }
+        statusDropdown.querySelectorAll('.options-list input').forEach(function(cb) {
+          cb.addEventListener('change', updateStatusSelected);
+        });
+        updateStatusSelected();
+      }
+    });
+    // Quick search across multiple fields
+    function quickSearch() {
+      const val = document.getElementById('searchInput').value.toLowerCase();
+      filteredData = quotations.filter(item => {
+        return item.code.toLowerCase().includes(val) ||
+               item.customer.toLowerCase().includes(val) ||
+               item.opportunity.toLowerCase().includes(val);
+      });
+      currentPage = 1;
+      renderTable();
+    }
+    // Action handlers (placeholders)
+    function viewQuotation(code) {
+      window.location.href = `quotation_detail.html?code=${code}`;
+    }
+    function editQuotation(code) {
+      window.location.href = `quotation_create.html?edit=${code}`;
+    }
+    function sendQuotation(code) {
+      alert('Quotation ' + code + ' đã được gửi!');
+    }
+    function downloadQuotation(code) {
+      alert('Tải xuống PDF cho ' + code);
+    }
+    function cancelQuotation(code) {
+      alert('Quotation ' + code + ' đã bị hủy');
+    }
+    // Refresh reloads data (for demo just resets filters)
+    function refreshData() {
+      resetFilters();
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initial render
+      renderTable();
+      // Filter buttons
+      document.getElementById('applyFilter').addEventListener('click', applyFilters);
+      document.getElementById('resetFilter').addEventListener('click', resetFilters);
+      // Quick search
+      document.getElementById('searchInput').addEventListener('input', quickSearch);
+      document.getElementById('refreshBtn').addEventListener('click', refreshData);
+      document.getElementById('exportBtn').addEventListener('click', function() {
+        alert('Export Excel không khả dụng trong demo.');
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Create Incident</title>
+
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --primary-blue:#0f172a;
+      --accent-blue:#3b82f6;
+      --bg-light:#f8fafc;
+      --card-white:#ffffff;
+      --text-main:#334155;
+      --text-muted:#64748b;
+      --border-color:#e2e8f0;
+      --shadow: 0 1px 3px rgba(0,0,0,.06);
+
+      --success:#10b981;
+      --danger:#ef4444;
+      --warning:#f59e0b;
+      --info:#0ea5e9;
+
+      --sev-critical-bg:#fee2e2; --sev-critical-tx:#b91c1c;
+      --sev-high-bg:#ffedd5; --sev-high-tx:#c2410c;
+      --sev-medium-bg:#fef9c3; --sev-medium-tx:#a16207;
+      --sev-low-bg:#e0f2fe; --sev-low-tx:#075985;
+
+      --st-open-bg:#e0f2fe; --st-open-tx:#075985;
+      --st-ack-bg:#eff6ff; --st-ack-tx:#1d4ed8;
+      --st-resolved-bg:#d1fae5; --st-resolved-tx:#059669;
+      --st-suppressed-bg:#f1f5f9; --st-suppressed-tx:#334155;
+    }
+
+    *{box-sizing:border-box}
+    body{margin:0;font-family:'Inter',sans-serif;background:var(--bg-light);color:var(--text-main)}
+    .page{min-height:100vh;padding:1.5rem 2rem}
+    @media (max-width: 900px){ .page{padding:1rem 1rem} }
+
+    .header-row{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:.75rem}
+    .header-left{display:flex;gap:1rem;align-items:flex-start;flex-wrap:wrap}
+    .header-left h1{font-size:1.35rem;font-weight:900;margin:0}
+    .header-left .desc{font-size:.85rem;color:var(--text-muted);margin:.35rem 0 0}
+    .back-button{
+      background: var(--border-color);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      border-radius:10px;
+      padding:0.45rem 0.85rem;
+      font-size:0.85rem;
+      display:inline-flex;
+      align-items:center;
+      gap:0.5rem;
+      text-decoration:none;
+      cursor:pointer;
+      user-select:none;
+      height:fit-content;
+    }
+    .back-button:hover{background:var(--accent-blue);color:#fff;border-color:var(--accent-blue)}
+
+    .pill{
+      display:inline-flex;align-items:center;gap:.4rem;
+      padding:.25rem .55rem;border-radius:999px;font-size:.75rem;font-weight:700;
+      border:1px solid var(--border-color);background:#fff;color:var(--text-main);
+      white-space:nowrap;
+    }
+
+    .btn{
+      padding:.45rem .9rem;border-radius:10px;font-size:.85rem;cursor:pointer;display:inline-flex;align-items:center;gap:.45rem;
+      border:1px solid transparent;user-select:none;white-space:nowrap
+    }
+    .btn-secondary{background:var(--card-white);color:var(--text-main);border-color:var(--border-color)}
+    .btn-secondary:hover{background:#f1f5f9}
+    .btn-primary{background:var(--accent-blue);color:#fff;border-color:var(--accent-blue)}
+    .btn-primary:hover{opacity:.92}
+    .btn-danger{background:#fee2e2;color:#b91c1c;border-color:#fecaca}
+    .btn-danger:hover{background:#fecaca}
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1.55fr .85fr;
+      gap:1rem;
+      align-items:start;
+    }
+    @media (max-width: 1100px){ .grid{grid-template-columns:1fr} }
+
+    .card{background:var(--card-white);border:1px solid var(--border-color);border-radius:12px;padding:1rem;box-shadow:var(--shadow)}
+    .divider{height:1px;background:var(--border-color);margin: .9rem 0}
+    .hint{font-size:.78rem;color:var(--text-muted);line-height:1.5}
+
+    .toolbar{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin:.75rem 0 1rem}
+    .toolbar-left,.toolbar-right{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+
+    .tabs{display:flex;gap:.6rem;flex-wrap:wrap;margin:.25rem 0 1rem}
+    .tab{padding:.55rem .9rem;border:1px solid var(--border-color);background:var(--card-white);border-radius:10px;cursor:pointer;font-weight:900;font-size:.85rem;color:var(--text-main);user-select:none}
+    .tab.active{border-color:var(--accent-blue);background:#eff6ff;color:var(--accent-blue)}
+    .tab-panel{display:none}
+    .tab-panel.active{display:block}
+
+    .form-grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:.75rem;
+      align-items:start;
+    }
+    @media (max-width: 900px){ .form-grid{grid-template-columns:1fr} }
+
+    .field{display:flex;flex-direction:column;gap:.35rem}
+    .field label{font-size:.75rem;color:var(--text-muted);font-weight:900}
+    .input, select, textarea{
+      width:100%;
+      background:#fff;
+      border:1px solid var(--border-color);
+      border-radius:10px;
+      padding:.55rem .65rem;
+      font-size:.85rem;
+      outline:none;
+      resize:vertical;
+    }
+    textarea{min-height:90px}
+    .input:focus, select:focus, textarea:focus{border-color: rgba(59,130,246,.55); box-shadow: 0 0 0 3px rgba(59,130,246,.12)}
+
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}
+
+    .sev{display:inline-block;padding:.22rem .55rem;border-radius:999px;font-size:.75rem;font-weight:900}
+    .sev-critical{background:var(--sev-critical-bg);color:var(--sev-critical-tx)}
+    .sev-high{background:var(--sev-high-bg);color:var(--sev-high-tx)}
+    .sev-medium{background:var(--sev-medium-bg);color:var(--sev-medium-tx)}
+    .sev-low{background:var(--sev-low-bg);color:var(--sev-low-tx)}
+
+    .st{display:inline-block;padding:.22rem .55rem;border-radius:999px;font-size:.75rem;font-weight:900}
+    .st-open{background:var(--st-open-bg);color:var(--st-open-tx)}
+    .st-ack{background:var(--st-ack-bg);color:var(--st-ack-tx)}
+    .st-resolved{background:var(--st-resolved-bg);color:var(--st-resolved-tx)}
+    .st-suppressed{background:var(--st-suppressed-bg);color:var(--st-suppressed-tx)}
+
+    .stepper{display:flex;gap:.6rem;flex-wrap:wrap;margin:.25rem 0 0}
+    .step{
+      display:flex;align-items:center;gap:.5rem;
+      padding:.45rem .65rem;border-radius:999px;border:1px solid var(--border-color);
+      background:#fff;font-size:.78rem;font-weight:900;color:var(--text-main);cursor:pointer;user-select:none;
+    }
+    .step .n{
+      width:22px;height:22px;border-radius:999px;background:#f1f5f9;color:var(--text-muted);
+      display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:900;
+    }
+    .step.active{border-color:var(--accent-blue);background:#eff6ff;color:var(--accent-blue)}
+    .step.active .n{background:rgba(59,130,246,.15);color:var(--accent-blue)}
+
+    .table-wrap{border:1px solid var(--border-color);border-radius:12px;overflow:auto}
+    table{width:100%;border-collapse:collapse;font-size:.85rem;min-width:860px}
+    thead th{padding:.65rem .6rem;color:var(--text-muted);font-weight:900;border-bottom:1px solid var(--border-color);text-align:left;background:#fbfdff;position:sticky;top:0;z-index:1}
+    tbody td{padding:.65rem .6rem;border-bottom:1px solid var(--border-color);vertical-align:middle}
+    tbody tr:hover{background:#f8fafc}
+    .mini{padding:.45rem .5rem;border-radius:10px;border:1px solid var(--border-color);outline:none;font-size:.85rem;width:100%}
+    .mini:focus{border-color: rgba(59,130,246,.55); box-shadow: 0 0 0 3px rgba(59,130,246,.12)}
+
+    .actions i{margin-right:.55rem;cursor:pointer;color:var(--accent-blue)}
+    .actions i:hover{color:rgba(59,130,246,.85)}
+    .actions i:last-child{margin-right:0}
+
+    .right-card .title{font-weight:900;margin:0 0 .2rem}
+    .kv{display:flex;justify-content:space-between;gap:1rem;padding:.35rem 0;border-bottom:1px dashed var(--border-color);font-size:.85rem}
+    .kv:last-child{border-bottom:none}
+    .k{color:var(--text-muted);font-weight:800}
+    .v{font-weight:900}
+    .note{border:1px dashed var(--border-color);border-radius:12px;padding:.65rem;background:#fbfdff}
+    a{color:var(--accent-blue);text-decoration:none}
+    a:hover{text-decoration:underline}
+  </style>
+</head>
+
+<body>
+  <div class="page">
+    <div class="header-row">
+      <div class="header-left">
+        <a class="back-button" href="incidents_alerts.html"><i class="fas fa-arrow-left"></i> Quay lại</a>
+        <div>
+          <h1>Create Incident</h1>
+          <p class="desc">Tạo case xử lý (Incident) để gom alerts, phân công owner, quản lý timeline, SLA và RCA.</p>
+          <div class="stepper" style="margin-top:.55rem;">
+            <div class="step active" data-step="info"><span class="n">1</span> Info</div>
+            <div class="step" data-step="impact"><span class="n">2</span> Impact</div>
+            <div class="step" data-step="timeline"><span class="n">3</span> Timeline</div>
+            <div class="step" data-step="alerts"><span class="n">4</span> Related Alerts</div>
+            <div class="step" data-step="review"><span class="n">5</span> Review</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;">
+        <span class="pill"><i class="fa-regular fa-id-badge"></i> Draft ID: <span class="mono" id="draftId">INC-DRAFT-001</span></span>
+        <span class="pill"><i class="fa-regular fa-clock"></i> Now: <span class="mono" id="nowTs">2026-01-14 13:05</span></span>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <span class="pill"><i class="fa-solid fa-circle-info"></i> Status: <span id="stPill" class="st st-open" style="margin-left:.35rem;">Open</span></span>
+        <span class="pill"><i class="fa-solid fa-gauge-high"></i> Severity: <span id="sevPill" class="sev sev-high" style="margin-left:.35rem;">High</span></span>
+        <span class="pill"><i class="fa-solid fa-user-shield"></i> Owner: <b id="ownerPill" style="margin-left:.35rem;">Ops Team</b></span>
+      </div>
+      <div class="toolbar-right">
+        <button class="btn btn-secondary" id="btnSaveDraft"><i class="fa-regular fa-floppy-disk"></i> Save draft</button>
+        <button class="btn btn-secondary" id="btnDiscard"><i class="fa-regular fa-trash-can"></i> Discard</button>
+        <button class="btn btn-primary" id="btnCreate"><i class="fa-solid fa-check"></i> Create Incident</button>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="tabs">
+          <div class="tab active" data-tab="info">Rule Info</div>
+          <div class="tab" data-tab="impact">Scope & Impact</div>
+          <div class="tab" data-tab="timeline">Timeline</div>
+          <div class="tab" data-tab="alerts">Related Alerts</div>
+          <div class="tab" data-tab="review">Review</div>
+        </div>
+
+        <div class="tab-panel active" id="tab-info">
+          <div class="form-grid">
+            <div class="field">
+              <label>Incident Title</label>
+              <input class="input" id="title" placeholder="VD: Delay hub HCM - outbound backlog" value="Delay hub HCM - outbound backlog"/>
+            </div>
+
+            <div class="field">
+              <label>Incident Type</label>
+              <select id="type">
+                <option selected>Operations</option>
+                <option>IT/System</option>
+                <option>Billing</option>
+                <option>Customer Service</option>
+                <option>Security</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Severity</label>
+              <select id="severity">
+                <option value="critical">Critical</option>
+                <option value="high" selected>High</option>
+                <option value="medium">Medium</option>
+                <option value="low">Low</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Status</label>
+              <select id="status">
+                <option value="open" selected>Open</option>
+                <option value="ack">Acknowledged</option>
+                <option value="resolved">Resolved</option>
+                <option value="suppressed">Suppressed</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Owner Team</label>
+              <select id="owner">
+                <option selected>Ops Team</option>
+                <option>Ops HCM</option>
+                <option>Ops HN</option>
+                <option>CS Team</option>
+                <option>Billing</option>
+                <option>IT</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>On-call / Assignee</label>
+              <select id="assignee">
+                <option selected>Ops On-call A</option>
+                <option>Ops On-call B</option>
+                <option>CS Lead</option>
+                <option>Billing Lead</option>
+              </select>
+            </div>
+
+            <div class="field" style="grid-column:1/-1;">
+              <label>Summary</label>
+              <textarea id="summary" placeholder="Tóm tắt ngắn: chuyện gì đang xảy ra, ảnh hưởng, phạm vi, tình trạng hiện tại.">Outbound backlog tăng đột biến tại hub HCM, nguy cơ trễ SLA các tuyến HCM→HN trong 4-8h tới.</textarea>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+          <div class="hint">
+            Tip: Severity nên theo tác động (SLA/khách hàng/chi phí). Nếu có nhiều alerts tương tự, hãy tạo incident để gom và phân công rõ ràng.
+          </div>
+        </div>
+
+        <div class="tab-panel" id="tab-impact">
+          <div class="form-grid">
+            <div class="field">
+              <label>Customer (optional)</label>
+              <input class="input" id="customer" placeholder="VD: ABC Trading / All customers" value="All customers"/>
+            </div>
+            <div class="field">
+              <label>Region / Hub</label>
+              <select id="region">
+                <option selected>HCM Hub</option>
+                <option>HN Hub</option>
+                <option>DN Hub</option>
+                <option>All hubs</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Service</label>
+              <select id="service">
+                <option selected>Express</option>
+                <option>Standard</option>
+                <option>Same-day</option>
+                <option>International</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Impact Level</label>
+              <select id="impactLevel">
+                <option selected>Major</option>
+                <option>Moderate</option>
+                <option>Minor</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Estimated Affected Shipments</label>
+              <input class="input" id="affected" type="number" min="0" value="320"/>
+            </div>
+
+            <div class="field">
+              <label>SLA Risk Window</label>
+              <select id="slaWindow">
+                <option selected>Next 4h</option>
+                <option>Next 8h</option>
+                <option>Next 24h</option>
+                <option>Unknown</option>
+              </select>
+            </div>
+
+            <div class="field" style="grid-column:1/-1;">
+              <label>Impact Details</label>
+              <textarea id="impactDetails" placeholder="VD: SLA trễ, hub delay, failed pickup, complaint spike...">Nguy cơ trễ giao 6 tuyến chính do backlog scanning + thiếu nhân sự ca chiều.</textarea>
+            </div>
+
+            <div class="field" style="grid-column:1/-1;">
+              <label>Mitigation / Current Actions</label>
+              <textarea id="mitigation" placeholder="VD: tăng ca, đổi tuyến, split load, notify CS...">Điều phối tăng ca 2h, ưu tiên quét đơn express, mở thêm 1 line xử lý.</textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="tab-timeline">
+          <div style="display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;align-items:flex-start;margin-bottom:.5rem;">
+            <div>
+              <div style="font-weight:900;">Timeline &amp; Tasks</div>
+              <div class="hint">Ghi nhận các mốc xử lý: detect → triage → mitigate → resolve → postmortem.</div>
+            </div>
+            <div style="display:flex;gap:.6rem;flex-wrap:wrap;">
+              <button class="btn btn-secondary" id="btnAddTask"><i class="fa-solid fa-plus"></i> Add item</button>
+              <button class="btn btn-secondary" id="btnLoadTemplate"><i class="fa-regular fa-clone"></i> Load template</button>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:170px;">Time</th>
+                  <th style="width:170px;">Type</th>
+                  <th>Description</th>
+                  <th style="width:170px;">Owner</th>
+                  <th style="width:120px;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="timelineBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="tab-alerts">
+          <div style="display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;align-items:flex-start;margin-bottom:.5rem;">
+            <div>
+              <div style="font-weight:900;">Related Alerts</div>
+              <div class="hint">Chọn alerts liên quan để gom vào incident (Exception Queue / SLA Monitor / Tracking stuck...).</div>
+            </div>
+            <div style="display:flex;gap:.6rem;flex-wrap:wrap;">
+              <button class="btn btn-secondary" id="btnAddAlert"><i class="fa-solid fa-plus"></i> Add alert</button>
+              <button class="btn btn-secondary" id="btnSearchAlert"><i class="fa-solid fa-magnifying-glass"></i> Search</button>
+            </div>
+          </div>
+
+          <div class="form-grid" style="margin-bottom:.75rem;">
+            <div class="field" style="grid-column:1/-1;">
+              <label>Quick add (paste IDs, separated by comma)</label>
+              <input class="input mono" id="quickAdd" placeholder="ALT-00021, ALT-00024, ALT-00030" />
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:140px;">Alert ID</th>
+                  <th style="width:140px;">Severity</th>
+                  <th style="width:160px;">Status</th>
+                  <th style="width:180px;">Source</th>
+                  <th>Title</th>
+                  <th style="width:200px;">Entity</th>
+                  <th style="width:120px;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="alertsBody"></tbody>
+            </table>
+          </div>
+
+          <div class="divider"></div>
+          <div class="hint">
+            Gợi ý: màn trước truyền query param <span class="mono">from_alert=ALT-00021</span> để auto-add vào list.
+          </div>
+        </div>
+
+        <div class="tab-panel" id="tab-review">
+          <div style="font-weight:900;margin-bottom:.35rem;">Review &amp; Confirm</div>
+          <div class="hint">Bản demo hiển thị payload dự kiến để map sang backend.</div>
+
+          <div class="divider"></div>
+
+          <div class="card" style="padding:.85rem;border-radius:12px;background:#fbfdff;">
+            <div style="display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;align-items:center;">
+              <div>
+                <div style="font-weight:900;">Payload preview</div>
+                <div class="hint">Dùng để map API/ERPNext/Odoo-like sau này.</div>
+              </div>
+              <button class="btn btn-secondary" id="btnCopy"><i class="fa-regular fa-copy"></i> Copy JSON</button>
+            </div>
+
+            <pre id="payload" class="mono" style="margin:.6rem 0 0;white-space:pre-wrap;">{}</pre>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="card right-card">
+        <div class="title">Quick Preview</div>
+        <div class="hint">Tóm tắt nhanh để supervisor duyệt / on-call xem.</div>
+
+        <div class="divider"></div>
+
+        <div class="kv"><div class="k">Title</div><div class="v" id="pvTitle">—</div></div>
+        <div class="kv"><div class="k">Type</div><div class="v" id="pvType">—</div></div>
+        <div class="kv"><div class="k">Severity</div><div class="v" id="pvSeverity">—</div></div>
+        <div class="kv"><div class="k">Owner</div><div class="v" id="pvOwner">—</div></div>
+        <div class="kv"><div class="k">Region</div><div class="v" id="pvRegion">—</div></div>
+        <div class="kv"><div class="k">Service</div><div class="v" id="pvService">—</div></div>
+        <div class="kv"><div class="k">Affected</div><div class="v" id="pvAffected">—</div></div>
+        <div class="kv"><div class="k">Alerts linked</div><div class="v" id="pvAlerts">—</div></div>
+        <div class="kv"><div class="k">Timeline items</div><div class="v" id="pvTimeline">—</div></div>
+
+        <div class="divider"></div>
+
+        <div class="note">
+          <div style="font-weight:900;margin-bottom:.2rem;">Next screens (placeholders)</div>
+          <div class="hint" style="margin-bottom:.35rem;">Sau khi tạo, điều hướng qua:</div>
+          <div class="hint">• <a href="incident_detail.html">incident_detail.html</a></div>
+          <div class="hint">• <a href="incident_edit.html">incident_edit.html</a></div>
+          <div class="hint">• <a href="incident_resolve.html">incident_resolve.html</a></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function openPage(page, params = {}) {
+      const qs = new URLSearchParams(params).toString();
+      window.location.href = qs ? `${page}?${qs}` : page;
+    }
+
+    (function initTabs(){
+      const tabs = document.querySelectorAll('.tab');
+      const steps = document.querySelectorAll('.step');
+
+      function activate(name){
+        tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        document.getElementById('tab-' + name).classList.add('active');
+
+        steps.forEach(s => s.classList.toggle('active', s.dataset.step === name));
+        refreshPayload();
+      }
+
+      tabs.forEach(t => t.addEventListener('click', () => activate(t.dataset.tab)));
+      steps.forEach(s => s.addEventListener('click', () => activate(s.dataset.step)));
+      activate('info');
+    })();
+
+    function sevPillHtml(sev){
+      const map = {
+        critical:{cls:"sev sev-critical", text:"Critical"},
+        high:{cls:"sev sev-high", text:"High"},
+        medium:{cls:"sev sev-medium", text:"Medium"},
+        low:{cls:"sev sev-low", text:"Low"},
+      };
+      const x = map[sev] || map.medium;
+      return `<span class="${x.cls}">${x.text}</span>`;
+    }
+    function stPillHtml(st){
+      const map = {
+        open:{cls:"st st-open", text:"Open"},
+        ack:{cls:"st st-ack", text:"Acknowledged"},
+        resolved:{cls:"st st-resolved", text:"Resolved"},
+        suppressed:{cls:"st st-suppressed", text:"Suppressed"},
+      };
+      const x = map[st] || map.open;
+      return `<span class="${x.cls}">${x.text}</span>`;
+    }
+
+    
+    // ===== AVAILABLE ALERTS (SAMPLE DATA) =====
+    let availableAlerts = [
+      {id:"ALT-00031", severity:"critical", status:"open", source:"SLA Monitor", title:"SLA breach predicted: HCM → HN (Express)", entity:"WB-23490123", created_at:"2026-01-14 11:20"},
+      {id:"ALT-00032", severity:"high", status:"open", source:"Exception Queue", title:"Outbound backlog exceeds threshold", entity:"HCM-HUB", created_at:"2026-01-14 11:40"},
+      {id:"ALT-00033", severity:"medium", status:"ack", source:"Tracking Monitor", title:"Shipment scan delay > 45 minutes", entity:"WB-23490555", created_at:"2026-01-14 10:55"},
+      {id:"ALT-00034", severity:"low", status:"open", source:"System Health", title:"Carrier API latency increased", entity:"Carrier: VNPost", created_at:"2026-01-14 09:10"}
+    ];
+
+    let linkedAlerts = [
+      {id:"ALT-00021", sev:"critical", st:"open", src:"SLA Monitor", title:"SLA breach predicted (HCM→HN)", entity:"WB-23490123"},
+      {id:"ALT-00022", sev:"high", st:"open", src:"Exception Queue", title:"Label mismatch (SKU/Service)", entity:"SO-900128"},
+    ];
+
+    let timeline = [
+      {time:"2026-01-14 12:30", type:"Detect", desc:"Tín hiệu backlog tăng (scan queue)", owner:"Ops HCM"},
+      {time:"2026-01-14 12:45", type:"Triage", desc:"Ưu tiên express + mở thêm line xử lý", owner:"Ops On-call A"},
+    ];
+
+    function renderAlerts(){
+      const body = document.getElementById("alertsBody");
+      body.innerHTML = "";
+      linkedAlerts.forEach((a, idx) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td class="mono"><b>${a.id}</b></td>
+          <td>${sevPillHtml(a.sev)}</td>
+          <td>${stPillHtml(a.st)}</td>
+          <td>${a.src}</td>
+          <td>${a.title}</td>
+          <td class="mono">${a.entity}</td>
+          <td class="actions">
+            <i class="fas fa-eye" title="View alert" data-action="view_alert" data-id="${a.id}"></i>
+            <i class="fa-regular fa-trash-can" title="Remove" data-action="remove_alert" data-index="${idx}"></i>
+          </td>
+        `;
+        body.appendChild(tr);
+      });
+      refreshPreview();
+    }
+
+    function renderTimeline(){
+      const body = document.getElementById("timelineBody");
+      body.innerHTML = "";
+      timeline.forEach((t, idx) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><input class="mini mono" value="${t.time}" data-k="time" data-i="${idx}"/></td>
+          <td>
+            <select class="mini" data-k="type" data-i="${idx}">
+              ${["Detect","Triage","Mitigate","Update","Resolve","Postmortem"].map(x => `<option ${x===t.type?"selected":""}>${x}</option>`).join("")}
+            </select>
+          </td>
+          <td><input class="mini" value="${t.desc}" data-k="desc" data-i="${idx}"/></td>
+          <td><input class="mini" value="${t.owner}" data-k="owner" data-i="${idx}"/></td>
+          <td class="actions">
+            <i class="fa-regular fa-trash-can" title="Remove" data-action="remove_task" data-index="${idx}"></i>
+            <i class="fa-regular fa-copy" title="Duplicate" data-action="dup_task" data-index="${idx}"></i>
+          </td>
+        `;
+        body.appendChild(tr);
+      });
+      refreshPreview();
+    }
+
+    function refreshHeaderPills(){
+      const sev = document.getElementById("severity").value;
+      const st  = document.getElementById("status").value;
+      const owner = document.getElementById("owner").value;
+
+      document.getElementById("sevPill").outerHTML = sevPillHtml(sev).replace('class="sev', 'id="sevPill" class="sev');
+      document.getElementById("stPill").outerHTML  = stPillHtml(st).replace('class="st', 'id="stPill" class="st');
+      document.getElementById("ownerPill").textContent = owner;
+    }
+
+    function refreshPreview(){
+      document.getElementById("pvTitle").textContent = document.getElementById("title").value || "—";
+      document.getElementById("pvType").textContent = document.getElementById("type").value || "—";
+      document.getElementById("pvSeverity").textContent = document.getElementById("severity").value || "—";
+      document.getElementById("pvOwner").textContent = document.getElementById("owner").value || "—";
+      document.getElementById("pvRegion").textContent = document.getElementById("region").value || "—";
+      document.getElementById("pvService").textContent = document.getElementById("service").value || "—";
+      document.getElementById("pvAffected").textContent = String(document.getElementById("affected").value || "0");
+      document.getElementById("pvAlerts").textContent = String(linkedAlerts.length);
+      document.getElementById("pvTimeline").textContent = String(timeline.length);
+    }
+
+    function buildPayload(){
+      return {
+        title: document.getElementById("title").value,
+        type: document.getElementById("type").value,
+        severity: document.getElementById("severity").value,
+        status: document.getElementById("status").value,
+        owner_team: document.getElementById("owner").value,
+        assignee: document.getElementById("assignee").value,
+        summary: document.getElementById("summary").value,
+        scope: {
+          customer: document.getElementById("customer").value,
+          region: document.getElementById("region").value,
+          service: document.getElementById("service").value,
+          impact_level: document.getElementById("impactLevel").value,
+          affected_shipments: Number(document.getElementById("affected").value || 0),
+          sla_window: document.getElementById("slaWindow").value,
+          impact_details: document.getElementById("impactDetails").value,
+          mitigation: document.getElementById("mitigation").value,
+        },
+        timeline: timeline,
+        related_alerts: linkedAlerts.map(a => a.id),
+        meta: {
+          from_alert: new URLSearchParams(window.location.search).get("from_alert") || null,
+          created_at: document.getElementById("nowTs").textContent
+        }
+      };
+    }
+
+    
+    // === CENTRAL SYNC FUNCTION (single source of truth) ===
+    function syncUI(){
+      refreshHeaderPills();
+      refreshPreview();
+      document.getElementById("payload").textContent =
+        JSON.stringify(buildPayload(), null, 2);
+    }
+
+    function refreshPayload(){
+      syncUI();
+    }
+
+    ["title","type","severity","status","owner","assignee","summary","customer","region","service","impactLevel","affected","slaWindow","impactDetails","mitigation"].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener("input", refreshPayload);
+      el.addEventListener("change", refreshPayload);
+    });
+
+    document.getElementById("timelineBody").addEventListener("input", (e) => {
+      const el = e.target.closest("[data-k]");
+      if (!el) return;
+      const i = Number(el.dataset.i);
+      const k = el.dataset.k;
+      if (!timeline[i]) return;
+      timeline[i][k] = el.value;
+      refreshPayload();
+    });
+    document.getElementById("timelineBody").addEventListener("change", (e) => {
+      const el = e.target.closest("[data-k]");
+      if (!el) return;
+      const i = Number(el.dataset.i);
+      const k = el.dataset.k;
+      if (!timeline[i]) return;
+      timeline[i][k] = el.value;
+      refreshPayload();
+    });
+
+    document.addEventListener("click", (e) => {
+      const a = e.target.closest("[data-action]");
+      if (!a) return;
+      const action = a.dataset.action;
+
+      if (action === "view_alert") return openPage("alert_detail.html", { id: a.dataset.id });
+
+      if (action === "remove_alert"){
+        const idx = Number(a.dataset.index);
+        linkedAlerts.splice(idx, 1);
+        renderAlerts(); refreshPayload();
+      }
+      if (action === "remove_task"){
+        const idx = Number(a.dataset.index);
+        timeline.splice(idx, 1);
+        renderTimeline(); refreshPayload();
+      }
+      if (action === "dup_task"){
+        const idx = Number(a.dataset.index);
+        timeline.splice(idx+1, 0, JSON.parse(JSON.stringify(timeline[idx])));
+        renderTimeline(); refreshPayload();
+      }
+    });
+
+    document.getElementById("btnAddTask").addEventListener("click", () => {
+      timeline.push({time: document.getElementById("nowTs").textContent, type:"Update", desc:"", owner: document.getElementById("assignee").value});
+      renderTimeline(); refreshPayload();
+    });
+
+    document.getElementById("btnLoadTemplate").addEventListener("click", () => {
+      timeline = [
+        {time:"2026-01-14 12:30", type:"Detect", desc:"Detect backlog / SLA risk", owner:"Ops HCM"},
+        {time:"2026-01-14 12:45", type:"Triage", desc:"Assess scope + assign owner", owner:"Ops On-call A"},
+        {time:"2026-01-14 13:00", type:"Mitigate", desc:"Add capacity / reroute / prioritize express", owner:"Ops HCM"},
+        {time:"2026-01-14 13:20", type:"Update", desc:"Notify CS + key customers", owner:"CS Lead"},
+        {time:"2026-01-14 15:00", type:"Resolve", desc:"Backlog cleared, monitor 2h", owner:"Ops HCM"},
+        {time:"2026-01-14 17:00", type:"Postmortem", desc:"RCA & prevention actions", owner:"Ops Team"},
+      ];
+      renderTimeline(); refreshPayload();
+    });
+
+    
+    document.getElementById("btnAddAlert").addEventListener("click", () => {
+      availableAlerts.forEach(a => {
+        const exists = linkedAlerts.some(x => x.id === a.id);
+        if (!exists){
+          linkedAlerts.push({
+            id: a.id,
+            sev: a.severity,
+            st: a.status,
+            src: a.source,
+            title: a.title,
+            entity: a.entity
+          });
+        }
+      });
+      renderAlerts();
+      refreshPayload();
+    });
+    
+    document.getElementById("btnSearchAlert").addEventListener("click", () => openPage("alerts_search.html"));
+
+    document.getElementById("quickAdd").addEventListener("keydown", (ev) => {
+      if (ev.key !== "Enter") return;
+      const raw = (ev.target.value || "").split(",").map(x => x.trim()).filter(Boolean);
+      raw.forEach(id => linkedAlerts.push({id, sev:"high", st:"open", src:"(manual)", title:"(manual added)", entity:"—"}));
+      ev.target.value = "";
+      renderAlerts(); refreshPayload();
+    });
+
+    document.getElementById("btnCopy").addEventListener("click", async () => {
+      try{
+        await navigator.clipboard.writeText(document.getElementById("payload").textContent);
+        alert("Copied payload JSON!");
+      }catch(e){
+        alert("Copy failed (browser permission).");
+      }
+    });
+
+    document.getElementById("btnSaveDraft").addEventListener("click", () => alert("Saved draft (demo)."));
+    document.getElementById("btnDiscard").addEventListener("click", () => {
+      if (!confirm("Discard this draft?")) return;
+      openPage("incidents_alerts.html");
+    });
+
+    document.getElementById("btnCreate").addEventListener("click", () => {
+      const fakeId = "INC-00010";
+      alert("Created Incident (demo): " + fakeId);
+      openPage("incident_detail.html", { id: fakeId });
+    });
+
+    (function initNow(){
+      const d = new Date();
+      const pad = (n) => String(n).padStart(2,"0");
+      const ts = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+      document.getElementById("nowTs").textContent = ts;
+    })();
+
+    (function initFromAlert(){
+      const from = new URLSearchParams(window.location.search).get("from_alert");
+      if (from){
+        const exists = linkedAlerts.some(a => a.id === from);
+        if (!exists){
+          linkedAlerts.unshift({id: from, sev:"high", st:"open", src:"(from param)", title:"(linked from alert)", entity:"—"});
+        }
+      }
+    })();
+
+    
+    // Bind sync to all form fields
+    document.querySelectorAll("input, select, textarea").forEach(el => {
+      el.addEventListener("input", syncUI);
+      el.addEventListener("change", syncUI);
+    });
+
+    renderAlerts();
+    renderTimeline();
+    refreshPayload();
+  </script>
+</body>
+</html>

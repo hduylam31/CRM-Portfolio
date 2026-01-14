@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chi tiết Contact</title>
+
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary-blue:#0f172a;
+      --accent-blue:#3b82f6;
+      --bg-light:#f8fafc;
+      --card-white:#ffffff;
+      --text-main:#334155;
+      --text-muted:#64748b;
+      --border-color:#e2e8f0;
+      --success:#10b981;
+      --warning:#f59e0b;
+      --danger:#ef4444;
+      --shadow: 0 10px 25px rgba(0,0,0,0.06);
+      --radius: 12px;
+    }
+
+    * { box-sizing:border-box; }
+    html, body { height:100%; }
+    body { margin:0; font-family:'Inter', sans-serif; background:var(--bg-light); color:var(--text-main); }
+
+    .page { min-height:100vh; padding:1.5rem 2rem; display:flex; flex-direction:column; gap:1rem; }
+    .card { background:var(--card-white); border:1px solid var(--border-color); border-radius:var(--radius); padding:1rem; }
+    .muted { color:var(--text-muted); }
+    .pill {
+      display:inline-flex; align-items:center; justify-content:center;
+      padding:.2rem .55rem; border-radius:999px;
+      font-size:.75rem; border:1px solid var(--border-color);
+      color:var(--text-muted); background:#fff;
+    }
+
+    .btn {
+      display:inline-flex; align-items:center; gap:.5rem;
+      border:1px solid var(--border-color);
+      background:var(--card-white);
+      color:var(--text-main);
+      padding:.55rem .9rem;
+      border-radius:10px;
+      font-size:.85rem;
+      cursor:pointer;
+      text-decoration:none;
+      user-select:none;
+      transition: all .15s ease;
+      white-space:nowrap;
+    }
+    .btn:hover { border-color: rgba(59,130,246,.4); box-shadow: 0 6px 18px rgba(59,130,246,.10); }
+    .btn-primary { background:var(--accent-blue); border-color:var(--accent-blue); color:#fff; }
+    .btn-primary:hover { opacity:.92; }
+    .btn-danger { background:#fff; border-color: rgba(239,68,68,.35); color:var(--danger); }
+    .btn-danger:hover { background: rgba(239,68,68,.06); box-shadow: 0 8px 18px rgba(239,68,68,.10); }
+
+    .grid { display:grid; gap:1rem; grid-template-columns:1fr; }
+    @media(min-width: 1024px){
+      .grid { grid-template-columns: 1.2fr .8fr; }
+    }
+
+    .title-row { display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; flex-wrap:wrap; }
+    .h1 { margin:0; font-size:1.35rem; font-weight:800; }
+    .sub { margin:.35rem 0 0; font-size:.85rem; color:var(--text-muted); }
+
+    .kpi-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:.75rem; }
+    @media(min-width: 1024px){ .kpi-grid { grid-template-columns:repeat(4,1fr); } }
+    .kpi {
+      border:1px solid var(--border-color);
+      border-radius:12px;
+      padding:.85rem;
+      background:#fff;
+    }
+    .kpi .label { font-size:.75rem; color:var(--text-muted); }
+    .kpi .value { font-size:1.05rem; font-weight:800; margin-top:.25rem; }
+
+    .field-grid { display:grid; grid-template-columns:1fr; gap:.75rem; }
+    @media(min-width: 768px){ .field-grid { grid-template-columns:1fr 1fr; } }
+    .field { border:1px solid var(--border-color); border-radius:12px; padding:.75rem .85rem; background:#fff; }
+    .field .label { font-size:.75rem; color:var(--text-muted); }
+    .field .value { margin-top:.25rem; font-weight:700; }
+    .link { color:var(--accent-blue); text-decoration:none; font-weight:700; }
+    .link:hover { text-decoration:underline; }
+
+    .status-badge{
+      display:inline-flex; align-items:center; gap:.4rem;
+      padding:.25rem .6rem; border-radius:999px;
+      font-size:.75rem; border:1px solid var(--border-color); background:#fff;
+    }
+    .status-active{ color:var(--success); border-color: rgba(16,185,129,.35); }
+    .status-inactive{ color:var(--text-muted); border-color: rgba(100,116,139,.35); }
+    .star { color:var(--warning); }
+
+    /* Tabs */
+    .tabs { display:flex; gap:.5rem; flex-wrap:wrap; border-bottom:1px solid var(--border-color); padding-bottom:.75rem; }
+    .tab {
+      padding:.5rem .75rem; border-radius:10px;
+      border:1px solid var(--border-color); background:#fff;
+      cursor:pointer; font-size:.85rem; font-weight:700;
+    }
+    .tab.active { border-color: rgba(59,130,246,.5); box-shadow: 0 6px 16px rgba(59,130,246,.10); }
+    .tabpanes { padding-top:1rem; }
+    .pane { display:none; }
+    .pane.active { display:block; }
+
+    /* Timeline */
+    .timeline { display:flex; flex-direction:column; gap:.75rem; }
+    .t-item { display:flex; gap:.75rem; }
+    .t-dot { width:34px; height:34px; border-radius:12px; border:1px solid var(--border-color); background:#fff; display:flex; align-items:center; justify-content:center; }
+    .t-content { flex:1; border:1px solid var(--border-color); border-radius:12px; padding:.75rem .85rem; background:#fff; }
+    .t-title { font-weight:800; }
+    .t-meta { margin-top:.2rem; font-size:.8rem; color:var(--text-muted); }
+
+    /* Table */
+    table { width:100%; border-collapse:collapse; font-size:.85rem; }
+    th, td { padding:.7rem .75rem; border-bottom:1px solid var(--border-color); text-align:left; }
+    th { color:var(--text-muted); font-size:.78rem; letter-spacing:.02em; }
+    tr:hover td { background: rgba(59,130,246,.04); }
+
+    /* Modal */
+    #confirmModal {
+      position:fixed; inset:0; display:none; align-items:center; justify-content:center;
+      background: rgba(15,23,42,.45); z-index: 9998;
+    }
+    .modal-card { width:min(520px, 92vw); box-shadow: var(--shadow); }
+    /* Toast */
+    #toast{
+      position: fixed; right: 20px; bottom: 20px;
+      background: #111827; color: #fff;
+      padding: .75rem 1rem; border-radius: 12px;
+      font-size: .85rem; box-shadow: var(--shadow);
+      opacity: 0; transform: translateY(8px);
+      transition: all .18s ease; z-index: 9999;
+    }
+    #toast.show { opacity:1; transform: translateY(0); }
+  </style>
+</head>
+
+<body>
+  <div class="page">
+
+    <!-- HEADER -->
+    <div class="card">
+      <div class="title-row">
+        <div>
+          <div style="display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;">
+            <h1 class="h1" id="contactName">Chi tiết Contact</h1>
+            <span class="pill" id="contactIdPill">CT-0000</span>
+            <span class="status-badge status-active" id="contactStatusBadge">
+              <i class="fas fa-circle" style="font-size:.55rem;"></i>
+              <span id="contactStatusText">Đang hoạt động</span>
+            </span>
+            <span class="status-badge" id="primaryBadge" title="Liên hệ chính" style="display:none;">
+              <i class="fas fa-star star"></i> Primary
+            </span>
+          </div>
+          <div class="sub" id="contactSubtitle">Vai trò • Công ty • Thông tin liên hệ</div>
+        </div>
+
+        <div style="display:flex; gap:.6rem; flex-wrap:wrap;">
+          <a class="btn" href="contacts_management.html"><i class="fas fa-arrow-left"></i> Quay lại danh sách</a>
+          <a class="btn" id="btnEdit" href="contact_edit.html?id="><i class="fas fa-pen"></i> Chỉnh sửa</a>
+          <button class="btn" id="btnPrimary" type="button"><i class="fas fa-star"></i> Set Primary</button>
+          <button class="btn btn-danger" id="btnDeactivate" type="button"><i class="fas fa-ban"></i> Ngưng sử dụng</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPI OVERVIEW -->
+    <div class="card">
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap;">
+        <div>
+          <div style="font-weight:800;">Tổng quan</div>
+          <div class="muted" style="font-size:.85rem;">Số liệu demo để làm mẫu layout</div>
+        </div>
+        <div style="display:flex; gap:.5rem; flex-wrap:wrap;">
+          <a class="btn" id="btnCall" href="#"><i class="fas fa-phone"></i> Gọi</a>
+          <a class="btn" id="btnEmail" href="#"><i class="fas fa-envelope"></i> Email</a>
+          <a class="btn" id="btnCreateLead" href="lead_create.html"><i class="fas fa-funnel-dollar"></i> Tạo Lead</a>
+          <a class="btn btn-primary" id="btnCreateOpp" href="opportunity_create.html"><i class="fas fa-bolt"></i> Tạo Opportunity</a>
+        </div>
+      </div>
+
+      <div class="kpi-grid" style="margin-top:1rem;">
+        <div class="kpi">
+          <div class="label">Tổng tương tác (30 ngày)</div>
+          <div class="value" id="kpiInteractions">12</div>
+        </div>
+        <div class="kpi">
+          <div class="label">Lead/Opportunity liên quan</div>
+          <div class="value" id="kpiDeals">3</div>
+        </div>
+        <div class="kpi">
+          <div class="label">Lần gọi thành công</div>
+          <div class="value" id="kpiCalls">5</div>
+        </div>
+        <div class="kpi">
+          <div class="label">Last activity</div>
+          <div class="value" id="kpiLastActivity">Hôm qua</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN GRID -->
+    <div class="grid">
+
+      <!-- LEFT: CONTACT PROFILE + TABS -->
+      <div class="stack">
+
+        <div class="card">
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap;">
+            <div>
+              <div style="font-weight:800;">Thông tin Contact</div>
+              <div class="muted" style="font-size:.85rem;">Thông tin cơ bản + vai trò + trạng thái</div>
+            </div>
+          </div>
+
+          <div class="field-grid" style="margin-top:1rem;">
+            <div class="field">
+              <div class="label">Họ & tên</div>
+              <div class="value" id="fName">—</div>
+            </div>
+            <div class="field">
+              <div class="label">Vai trò</div>
+              <div class="value" id="fRole">—</div>
+            </div>
+            <div class="field">
+              <div class="label">Email</div>
+              <div class="value"><a class="link" id="fEmail" href="#">—</a></div>
+            </div>
+            <div class="field">
+              <div class="label">Số điện thoại</div>
+              <div class="value"><a class="link" id="fPhone" href="#">—</a></div>
+            </div>
+            <div class="field">
+              <div class="label">Kênh ưa thích</div>
+              <div class="value" id="fPreferred">—</div>
+            </div>
+            <div class="field">
+              <div class="label">Ghi chú nhanh</div>
+              <div class="value" id="fNote">—</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="tabs" role="tablist">
+            <button class="tab active" data-tab="tab_overview" type="button"><i class="fas fa-chart-pie"></i> Tổng quan</button>
+            <button class="tab" data-tab="tab_timeline" type="button"><i class="fas fa-clock"></i> Tương tác</button>
+            <button class="tab" data-tab="tab_deals" type="button"><i class="fas fa-funnel-dollar"></i> Lead & Opportunity</button>
+            <button class="tab" data-tab="tab_notes" type="button"><i class="fas fa-note-sticky"></i> Ghi chú</button>
+            <button class="tab" data-tab="tab_files" type="button"><i class="fas fa-paperclip"></i> File</button>
+          </div>
+
+          <div class="tabpanes">
+            <!-- Overview -->
+            <div class="pane active" id="tab_overview">
+              <div class="field-grid">
+                <div class="field">
+                  <div class="label">Customer liên kết</div>
+                  <div class="value"><a class="link" id="linkedCustomer" href="customer_detail_xyz.html">—</a></div>
+                </div>
+                <div class="field">
+                  <div class="label">Địa chỉ</div>
+                  <div class="value" id="fAddress">—</div>
+                </div>
+                <div class="field">
+                  <div class="label">Ngày tạo</div>
+                  <div class="value" id="fCreatedAt">—</div>
+                </div>
+                <div class="field">
+                  <div class="label">Người phụ trách</div>
+                  <div class="value" id="fOwner">—</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Timeline -->
+            <div class="pane" id="tab_timeline">
+              <div class="timeline" id="timelineList"></div>
+            </div>
+
+            <!-- Deals -->
+            <div class="pane" id="tab_deals">
+              <div style="overflow:auto;">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Mã</th>
+                      <th>Loại</th>
+                      <th>Trạng thái</th>
+                      <th>Giá trị</th>
+                      <th>Ngày cập nhật</th>
+                      <th style="text-align:right;">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="dealsTbody"></tbody>
+                </table>
+              </div>
+              <div style="margin-top:1rem; display:flex; gap:.6rem; flex-wrap:wrap;">
+                <a class="btn" href="leads_opportunities.html"><i class="fas fa-up-right-from-square"></i> Mở Lead & Cơ hội</a>
+                <a class="btn btn-primary" href="opportunity_create.html"><i class="fas fa-plus"></i> Tạo Opportunity mới</a>
+              </div>
+            </div>
+
+            <!-- Notes -->
+            <div class="pane" id="tab_notes">
+              <textarea id="notesBox" placeholder="Ghi chú nội bộ về contact…" style="width:100%; min-height:160px; border-radius:12px; border:1px solid var(--border-color); padding:.85rem; font-family:inherit; outline:none;"></textarea>
+              <div style="display:flex; justify-content:flex-end; margin-top:.75rem;">
+                <button class="btn btn-primary" type="button" id="btnSaveNotes"><i class="fas fa-save"></i> Lưu ghi chú</button>
+              </div>
+            </div>
+
+            <!-- Files -->
+            <div class="pane" id="tab_files">
+              <div class="muted" style="font-size:.9rem;">(Mẫu) Khu vực đính kèm file/hồ sơ liên hệ.</div>
+              <div style="margin-top:1rem; display:flex; gap:.6rem; flex-wrap:wrap;">
+                <button class="btn" type="button" id="btnUpload"><i class="fas fa-upload"></i> Upload</button>
+                <button class="btn" type="button"><i class="fas fa-folder-open"></i> Mở thư mục</button>
+              </div>
+              <div style="margin-top:1rem; border:1px dashed var(--border-color); border-radius:12px; padding:1.25rem; background:#fff;">
+                <div style="font-weight:800;">Chưa có file</div>
+                <div class="muted" style="font-size:.85rem; margin-top:.2rem;">Kéo thả file vào đây hoặc bấm Upload.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT: COMPANY CARD + QUICK ACTIONS -->
+      <div class="stack">
+
+        <div class="card">
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:1rem;">
+            <div>
+              <div style="font-weight:800;">Công ty liên kết</div>
+              <div class="muted" style="font-size:.85rem;">Thông tin customer để điều hướng nhanh</div>
+            </div>
+            <a class="btn" id="btnOpenCustomer" href="customer_detail_xyz.html"><i class="fas fa-up-right-from-square"></i></a>
+          </div>
+
+          <div class="field" style="margin-top:1rem;">
+            <div class="label">Customer</div>
+            <div class="value"><a class="link" id="cName" href="customer_detail_xyz.html">—</a></div>
+          </div>
+          <div class="field" style="margin-top:.75rem;">
+            <div class="label">Nhóm khách</div>
+            <div class="value" id="cSegment">—</div>
+          </div>
+          <div class="field" style="margin-top:.75rem;">
+            <div class="label">Địa chỉ công ty</div>
+            <div class="value" id="cAddress">—</div>
+          </div>
+
+          <div style="display:flex; gap:.6rem; flex-wrap:wrap; margin-top:1rem;">
+            <a class="btn" href="quotation_management.html"><i class="fas fa-file-invoice"></i> Báo giá</a>
+            <a class="btn" href="orders_monitoring.html"><i class="fas fa-truck"></i> Đơn hàng</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="font-weight:800;">Tác vụ nhanh</div>
+          <div class="muted" style="font-size:.85rem; margin-top:.2rem;">Các nút này trỏ sang file khác để bạn mở rộng.</div>
+
+          <div style="display:grid; grid-template-columns:1fr; gap:.6rem; margin-top:1rem;">
+            <a class="btn" href="contact_edit.html" id="qaEdit"><i class="fas fa-pen"></i> Chỉnh sửa Contact</a>
+            <a class="btn" href="activity_create.html"><i class="fas fa-calendar-plus"></i> Tạo Activity</a>
+            <a class="btn" href="ticket_create.html"><i class="fas fa-headset"></i> Tạo Ticket CSKH</a>
+            <a class="btn" href="lead_create.html"><i class="fas fa-funnel-dollar"></i> Convert → Lead</a>
+            <button class="btn" type="button" id="qaDeactivate"><i class="fas fa-ban"></i> Ngưng sử dụng</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- CONFIRM MODAL -->
+    <div id="confirmModal">
+      <div class="card modal-card">
+        <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:1rem;">
+          <div>
+            <div style="font-weight:800; font-size:1.05rem;">Xác nhận thao tác</div>
+            <div id="confirmMessage" class="muted" style="margin-top:.25rem; font-size:.9rem;">
+              Bạn chắc chắn muốn ngưng sử dụng Contact này?
+            </div>
+          </div>
+          <button class="btn" type="button" id="btnCloseModal" title="Đóng"><i class="fas fa-xmark"></i></button>
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:.6rem; margin-top:1.2rem;">
+          <button class="btn" type="button" id="confirmCancel">Hủy</button>
+          <button class="btn btn-danger" type="button" id="confirmOk"><i class="fas fa-ban"></i> Ngưng sử dụng</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOAST -->
+    <div id="toast"></div>
+
+  </div>
+
+  <script>
+    // =========
+    // Demo data
+    // =========
+    const demoDB = [
+      {
+        id: "CT-0001",
+        name: "Phạm Văn D",
+        role: "Chủ cửa hàng",
+        email: "d.pham@xyzshop.com",
+        phone: "0910 123 456",
+        preferred: "Zalo/Call",
+        note: "Thích liên hệ buổi sáng, ưu tiên giá tốt.",
+        status: "active",
+        primary: true,
+        created_at: "2026-01-10",
+        owner: "Sales Team A",
+        customer: {
+          name: "Shop XYZ",
+          segment: "SME / Retail",
+          address: "12 Trần Hưng Đạo, Q.1, TP.HCM"
+        },
+        address: "Q.1, TP.HCM",
+        timeline: [
+          { icon:"fa-phone", title:"Gọi tư vấn", meta:"Hôm qua • 09:15 • Kết quả: OK" },
+          { icon:"fa-envelope", title:"Gửi báo giá", meta:"3 ngày trước • Email" },
+          { icon:"fa-note-sticky", title:"Ghi chú nội bộ", meta:"5 ngày trước • Update vai trò: Decision Maker" },
+        ],
+        deals: [
+          { code:"OPP-0012", type:"Opportunity", status:"Qualified", value:"45,000,000", updated:"2026-01-11" },
+          { code:"LEAD-091", type:"Lead", status:"New", value:"—", updated:"2026-01-09" },
+          { code:"OPP-0009", type:"Opportunity", status:"Proposition", value:"18,000,000", updated:"2026-01-06" },
+        ],
+        notes: "Ghi chú mẫu: Khách quan tâm combo vận chuyển nhanh."
+      },
+      {
+        id: "CT-0002",
+        name: "Đặng Thị E",
+        role: "Quản lý kho",
+        email: "e.dang@xyzshop.com",
+        phone: "0911 234 567",
+        preferred: "Email",
+        note: "Phụ trách đối soát và lịch pickup.",
+        status: "active",
+        primary: false,
+        created_at: "2026-01-08",
+        owner: "Sales Team A",
+        customer: {
+          name: "Shop XYZ",
+          segment: "SME / Retail",
+          address: "12 Trần Hưng Đạo, Q.1, TP.HCM"
+        },
+        address: "Q.1, TP.HCM",
+        timeline: [
+          { icon:"fa-calendar-check", title:"Hẹn lịch khảo sát", meta:"2 ngày trước • 14:00" },
+          { icon:"fa-comment-dots", title:"Chat Zalo", meta:"4 ngày trước • hỏi giá theo tuyến" },
+        ],
+        deals: [
+          { code:"OPP-0012", type:"Opportunity", status:"Qualified", value:"45,000,000", updated:"2026-01-11" }
+        ],
+        notes: ""
+      }
+    ];
+
+    // =========
+    // Helpers
+    // =========
+    const $ = (id) => document.getElementById(id);
+    function getQueryParam(name){
+      const u = new URL(window.location.href);
+      return u.searchParams.get(name);
+    }
+    function toast(msg){
+      const el = $("toast");
+      el.textContent = msg;
+      el.classList.add("show");
+      setTimeout(()=>el.classList.remove("show"), 2200);
+    }
+
+    // =========
+    // Render
+    // =========
+    function renderContact(c){
+      if(!c){
+        document.body.innerHTML = `
+          <div style="padding:2rem; font-family:Inter,sans-serif;">
+            <h2>Không tìm thấy Contact</h2>
+            <p>Hãy quay lại danh sách Contacts.</p>
+            <a href="contacts_management.html">← Back</a>
+          </div>`;
+        return;
+      }
+
+      $("contactName").textContent = c.name;
+      $("contactIdPill").textContent = c.id;
+
+      const badge = $("contactStatusBadge");
+      const statusText = $("contactStatusText");
+      if(c.status === "active"){
+        badge.classList.add("status-active");
+        badge.classList.remove("status-inactive");
+        statusText.textContent = "Đang hoạt động";
+      } else {
+        badge.classList.add("status-inactive");
+        badge.classList.remove("status-active");
+        statusText.textContent = "Ngưng";
+      }
+
+      $("primaryBadge").style.display = c.primary ? "inline-flex" : "none";
+      $("contactSubtitle").textContent = `${c.role} • ${c.customer.name} • ${c.email}`;
+
+      $("fName").textContent = c.name;
+      $("fRole").textContent = c.role;
+      $("fPreferred").textContent = c.preferred;
+      $("fNote").textContent = c.note || "—";
+
+      $("fEmail").textContent = c.email;
+      $("fEmail").href = `mailto:${c.email}`;
+
+      $("fPhone").textContent = c.phone;
+      $("fPhone").href = `tel:${c.phone}`;
+
+      $("linkedCustomer").textContent = c.customer.name;
+      $("fAddress").textContent = c.address || "—";
+      $("fCreatedAt").textContent = c.created_at;
+      $("fOwner").textContent = c.owner;
+
+      $("cName").textContent = c.customer.name;
+      $("cSegment").textContent = c.customer.segment || "—";
+      $("cAddress").textContent = c.customer.address || "—";
+
+      // Buttons links
+      $("btnEdit").href = `contact_edit.html?id=${encodeURIComponent(c.id)}`;
+      $("qaEdit").href = `contact_edit.html?id=${encodeURIComponent(c.id)}`;
+
+      $("btnCall").href = `tel:${c.phone}`;
+      $("btnEmail").href = `mailto:${c.email}`;
+
+      // Timeline
+      const tl = $("timelineList");
+      tl.innerHTML = (c.timeline || []).map(t => `
+        <div class="t-item">
+          <div class="t-dot"><i class="fas ${t.icon}"></i></div>
+          <div class="t-content">
+            <div class="t-title">${t.title}</div>
+            <div class="t-meta">${t.meta}</div>
+          </div>
+        </div>
+      `).join("") || `<div class="muted">Chưa có tương tác.</div>`;
+
+      // Deals
+      const tbody = $("dealsTbody");
+      tbody.innerHTML = (c.deals || []).map(d => `
+        <tr>
+          <td><a class="link" href="leads_opportunities.html">${d.code}</a></td>
+          <td>${d.type}</td>
+          <td><span class="pill">${d.status}</span></td>
+          <td>${d.value}</td>
+          <td>${d.updated}</td>
+          <td style="text-align:right;">
+            <a class="btn" style="padding:.35rem .6rem;" href="leads_opportunities.html"><i class="fas fa-eye"></i> Xem</a>
+          </td>
+        </tr>
+      `).join("") || `<tr><td colspan="6" class="muted">Chưa có lead/opportunity liên quan.</td></tr>`;
+
+      // Notes
+      $("notesBox").value = c.notes || "";
+    }
+
+    // =========
+    // Tabs
+    // =========
+    function setupTabs(){
+      const tabs = document.querySelectorAll(".tab");
+      tabs.forEach(btn => {
+        btn.addEventListener("click", () => {
+          tabs.forEach(t => t.classList.remove("active"));
+          btn.classList.add("active");
+          const id = btn.getAttribute("data-tab");
+          document.querySelectorAll(".pane").forEach(p => p.classList.remove("active"));
+          document.getElementById(id).classList.add("active");
+        });
+      });
+    }
+
+    // =========
+    // Modal
+    // =========
+    function openConfirm(){
+      $("confirmModal").style.display = "flex";
+    }
+    function closeConfirm(){
+      $("confirmModal").style.display = "none";
+    }
+
+    // =========
+    // Init
+    // =========
+    (function init(){
+      setupTabs();
+
+      const id = getQueryParam("id") || "CT-0001";
+      const contact = demoDB.find(x => x.id === id) || demoDB[0];
+      renderContact(contact);
+
+      // Primary
+      $("btnPrimary").addEventListener("click", () => {
+        toast("Đã set Primary (demo)");
+        $("primaryBadge").style.display = "inline-flex";
+      });
+
+      // Deactivate actions
+      $("btnDeactivate").addEventListener("click", openConfirm);
+      $("qaDeactivate").addEventListener("click", openConfirm);
+      $("btnCloseModal").addEventListener("click", closeConfirm);
+      $("confirmCancel").addEventListener("click", closeConfirm);
+      $("confirmModal").addEventListener("click", (e) => { if(e.target === $("confirmModal")) closeConfirm(); });
+
+      $("confirmOk").addEventListener("click", () => {
+        closeConfirm();
+        toast("Đã ngưng sử dụng Contact (demo)");
+        $("contactStatusBadge").classList.remove("status-active");
+        $("contactStatusBadge").classList.add("status-inactive");
+        $("contactStatusText").textContent = "Ngưng";
+      });
+
+      // Save notes
+      $("btnSaveNotes").addEventListener("click", () => {
+        toast("Đã lưu ghi chú (demo)");
+      });
+
+      // Upload
+      $("btnUpload").addEventListener("click", () => toast("Upload (demo)"));
+
+    })();
+  </script>
+</body>
+</html>

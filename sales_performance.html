@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hiệu suất &amp; Hoa hồng</title>
+  <!-- External resources -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary-blue:#0f172a;
+      --accent-blue:#3b82f6;
+      --bg-light:#f8fafc;
+      --card-white:#ffffff;
+      --text-main:#334155;
+      --text-muted:#64748b;
+      --border-color:#e2e8f0;
+    }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:'Inter', sans-serif; background:var(--bg-light); color:var(--text-main); }
+    html, body { height:100%; }
+    .page { min-height:100vh; padding:1.5rem 2rem; }
+    /* Header */
+    .header-row { margin-bottom:1rem; }
+    .header-row h1 { font-size:1.4rem; font-weight:700; margin:0; }
+    .header-row .desc { font-size:0.85rem; color:var(--text-muted); margin-top:0.3rem; }
+    /* Filter panel */
+    .filter-panel {
+      background:var(--card-white);
+      border:1px solid var(--border-color);
+      border-radius:12px;
+      padding:1rem;
+      margin-bottom:1rem;
+    }
+    .filter-grid {
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));
+      gap:1rem;
+    }
+    .filter-group { display:flex; flex-direction:column; font-size:0.8rem; }
+    .filter-group label { color:var(--text-muted); font-size:0.75rem; margin-bottom:0.3rem; }
+    .filter-group input,
+    .filter-group select { padding:0.45rem 0.6rem; border:1px solid var(--border-color); border-radius:6px; background:var(--card-white); color:var(--text-main); font-size:0.85rem; }
+    .filter-group select[multiple] { height:2.7rem; overflow-y:auto; }
+    /* Multi-select dropdown for status */
+    .multi-select {
+      position: relative;
+      display: flex;
+      align-items: center;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      background: var(--card-white);
+      padding: 0.45rem 0.6rem;
+      cursor: pointer;
+      min-height: 2.7rem;
+    }
+    .multi-select .selected-options {
+      flex: 1;
+      font-size: 0.8rem;
+      color: var(--text-main);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .multi-select .dropdown-icon {
+      margin-left: 0.5rem;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+    }
+    .multi-select.open {
+      border-color: var(--accent-blue);
+    }
+    .multi-select .options-list {
+      position: absolute;
+      top: calc(100% + 0.2rem);
+      left: 0;
+      right: 0;
+      background: var(--card-white);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      padding: 0.4rem;
+      z-index: 50;
+      display: none;
+    }
+    .multi-select.open .options-list {
+      display: block;
+    }
+    .multi-select .options-list label {
+      display: flex;
+      align-items: center;
+      font-size: 0.8rem;
+      color: var(--text-main);
+      padding: 0.3rem 0;
+      cursor: pointer;
+    }
+    .multi-select .options-list label input {
+      margin-right: 0.4rem;
+    }
+    /* Filter actions buttons */
+    .filter-actions { display:flex; gap:1rem; margin-top:1rem; }
+    .filter-actions button {
+      padding:0.5rem 1rem;
+      border:none;
+      border-radius:8px;
+      font-size:0.8rem;
+      cursor:pointer;
+    }
+    .filter-actions .apply-btn { background:var(--accent-blue); color:#fff; }
+    .filter-actions .reset-btn { background:var(--border-color); color:var(--text-main); }
+    .filter-actions .apply-btn:hover { background:rgba(59,130,246,0.8); }
+    .filter-actions .reset-btn:hover { background:#e2e8f0; }
+    /* Action bar */
+    .action-bar {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    .action-bar button {
+      padding: 0.45rem 0.8rem;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+    .export-btn {
+      background: var(--border-color);
+      color: var(--text-main);
+    }
+    .approve-btn {
+      background: #d97706;
+      color: #fff;
+    }
+    .paid-btn {
+      background: #16a34a;
+      color: #fff;
+    }
+    .export-btn:hover { background: #e2e8f0; }
+    .approve-btn:hover { background: #fbbf24; }
+    .paid-btn:hover { background: #22c55e; }
+
+    /* KPI cards */
+    .kpi-container { display:flex; flex-wrap: wrap; gap:1rem; margin-bottom:1rem; }
+    .kpi-card {
+      flex:1;
+      min-width:200px;
+      background:var(--card-white);
+      border:1px solid var(--border-color);
+      border-radius:12px;
+      padding:1rem;
+    }
+    .kpi-title { font-size:0.8rem; color:var(--text-muted); margin-bottom:0.3rem; }
+    .kpi-value { font-size:1.5rem; font-weight:600; color:var(--text-main); margin:0; }
+    .kpi-change { font-size:0.75rem; margin-top:0.3rem; }
+    .kpi-change .positive { color:#059669; }
+    .kpi-change .negative { color:#b91c1c; }
+    /* Card container */
+    .card {
+      background:var(--card-white);
+      border:1px solid var(--border-color);
+      border-radius:12px;
+      padding:1rem;
+      margin-bottom:1.5rem;
+    }
+    /* Chart container */
+    .chart-container { margin-bottom:1.5rem; }
+    .chart-container canvas { width:100% !important; height:300px !important; }
+    /* Commission table */
+    .commission-table {
+      width:100%;
+      border-collapse:collapse;
+      font-size:0.8rem;
+    }
+    .commission-table th,
+    .commission-table td {
+      padding:0.65rem 0.6rem;
+      border-bottom:1px solid var(--border-color);
+      text-align:left;
+      font-size:0.85rem;
+    }
+    .commission-table th {
+      color:var(--text-muted);
+      font-weight:600;
+      position:sticky;
+      top:0;
+      background:var(--card-white);
+      z-index:1;
+    }
+    .commission-table a {
+      color:var(--accent-blue);
+      text-decoration:none;
+    }
+    .commission-table a:hover {
+      text-decoration:underline;
+    }
+    .actions i {
+      margin-right:0.6rem;
+      cursor:pointer;
+      color:var(--accent-blue);
+    }
+    .actions i:last-child { margin-right:0; }
+    .actions i:hover {
+      color:rgba(59,130,246,0.8);
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+  <div class="page">
+    <div class="header-row">
+      <h1>Hiệu suất &amp; Hoa hồng bán hàng</h1>
+      <p class="desc">Theo dõi KPI và thu nhập theo thời gian</p>
+    </div>
+    <!-- Filter panel -->
+    <div class="filter-panel">
+      <div class="filter-grid">
+        <div class="filter-group">
+          <label for="filterTimePeriod">Thời gian</label>
+          <select id="filterTimePeriod">
+            <option value="month">Tháng</option>
+            <option value="quarter">Quý</option>
+            <option value="year">Năm</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="filterStart">Từ ngày</label>
+          <input type="date" id="filterStart">
+        </div>
+        <div class="filter-group">
+          <label for="filterEnd">Đến ngày</label>
+          <input type="date" id="filterEnd">
+        </div>
+        <div class="filter-group">
+          <label for="filterSales">Sales</label>
+          <select id="filterSales">
+            <option value="">Tất cả</option>
+            <option value="Nguyễn Văn A">Nguyễn Văn A</option>
+            <option value="Lê Thị B">Lê Thị B</option>
+            <option value="Trần Văn C">Trần Văn C</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="filterTeam">Team</label>
+          <select id="filterTeam">
+            <option value="">Tất cả</option>
+            <option value="Team 1">Team 1</option>
+            <option value="Team 2">Team 2</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Trạng thái</label>
+          <div class="multi-select" id="statusDropdown">
+            <div class="selected-options">Tất cả</div>
+            <div class="dropdown-icon"><i class="fas fa-chevron-down"></i></div>
+            <div class="options-list">
+              <label><input type="checkbox" value="won"> Won</label>
+              <label><input type="checkbox" value="inprogress"> In-progress</label>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="filter-actions">
+        <button class="apply-btn" id="applyFilter">Apply</button>
+        <button class="reset-btn" id="resetFilter">Reset</button>
+      </div>
+    </div>
+    <!-- KPI cards: Performance -->
+    <div class="kpi-container">
+      <div class="kpi-card">
+        <div class="kpi-title">Tổng Cơ hội</div>
+        <div class="kpi-value" id="totalOpp">0</div>
+        <div class="kpi-change" id="totalOppChange"></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-title">Cơ hội thắng</div>
+        <div class="kpi-value" id="wonOpp">0</div>
+        <div class="kpi-change" id="wonOppChange"></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-title">Win Rate (%)</div>
+        <div class="kpi-value" id="winRate">0%</div>
+        <div class="kpi-change" id="winRateChange"></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-title">Doanh thu</div>
+        <div class="kpi-value" id="revenue">0</div>
+        <div class="kpi-change" id="revenueChange"></div>
+      </div>
+    </div>
+    <!-- KPI cards: Commission -->
+    <div class="kpi-container">
+      <div class="kpi-card">
+        <div class="kpi-title">Hoa hồng dự kiến</div>
+        <div class="kpi-value" id="commExpected">0</div>
+        <div class="kpi-change" id="commExpectedChange"></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-title">Hoa hồng đã duyệt</div>
+        <div class="kpi-value" id="commApproved">0</div>
+        <div class="kpi-change" id="commApprovedChange"></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-title">Hoa hồng đã trả</div>
+        <div class="kpi-value" id="commPaid">0</div>
+        <div class="kpi-change" id="commPaidChange"></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-title">Hoa hồng còn lại</div>
+        <div class="kpi-value" id="commPending">0</div>
+        <div class="kpi-change" id="commPendingChange"></div>
+      </div>
+    </div>
+    <!-- Performance breakdown charts -->
+    <div class="chart-container card">
+      <h3 style="margin-top:0; font-size:1rem; color:var(--text-main);">Pipeline Conversion</h3>
+      <canvas id="pipelineChart"></canvas>
+    </div>
+    <div class="chart-container card">
+      <h3 style="margin-top:0; font-size:1rem; color:var(--text-main);">Revenue Over Time</h3>
+      <canvas id="revenueChart"></canvas>
+    </div>
+    <div class="chart-container card">
+      <h3 style="margin-top:0; font-size:1rem; color:var(--text-main);">Commission Over Time</h3>
+      <canvas id="commissionChart"></canvas>
+    </div>
+    <!-- Commission detail table -->
+    <div class="card">
+      <h3 style="margin-top:0; font-size:1rem; color:var(--text-main);">Chi tiết hoa hồng</h3>
+      <!-- Action bar for table operations -->
+      <div class="action-bar">
+        <button class="export-btn" id="exportTable">Xuất Excel</button>
+        <button class="approve-btn" id="approveCommission">Duyệt hoa hồng</button>
+        <button class="paid-btn" id="markAsPaid">Đánh dấu đã chi</button>
+      </div>
+      <table class="commission-table">
+        <thead>
+          <tr>
+            <th><input type="checkbox" id="selectAll"></th>
+            <th>Mã Cơ hội</th>
+            <th>Khách hàng</th>
+            <th>Mã Báo giá</th>
+            <th>Giá trị Deal</th>
+            <th>Tỷ lệ hoa hồng</th>
+            <th>Tiền hoa hồng</th>
+            <th>Trạng thái</th>
+            <th>Ngày chốt</th>
+            <th>Trạng thái thanh toán</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="commissionTableBody">
+          <!-- rows will be injected here -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Sample opportunity dataset with commission info
+      const opportunities = [
+        {
+          code: 'Opp #001',
+          customer: 'Nguyễn Thu Huyền',
+          quotation: 'Q-101',
+          value: 500000000,
+          commissionRate: 0.02,
+          commissionStatus: 'expected',
+          status: 'won',
+          close: '2025-09-15',
+          paymentStatus: 'paid'
+        },
+        {
+          code: 'Opp #002',
+          customer: 'Cty DEF Logistics',
+          quotation: 'Q-102',
+          value: 1200000000,
+          commissionRate: 0.03,
+          commissionStatus: 'approved',
+          status: 'won',
+          close: '2025-10-20',
+          paymentStatus: 'pending'
+        },
+        {
+          code: 'Opp #003',
+          customer: 'Shop MNO',
+          quotation: 'Q-103',
+          value: 800000000,
+          commissionRate: 0.03,
+          commissionStatus: 'expected',
+          status: 'qualification',
+          close: '2025-09-25',
+          paymentStatus: 'pending'
+        },
+        {
+          code: 'Opp #004',
+          customer: 'Cty DEF Logistics',
+          quotation: 'Q-104',
+          value: 2000000000,
+          commissionRate: 0.03,
+          commissionStatus: 'approved',
+          status: 'negotiation',
+          close: '2025-11-30',
+          paymentStatus: 'paid'
+        },
+        {
+          code: 'Opp #005',
+          customer: 'Shop MNO',
+          quotation: 'Q-105',
+          value: 600000000,
+          commissionRate: 0.05,
+          commissionStatus: 'paid',
+          status: 'won',
+          close: '2025-10-05',
+          paymentStatus: 'paid'
+        },
+        {
+          code: 'Opp #006',
+          customer: 'Cty DEF Logistics',
+          quotation: 'Q-106',
+          value: 900000000,
+          commissionRate: 0.05,
+          commissionStatus: 'expected',
+          status: 'lost',
+          close: '2025-09-02',
+          paymentStatus: 'pending'
+        }
+      ];
+      function formatCurrency(val) {
+        return new Intl.NumberFormat('vi-VN', { style:'currency', currency:'VND' }).format(val);
+      }
+      function updateKPI() {
+        const totalOpp = opportunities.length;
+        const wonOpp = opportunities.filter(o => o.status === 'won').length;
+        const winRate = totalOpp ? Math.round((wonOpp / totalOpp) * 100) : 0;
+        const revenue = opportunities.reduce((sum, o) => sum + o.value, 0);
+        let expected = 0, approved = 0, paid = 0, pending = 0;
+        opportunities.forEach(o => {
+          const comm = o.value * o.commissionRate;
+          if (o.commissionStatus === 'expected') expected += comm;
+          else if (o.commissionStatus === 'approved') approved += comm;
+          else if (o.commissionStatus === 'paid') paid += comm;
+          else pending += comm;
+        });
+        // update DOM
+        document.getElementById('totalOpp').textContent = totalOpp;
+        document.getElementById('wonOpp').textContent = wonOpp;
+        document.getElementById('winRate').textContent = winRate + '%';
+        document.getElementById('revenue').textContent = formatCurrency(revenue);
+        document.getElementById('commExpected').textContent = formatCurrency(expected);
+        document.getElementById('commApproved').textContent = formatCurrency(approved);
+        document.getElementById('commPaid').textContent = formatCurrency(paid);
+        document.getElementById('commPending').textContent = formatCurrency(pending);
+      }
+      function populateTable() {
+        const tbody = document.getElementById('commissionTableBody');
+        tbody.innerHTML = '';
+        opportunities.forEach((o, index) => {
+          const tr = document.createElement('tr');
+          // Determine human readable status labels
+          const commissionLabel = o.commissionStatus.charAt(0).toUpperCase() + o.commissionStatus.slice(1);
+          const paymentLabel = o.paymentStatus === 'paid' ? 'Đã trả' : 'Chưa trả';
+          const closeDate = o.close.split('-').reverse().join('/');
+          // Build row HTML with checkbox and actions
+          tr.innerHTML = `
+            <td><input type="checkbox" class="row-select" data-index="${index}"></td>
+            <td><a href="opportunity_detail.html">${o.code}</a></td>
+            <td>${o.customer}</td>
+            <td><a href="quotation_detail.html">${o.quotation}</a></td>
+            <td>${formatCurrency(o.value)}</td>
+            <td>${(o.commissionRate * 100).toFixed(1)}%</td>
+            <td>${formatCurrency(o.value * o.commissionRate)}</td>
+            <td>${commissionLabel}</td>
+            <td>${closeDate}</td>
+            <td>${paymentLabel}</td>
+            <td class="actions">
+              <i class="fas fa-eye" title="Xem chi tiết"></i>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+        // Reattach select-all toggle after populating
+        const selectAll = document.getElementById('selectAll');
+        if (selectAll) {
+          selectAll.checked = false;
+          // Remove any existing listener by cloning the element
+          const newSelectAll = selectAll.cloneNode(true);
+          selectAll.parentNode.replaceChild(newSelectAll, selectAll);
+          newSelectAll.addEventListener('change', function() {
+            const checked = this.checked;
+            document.querySelectorAll('.row-select').forEach(cb => {
+              cb.checked = checked;
+            });
+          });
+        }
+      }
+      // Multi-select dropdown for status
+      const statusDropdown = document.getElementById('statusDropdown');
+      if (statusDropdown) {
+        const selectedEl = statusDropdown.querySelector('.selected-options');
+        statusDropdown.addEventListener('click', function(e) {
+          if (!e.target.closest('.options-list')) {
+            this.classList.toggle('open');
+          }
+        });
+        document.addEventListener('click', function(ev) {
+          if (!statusDropdown.contains(ev.target)) {
+            statusDropdown.classList.remove('open');
+          }
+        });
+        function updateSelected() {
+          const selectedLabels = Array.from(statusDropdown.querySelectorAll('.options-list input:checked')).map(cb => cb.parentElement.textContent.trim());
+          selectedEl.textContent = selectedLabels.length ? selectedLabels.join(', ') : 'Tất cả';
+        }
+        statusDropdown.querySelectorAll('.options-list input').forEach(function(cb) {
+          cb.addEventListener('change', updateSelected);
+        });
+        updateSelected();
+      }
+      // Chart initialization
+      const pipelineCtx = document.getElementById('pipelineChart').getContext('2d');
+      new Chart(pipelineCtx, {
+        type: 'bar',
+        data: {
+          labels: ['Lead', 'Opportunity', 'Won'],
+          datasets: [{
+            label: 'Chuyển đổi',
+            data: [200, 120, 50],
+            backgroundColor: ['#3b82f6','#60a5fa','#93c5fd']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: { beginAtZero:true }
+          },
+          plugins: {
+            legend: { display: false }
+          }
+        }
+      });
+      const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+      new Chart(revenueCtx, {
+        type: 'line',
+        data: {
+          labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep'],
+          datasets: [{
+            label: 'Doanh thu',
+            data: [5,8,12,15,18,22,30,35,40],
+            borderColor: '#3b82f6',
+            fill: false
+          }]
+        },
+        options: {
+          responsive:true,
+          maintainAspectRatio:false,
+          plugins: { legend: { display: false } }
+        }
+      });
+      const commissionCtx = document.getElementById('commissionChart').getContext('2d');
+      new Chart(commissionCtx, {
+        type: 'line',
+        data: {
+          labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep'],
+          datasets: [{
+            label: 'Hoa hồng',
+            data: [2,3,4,6,8,10,12,14,16],
+            borderColor: '#059669',
+            fill: false
+          }]
+        },
+        options: {
+          responsive:true,
+          maintainAspectRatio:false,
+          plugins: { legend: { display: false } }
+        }
+      });
+      // Initial load
+      updateKPI();
+      populateTable();
+      // Filter actions
+      document.getElementById('applyFilter').addEventListener('click', function() {
+        // Placeholder: apply filter logic if needed
+        alert('Filter applied (not implemented).');
+      });
+      document.getElementById('resetFilter').addEventListener('click', function() {
+        // Reset filters and reload data
+        document.getElementById('filterTimePeriod').value = 'month';
+        document.getElementById('filterStart').value = '';
+        document.getElementById('filterEnd').value = '';
+        document.getElementById('filterSales').value = '';
+        document.getElementById('filterTeam').value = '';
+        // Reset status multi-select
+        statusDropdown.querySelectorAll('.options-list input').forEach(cb => cb.checked = false);
+        statusDropdown.querySelector('.selected-options').textContent = 'Tất cả';
+        updateKPI();
+        populateTable();
+      });
+
+      /**
+       * Utility: Get indices of selected rows based on data-index attribute
+       */
+      function getSelectedIndices() {
+        return Array.from(document.querySelectorAll('.row-select:checked')).map(cb => parseInt(cb.getAttribute('data-index')));
+      }
+
+      // Select all checkbox handler
+      const selectAllCheckbox = document.getElementById('selectAll');
+      if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function() {
+          const checked = this.checked;
+          document.querySelectorAll('.row-select').forEach(cb => {
+            cb.checked = checked;
+          });
+        });
+      }
+
+      // Approve commission button handler
+      const approveBtn = document.getElementById('approveCommission');
+      if (approveBtn) {
+        approveBtn.addEventListener('click', function() {
+          const indices = getSelectedIndices();
+          if (!indices.length) {
+            alert('Vui lòng chọn cơ hội để duyệt.');
+            return;
+          }
+          indices.forEach(i => {
+            const o = opportunities[i];
+            // Only update expected commissions to approved
+            if (o.commissionStatus === 'expected') {
+              o.commissionStatus = 'approved';
+            }
+          });
+          updateKPI();
+          populateTable();
+        });
+      }
+
+      // Mark as paid button handler
+      const paidBtn = document.getElementById('markAsPaid');
+      if (paidBtn) {
+        paidBtn.addEventListener('click', function() {
+          const indices = getSelectedIndices();
+          if (!indices.length) {
+            alert('Vui lòng chọn cơ hội để đánh dấu đã chi.');
+            return;
+          }
+          indices.forEach(i => {
+            const o = opportunities[i];
+            // Can only mark approved commissions as paid
+            if (o.commissionStatus === 'approved') {
+              o.commissionStatus = 'paid';
+              o.paymentStatus = 'paid';
+            }
+          });
+          updateKPI();
+          populateTable();
+        });
+      }
+
+      // Export table to Excel
+      const exportBtn = document.getElementById('exportTable');
+      if (exportBtn) {
+        exportBtn.addEventListener('click', function() {
+          // Prepare data for export (excluding selection and actions column)
+          const exportData = opportunities.map(o => ({
+            'Mã Cơ hội': o.code,
+            'Khách hàng': o.customer,
+            'Mã Báo giá': o.quotation,
+            'Giá trị Deal': o.value,
+            'Tỷ lệ hoa hồng': (o.commissionRate * 100).toFixed(1) + '%',
+            'Tiền hoa hồng': o.value * o.commissionRate,
+            'Trạng thái': o.commissionStatus.charAt(0).toUpperCase() + o.commissionStatus.slice(1),
+            'Ngày chốt': o.close.split('-').reverse().join('/'),
+            'Trạng thái thanh toán': o.paymentStatus === 'paid' ? 'Đã trả' : 'Chưa trả'
+          }));
+          const worksheet = XLSX.utils.json_to_sheet(exportData);
+          const workbook = XLSX.utils.book_new();
+          XLSX.utils.book_append_sheet(workbook, worksheet, 'Commission');
+          XLSX.writeFile(workbook, 'commission_detail.xlsx');
+        });
+      }
+    });
+  </script>
+</body>
+</html>

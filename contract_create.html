@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tạo Hợp đồng dịch vụ</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --primary-blue:#0f172a;
+      --accent-blue:#3b82f6;
+      --bg-light:#f8fafc;
+      --card-white:#ffffff;
+      --text-main:#334155;
+      --text-muted:#64748b;
+      --border-color:#e2e8f0;
+      --shadow: 0 1px 3px rgba(0,0,0,.06);
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:'Inter',sans-serif;background:var(--bg-light);color:var(--text-main)}
+    .page{min-height:100vh;padding:1.5rem 2rem}
+    .header-row{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:1rem}
+    .header-left h1{font-size:1.4rem;font-weight:700;margin:0}
+    .header-left .desc{font-size:.85rem;color:var(--text-muted);margin:.35rem 0 0}
+    .back-button{
+      background: var(--border-color);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      border-radius:10px;
+      padding:0.45rem 0.85rem;
+      font-size:0.85rem;
+      display:inline-flex;
+      align-items:center;
+      gap:0.5rem;
+      text-decoration:none;
+    }
+    .back-button:hover{background:var(--accent-blue);color:#fff;border-color:var(--accent-blue)}
+    .pill{
+      display:inline-flex;align-items:center;gap:.4rem;
+      padding:.25rem .55rem;border-radius:999px;font-size:.75rem;font-weight:600;
+      border:1px solid var(--border-color);background:#fff;color:var(--text-main);
+    }
+    .card{background:var(--card-white);border:1px solid var(--border-color);border-radius:12px;padding:1rem;box-shadow:var(--shadow);margin-bottom:1rem}
+    .section-title{display:flex;align-items:center;justify-content:space-between;margin:0 0 .75rem}
+    .section-title h3{margin:0;font-size:1rem;font-weight:800}
+    .hint{font-size:.78rem;color:var(--text-muted)}
+    .inline-warn{display:flex;align-items:flex-start;gap:.6rem;background:#fffbeb;border:1px solid #fde68a;color:#92400e;border-radius:12px;padding:.75rem 1rem;margin-bottom:1rem}
+    .inline-warn i{margin-top:.1rem}
+    .form-grid{display:grid;grid-template-columns:repeat(3, minmax(260px, 1fr));gap:1rem 1.2rem}
+    .two-col{display:grid;grid-template-columns:repeat(2,minmax(260px,1fr));gap:1rem}
+    .divider{height:1px;background:var(--border-color);margin:1rem 0}
+    .form-group{display:flex;flex-direction:column;font-size:.8rem}
+    .form-group label{color:var(--text-muted);font-size:.75rem;margin-bottom:.35rem}
+    .form-group input,.form-group select,.form-group textarea{
+      padding:.5rem .65rem;border:1px solid var(--border-color);border-radius:10px;font-size:.9rem;background:var(--card-white)
+    }
+    .form-group textarea{resize:vertical}
+    .form-group input[readonly], .form-group select[disabled]{background:#f1f5f9;color:#475569}
+    .form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:var(--accent-blue)}
+    .btn{
+      padding:.45rem .9rem;border-radius:10px;font-size:.85rem;cursor:pointer;display:inline-flex;align-items:center;gap:.45rem;
+      border:1px solid transparent;user-select:none;white-space:nowrap
+    }
+    .btn-primary{background:var(--accent-blue);color:#fff;border-color:var(--accent-blue)}
+    .btn-primary:hover{background:rgba(59,130,246,.85)}
+    .btn-secondary{background:var(--card-white);color:var(--text-main);border-color:var(--border-color)}
+    .btn-secondary:hover{background:#f1f5f9}
+    .btn-disabled{opacity:.55;cursor:not-allowed}
+    .readonly-badge{display:inline-flex;align-items:center;gap:.4rem;font-size:.78rem;color:var(--text-muted)}
+    .readonly-badge i{color:#94a3b8}
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="header-row">
+      <div style="display:flex;gap:1rem;align-items:flex-start;flex-wrap:wrap;">
+        <a class="back-button" href="contract_management.html"><i class="fas fa-arrow-left"></i> Quay lại</a>
+        <div class="header-left">
+          <h1>Tạo/Chỉnh sửa Hợp đồng</h1>
+          <p class="desc">Entry point bắt buộc: Opportunity Won + Quotation Approved</p>
+        </div>
+      </div>
+      <div style="display:flex; gap:.6rem; align-items:center; flex-wrap:wrap;">
+        <span class="pill" id="entryPill"><i class="fa-solid fa-shield-halved"></i> Entry point check</span>
+      </div>
+    </div>
+
+    <div id="entryWarn" class="inline-warn" style="display:none;">
+      <i class="fas fa-triangle-exclamation"></i>
+      <div>
+        <div style="font-weight:800;">Không thể tạo Contract thủ công</div>
+        <div class="hint">Contract chỉ tạo từ Opportunity <b>Won</b> và Quotation <b>Approved</b>. Vui lòng quay lại Opportunity để tạo.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">
+        <h3>Thông tin chung</h3>
+        <div class="readonly-badge"><i class="fas fa-lock"></i> Các trường liên kết tự động (readonly)</div>
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Mã hợp đồng (auto)</label>
+          <input id="contractCode" type="text" value="CT-NEW" readonly>
+        </div>
+        <div class="form-group">
+          <label>Khách hàng</label>
+          <input id="customerName" type="text" value="Tự động" readonly>
+        </div>
+        <div class="form-group">
+          <label>Sales Owner</label>
+          <input id="salesOwner" type="text" value="Sales A" readonly>
+        </div>
+
+        <div class="form-group">
+          <label>Opportunity</label>
+          <input id="oppCode" type="text" value="Tự động" readonly>
+        </div>
+        <div class="form-group">
+          <label>Báo giá</label>
+          <input id="quotationCode" type="text" value="Tự động" readonly>
+        </div>
+        <div class="form-group">
+          <label>Trạng thái</label>
+          <select id="contractStatus" disabled>
+            <option value="draft" selected>Draft</option>
+            <option value="active">Active</option>
+            <option value="expired">Expired</option>
+            <option value="terminated">Terminated</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">
+        <h3>Thời hạn &amp; gia hạn</h3>
+        <div class="hint">Active: readonly (trừ gia hạn)</div>
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="startDate">Start Date <span style="color:red">*</span></label>
+          <input id="startDate" type="date">
+        </div>
+        <div class="form-group">
+          <label for="endDate">End Date <span style="color:red">*</span></label>
+          <input id="endDate" type="date">
+        </div>
+        <div class="form-group">
+          <label>Auto Renew</label>
+          <select id="autoRenew">
+            <option value="false">No</option>
+            <option value="true">Yes</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Renew Period</label>
+          <select id="renewPeriod">
+            <option value="6">6 tháng</option>
+            <option value="12" selected>12 tháng</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Notice Period (ngày)</label>
+          <input id="noticePeriod" type="number" min="0" value="30">
+        </div>
+        <div class="form-group">
+          <label>Giá trị hợp đồng (từ Quotation)</label>
+          <input id="contractValue" type="text" value="0" readonly>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">
+        <h3>Điều khoản dịch vụ</h3>
+        <div class="hint">Lấy từ Quotation, cho phép chỉnh có kiểm soát (demo)</div>
+      </div>
+
+      <div class="two-col">
+        <div class="form-group">
+          <label>Phạm vi dịch vụ</label>
+          <textarea id="serviceScope" rows="6" placeholder="VD: Vận chuyển nội địa tuyến HN ↔ HCM, bao gồm pickup & delivery..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>SLA (Delivery time)</label>
+          <textarea id="sla" rows="6" placeholder="VD: Express 24–48h, Economy 3–5 ngày..."></textarea>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="two-col">
+        <div class="form-group">
+          <label>Bảng giá áp dụng</label>
+          <textarea id="pricingRef" rows="5" placeholder="VD: Price List 2025-Q4 (theo Quotation)"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Cam kết bồi thường</label>
+          <textarea id="compensation" rows="5" placeholder="VD: Bồi thường tối đa 100% cước nếu trễ SLA trên 48h..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">
+        <h3>Điều khoản thanh toán</h3>
+        <div class="hint">Căn cứ xuất hóa đơn &amp; đối soát</div>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Payment Term</label>
+          <select id="paymentTerm">
+            <option value="COD">COD</option>
+            <option value="Monthly">Monthly</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Billing Cycle</label>
+          <select id="billingCycle">
+            <option value="Monthly" selected>Monthly</option>
+            <option value="Quarterly">Quarterly</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Invoice Day</label>
+          <input id="invoiceDay" type="number" min="1" max="31" value="5">
+        </div>
+
+        <div class="form-group">
+          <label>Credit Limit (nếu có)</label>
+          <input id="creditLimit" type="number" min="0" value="0">
+        </div>
+
+        <div class="form-group" style="grid-column: span 2;">
+          <label>Ghi chú</label>
+          <textarea id="notes" rows="3" placeholder="Ghi chú nội bộ..."></textarea>
+        </div>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:.75rem; margin-top:1rem; flex-wrap:wrap;">
+        <button class="btn btn-secondary" type="button" id="cancelBtn"><i class="fas fa-xmark"></i> Huỷ</button>
+        <button class="btn btn-secondary" type="button" id="saveDraftBtn"><i class="fas fa-floppy-disk"></i> Lưu Draft</button>
+        <button class="btn btn-primary" type="button" id="activateBtn"><i class="fas fa-play"></i> Activate</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const demoOppMap = {
+      "Opp #005": { customer: "ABC Trading", sales: "Nguyễn Văn A", quotation: "Q-003", value: 3800000000 },
+      "Opp #004": { customer: "DEF Logistics", sales: "Lê Thị B", quotation: "Q-002", value: 1200000000 }
+    };
+
+    function formatCurrency(val){
+      return new Intl.NumberFormat('vi-VN',{style:'currency',currency:'VND'}).format(val||0);
+    }
+
+    function setReadOnlyMode(isReadOnly){
+      const editableIds = [
+        'startDate','endDate','autoRenew','renewPeriod','noticePeriod',
+        'serviceScope','sla','pricingRef','compensation',
+        'paymentTerm','billingCycle','invoiceDay','creditLimit','notes'
+      ];
+      editableIds.forEach(id=>{
+        const el = document.getElementById(id);
+        if(!el) return;
+        if(el.tagName === 'SELECT') el.disabled = isReadOnly;
+        else el.readOnly = isReadOnly;
+      });
+      document.getElementById('activateBtn').style.display = isReadOnly ? 'none' : '';
+    }
+
+    function entryPointCheck(){
+      const p = new URLSearchParams(window.location.search);
+      const fromOpp = p.get('from_opp');
+      const won = p.get('won') === '1';
+      const qApproved = p.get('quotation_approved') === '1';
+
+      const ok = !!fromOpp && won && qApproved;
+      document.getElementById('entryWarn').style.display = ok ? 'none' : '';
+      document.getElementById('entryPill').innerHTML = ok
+        ? '<i class="fa-solid fa-circle-check"></i> Entry point: OK'
+        : '<i class="fa-solid fa-triangle-exclamation"></i> Entry point: BLOCKED';
+
+      if(!ok){
+        setReadOnlyMode(true);
+        document.getElementById('saveDraftBtn').classList.add('btn-disabled');
+        document.getElementById('activateBtn').classList.add('btn-disabled');
+        document.getElementById('saveDraftBtn').onclick = ()=>alert('Blocked: không tạo Contract thủ công (demo).');
+        document.getElementById('activateBtn').onclick = ()=>alert('Blocked: không tạo Contract thủ công (demo).');
+        return;
+      }
+
+      const opp = fromOpp;
+      const info = demoOppMap[opp] || {
+        customer: p.get('customer') || 'ABC Trading',
+        sales: p.get('sales') || 'Sales A',
+        quotation: p.get('quotation') || 'Q-003',
+        value: Number(p.get('value') || 0)
+      };
+
+      document.getElementById('oppCode').value = opp;
+      document.getElementById('customerName').value = info.customer;
+      document.getElementById('salesOwner').value = info.sales;
+      document.getElementById('quotationCode').value = info.quotation;
+      document.getElementById('contractValue').value = formatCurrency(info.value);
+
+      // default dates: tomorrow → 1 year - 1 day
+      const today = new Date();
+      const start = new Date(today.getFullYear(), today.getMonth(), today.getDate()+1);
+      const end = new Date(start.getFullYear()+1, start.getMonth(), start.getDate()-1);
+      document.getElementById('startDate').value = start.toISOString().slice(0,10);
+      document.getElementById('endDate').value = end.toISOString().slice(0,10);
+    }
+
+    function validate(){
+      const s = document.getElementById('startDate').value;
+      const e = document.getElementById('endDate').value;
+      if(!s || !e) return { ok:false, msg:'Vui lòng nhập Start Date và End Date.' };
+      if(e < s) return { ok:false, msg:'End Date phải lớn hơn Start Date.' };
+      return { ok:true };
+    }
+
+    function saveDraft(){
+      const v = validate();
+      if(!v.ok) return alert(v.msg);
+      alert('Đã lưu Draft (demo).');
+    }
+
+    function activate(){
+      const v = validate();
+      if(!v.ok) return alert(v.msg);
+      document.getElementById('contractStatus').value = 'active';
+      setReadOnlyMode(true);
+      alert('Contract đã Activate (demo).');
+      window.location.href = 'contract_detail.html?code=CT-NEW&status=active';
+    }
+
+    document.addEventListener('DOMContentLoaded', ()=>{
+      entryPointCheck();
+      document.getElementById('cancelBtn').addEventListener('click', ()=>window.location.href='contract_management.html');
+      document.getElementById('saveDraftBtn').addEventListener('click', saveDraft);
+      document.getElementById('activateBtn').addEventListener('click', activate);
+    });
+  </script>
+</body>
+</html>

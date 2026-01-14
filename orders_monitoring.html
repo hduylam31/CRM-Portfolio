@@ -1,0 +1,1307 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Giám sát đơn hàng & vận đơn</title>
+
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --primary-blue:#0f172a;
+      --accent-blue:#3b82f6;
+      --bg-light:#f8fafc;
+      --card-white:#ffffff;
+      --text-main:#334155;
+      --text-muted:#64748b;
+      --border-color:#e2e8f0;
+
+      --success:#10b981;
+      --warning:#f59e0b;
+      --danger:#ef4444;
+      --shadow: 0 1px 3px rgba(0,0,0,.06);
+    }
+
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family:'Inter',sans-serif;
+      background: var(--bg-light);
+      color: var(--text-main);
+    }
+
+    /* Page wrapper (iframe content) */
+    .page{
+      min-height: 100vh;
+      padding: 1.5rem 2rem;
+    }
+
+    /* Header */
+    .header-row{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+    .header-left h1{
+      font-size:1.35rem;
+      font-weight:800;
+      margin:0;
+      color: var(--primary-blue);
+    }
+    .header-left .desc{
+      font-size:.85rem;
+      color: var(--text-muted);
+      margin:.35rem 0 0;
+      line-height: 1.4;
+    }
+
+    .header-actions{
+      display:flex;
+      gap:.6rem;
+      align-items:center;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .pill{
+      display:inline-flex; align-items:center; gap:.45rem;
+      padding:.28rem .6rem;
+      border-radius:999px;
+      font-size:.78rem;
+      font-weight:700;
+      border:1px solid var(--border-color);
+      background:#fff;
+      color: var(--text-main);
+      user-select:none;
+      white-space: nowrap;
+    }
+    .pill-live{
+      border-color: rgba(16,185,129,.35);
+      background: rgba(16,185,129,.08);
+      color:#065f46;
+    }
+    .live-dot{
+      width:8px;height:8px;border-radius:999px;background: var(--success);
+      box-shadow: 0 0 0 rgba(16,185,129,.55);
+      animation: pulse 1.6s infinite;
+    }
+    @keyframes pulse{
+      0%{ box-shadow: 0 0 0 0 rgba(16,185,129,.55); }
+      70%{ box-shadow: 0 0 0 10px rgba(16,185,129,0); }
+      100%{ box-shadow: 0 0 0 0 rgba(16,185,129,0); }
+    }
+
+    .btn{
+      padding:.45rem .9rem;
+      border-radius:10px;
+      font-size:.85rem;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      gap:.45rem;
+      border:1px solid transparent;
+      user-select:none;
+      white-space:nowrap;
+    }
+    .btn-primary{ background: var(--accent-blue); color:#fff; border-color: var(--accent-blue); }
+    .btn-primary:hover{ background: rgba(59,130,246,.86); }
+    .btn-secondary{ background:#fff; color: var(--text-main); border-color: var(--border-color); }
+    .btn-secondary:hover{ background:#f1f5f9; }
+
+    /* Cards */
+    .card{
+      background: var(--card-white);
+      border:1px solid var(--border-color);
+      border-radius:12px;
+      padding:1rem;
+      box-shadow: var(--shadow);
+      margin-bottom: 1rem;
+    }
+    .section-title{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 1rem;
+      margin: 0 0 .75rem;
+      flex-wrap: wrap;
+    }
+    .section-title h3{
+      margin:0;
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--primary-blue);
+    }
+    .hint{
+      font-size: .78rem;
+      color: var(--text-muted);
+      line-height: 1.35;
+    }
+
+    /* KPI */
+    .kpi-grid{
+      display:grid;
+      grid-template-columns: repeat(5, minmax(180px, 1fr));
+      gap: 1rem;
+    }
+    .kpi-item{
+      border:1px solid var(--border-color);
+      border-radius:12px;
+      padding: .9rem 1rem;
+      background:#fff;
+      display:flex;
+      align-items:center;
+      gap:.75rem;
+      min-height: 74px;
+    }
+    .kpi-icon{
+      width:42px;height:42px;border-radius:10px;
+      display:flex;align-items:center;justify-content:center;
+      font-size: 1.05rem;
+    }
+    .kpi-meta .label{
+      font-size:.75rem;
+      color: var(--text-muted);
+      font-weight: 700;
+      margin-bottom: .2rem;
+    }
+    .kpi-meta .value{
+      font-size: 1.2rem;
+      font-weight: 900;
+      color: var(--primary-blue);
+      letter-spacing: .2px;
+    }
+    .kpi-meta .sub{
+      font-size:.75rem;
+      color: var(--text-muted);
+      margin-top: .15rem;
+    }
+
+    /* Filter grid */
+    .filters-grid{
+      display:grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: .85rem 1rem;
+      align-items:end;
+    }
+    .fg{ display:flex; flex-direction:column; gap:.35rem; }
+    .fg label{
+      font-size:.75rem;
+      color: var(--text-muted);
+      font-weight:700;
+    }
+    .fg input, .fg select{
+      padding: .55rem .65rem;
+      border:1px solid var(--border-color);
+      border-radius: 10px;
+      font-size: .9rem;
+      background:#fff;
+      outline:none;
+    }
+    .fg input:focus, .fg select:focus{ border-color: var(--accent-blue); }
+
+    /* Multi-select dropdown (giống hướng bạn đưa) */
+    .multi-select{
+      position: relative;
+      user-select:none;
+    }
+    .multi-select .selected-options{
+      padding: .55rem .65rem;
+      border:1px solid var(--border-color);
+      border-radius: 10px;
+      font-size: .9rem;
+      background:#fff;
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: .6rem;
+      cursor: pointer;
+      min-height: 38px;
+    }
+    .multi-select .selected-text{
+      display:flex;
+      flex-wrap: wrap;
+      gap: .35rem;
+      align-items:center;
+      line-height: 1.25;
+    }
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap:.35rem;
+      padding: .15rem .45rem;
+      border-radius: 999px;
+      font-size: .78rem;
+      font-weight: 700;
+      border:1px solid var(--border-color);
+      background:#fff;
+      color: var(--text-main);
+    }
+    .chip i{ font-size:.75rem; color:#94a3b8; cursor:pointer; }
+    .dropdown-icon{
+      color:#94a3b8;
+      display:flex;align-items:center;justify-content:center;
+      width: 26px;
+    }
+    .options-list{
+      position:absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      right: 0;
+      background:#fff;
+      border:1px solid var(--border-color);
+      border-radius: 12px;
+      box-shadow: 0 12px 24px rgba(0,0,0,0.06);
+      padding: .5rem;
+      z-index: 20;
+      display:none;
+      max-height: 240px;
+      overflow:auto;
+    }
+    .options-list .opt-head{
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: .6rem;
+      padding: .35rem .35rem .5rem;
+      border-bottom: 1px dashed var(--border-color);
+      margin-bottom: .35rem;
+    }
+    .options-list .opt-head .mini{
+      font-size:.75rem;color: var(--text-muted);font-weight:700;
+    }
+    .options-list .opt-actions{
+      display:flex; gap:.35rem; flex-wrap: wrap;
+    }
+    .mini-btn{
+      font-size:.75rem;
+      padding:.25rem .45rem;
+      border-radius: 9px;
+      border:1px solid var(--border-color);
+      background:#fff;
+      cursor:pointer;
+      color: var(--text-main);
+      font-weight:700;
+    }
+    .mini-btn:hover{ background:#f1f5f9; }
+    .options-list label{
+      display:flex;
+      align-items:center;
+      gap:.55rem;
+      padding: .45rem .5rem;
+      border-radius: 10px;
+      cursor:pointer;
+      font-size:.85rem;
+      color: var(--text-main);
+    }
+    .options-list label:hover{ background:#f8fafc; }
+    .options-list input[type="checkbox"]{ width: 16px; height: 16px; }
+
+    /* Table */
+    .table-wrap{
+      overflow:auto;
+      border:1px solid var(--border-color);
+      border-radius: 12px;
+      background:#fff;
+    }
+    table{
+      width:100%;
+      border-collapse: collapse;
+      min-width: 980px;
+    }
+    thead th{
+      text-align:left;
+      font-size:.75rem;
+      color: var(--text-muted);
+      font-weight:800;
+      padding: .75rem .9rem;
+      border-bottom: 1px solid var(--border-color);
+      background: #fbfdff;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+    tbody td{
+      padding: .75rem .9rem;
+      border-bottom: 1px solid #f1f5f9;
+      font-size:.88rem;
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+    tbody tr:hover{
+      background: #f8fafc;
+      cursor: pointer;
+    }
+    tbody tr.highlight{
+      animation: rowFlash 1.2s ease;
+      outline: 2px solid rgba(59,130,246,.25);
+      outline-offset: -2px;
+    }
+    @keyframes rowFlash{
+      0%{ background: rgba(59,130,246,.10); }
+      100%{ background: transparent; }
+    }
+
+    .muted{ color: var(--text-muted); font-size: .82rem; }
+
+    /* Status badge */
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:.4rem;
+      padding: .2rem .55rem;
+      border-radius: 999px;
+      font-size: .78rem;
+      font-weight: 800;
+      border: 1px solid var(--border-color);
+      background:#fff;
+    }
+    .b-success{ border-color: rgba(16,185,129,.35); background: rgba(16,185,129,.08); color:#065f46; }
+    .b-warning{ border-color: rgba(245,158,11,.35); background: rgba(245,158,11,.10); color:#92400e; }
+    .b-danger{ border-color: rgba(239,68,68,.35); background: rgba(239,68,68,.10); color:#991b1b; }
+    .b-neutral{ border-color: rgba(100,116,139,.25); background: rgba(100,116,139,.08); color:#334155; }
+
+    /* SLA */
+    .sla{
+      display:inline-flex;
+      align-items:center;
+      gap:.45rem;
+      font-weight: 800;
+      font-size:.8rem;
+    }
+    .sla i{ font-size:.8rem; }
+    .sla.on{ color: #065f46; }
+    .sla.late{ color: #991b1b; }
+
+    .ex-flag{
+      display:inline-flex;
+      align-items:center;
+      gap:.4rem;
+      font-size:.82rem;
+      font-weight:800;
+      color:#991b1b;
+    }
+    .ex-flag i{ color: var(--danger); }
+
+    /* Drawer */
+    .drawer-overlay{
+      position: fixed;
+      inset: 0;
+      background: rgba(15,23,42,.35);
+      display: none;
+      z-index: 50;
+    }
+    .drawer{
+      position: fixed;
+      top: 0;
+      right: 0;
+      height: 100%;
+      width: min(520px, 92vw);
+      background: #fff;
+      border-left: 1px solid var(--border-color);
+      box-shadow: -16px 0 36px rgba(0,0,0,0.12);
+      transform: translateX(100%);
+      transition: transform .22s ease;
+      z-index: 60;
+      display:flex;
+      flex-direction: column;
+    }
+    .drawer.open{ transform: translateX(0); }
+    .drawer-header{
+      padding: 1rem 1rem .85rem;
+      border-bottom: 1px solid var(--border-color);
+      display:flex;
+      align-items:flex-start;
+      justify-content: space-between;
+      gap: .75rem;
+    }
+    .drawer-title{
+      display:flex;
+      flex-direction: column;
+      gap: .25rem;
+      min-width: 0;
+    }
+    .drawer-title .t1{
+      font-weight: 900;
+      color: var(--primary-blue);
+      line-height: 1.2;
+    }
+    .drawer-title .t2{
+      font-size:.82rem;
+      color: var(--text-muted);
+    }
+    .icon-close{
+      width: 38px; height: 38px;
+      border-radius: 10px;
+      border:1px solid var(--border-color);
+      background:#fff;
+      cursor:pointer;
+      display:flex;align-items:center;justify-content:center;
+      color: var(--text-muted);
+      flex: 0 0 auto;
+    }
+    .icon-close:hover{ background:#f1f5f9; color: var(--text-main); }
+    .drawer-body{
+      padding: 1rem;
+      overflow:auto;
+      flex: 1 1 auto;
+    }
+    .kv{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: .75rem;
+      margin-bottom: .9rem;
+    }
+    .kv .item{
+      border:1px solid var(--border-color);
+      border-radius: 12px;
+      padding: .7rem .75rem;
+      background:#fff;
+      min-width: 0;
+    }
+    .kv .k{ font-size:.72rem; color: var(--text-muted); font-weight:800; margin-bottom: .15rem; }
+    .kv .v{ font-size:.92rem; font-weight:900; color: var(--primary-blue); white-space: nowrap; overflow:hidden; text-overflow: ellipsis; }
+
+    /* Timeline */
+    .timeline{
+      border:1px solid var(--border-color);
+      border-radius: 12px;
+      padding: .85rem .85rem;
+      background:#fff;
+      margin-bottom: .9rem;
+    }
+    .timeline .row{
+      display:flex;
+      gap:.75rem;
+      padding: .55rem 0;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .timeline .row:last-child{ border-bottom: none; }
+    .dot{
+      width: 10px; height: 10px; border-radius: 999px;
+      margin-top: .3rem;
+      background: #cbd5e1;
+      flex: 0 0 auto;
+    }
+    .row.done .dot{ background: var(--success); }
+    .row.now .dot{ background: var(--accent-blue); }
+    .timeline .meta{
+      display:flex;
+      flex-direction: column;
+      gap: .1rem;
+      min-width: 0;
+    }
+    .timeline .meta .s{
+      font-weight: 900;
+      color: var(--primary-blue);
+      font-size:.9rem;
+    }
+    .timeline .meta .t{
+      color: var(--text-muted);
+      font-size:.8rem;
+    }
+    .timeline .meta .loc{
+      color: #475569;
+      font-size:.82rem;
+      white-space: nowrap;
+      overflow:hidden;
+      text-overflow: ellipsis;
+    }
+
+    .drawer-footer{
+      padding: .9rem 1rem 1rem;
+      border-top: 1px solid var(--border-color);
+      display:flex;
+      gap:.6rem;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+    }
+
+    /* Responsive */
+    @media (max-width: 1100px){
+      .kpi-grid{ grid-template-columns: repeat(2, minmax(180px, 1fr)); }
+    }
+    @media (max-width: 860px){
+      .page{ padding: 1rem; }
+      .filters-grid{ grid-template-columns: repeat(6, 1fr); }
+    }
+    @media (max-width: 520px){
+      .filters-grid{ grid-template-columns: repeat(2, 1fr); }
+      .kv{ grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <!-- Header -->
+    <div class="header-row">
+      <div class="header-left">
+        <h1>Giám sát đơn hàng &amp; vận đơn</h1>
+        <p class="desc">“Radar” theo dõi trạng thái giao hàng realtime, phát hiện trễ SLA &amp; exception để CS/Ops xử lý nhanh.</p>
+      </div>
+
+      <div class="header-actions">
+        <span class="pill pill-live"><span class="live-dot"></span> Live</span>
+        <span class="pill" id="lastRefreshed"><i class="fa-regular fa-clock"></i> Cập nhật: --:--:--</span>
+        <button class="btn btn-secondary" type="button" id="btnReset"><i class="fas fa-rotate-left"></i> Reset filter</button>
+        <button class="btn btn-primary" type="button" id="btnRefresh"><i class="fas fa-arrows-rotate"></i> Refresh</button>
+      </div>
+    </div>
+
+    <!-- KPI -->
+    <div class="card">
+      <div class="section-title">
+        <h3>Live Stats</h3>
+        <div class="hint">Gợi ý: refresh 30–60s, highlight khi đổi trạng thái (demo: tự mô phỏng).</div>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi-item">
+          <div class="kpi-icon" style="background:#e0f2fe;color:#0369a1;"><i class="fas fa-boxes-stacked"></i></div>
+          <div class="kpi-meta">
+            <div class="label">Tổng đơn hôm nay</div>
+            <div class="value" id="kpiTotal">0</div>
+            <div class="sub">Volume</div>
+          </div>
+        </div>
+
+        <div class="kpi-item">
+          <div class="kpi-icon" style="background:#fef9c3;color:#a16207;"><i class="fas fa-truck-fast"></i></div>
+          <div class="kpi-meta">
+            <div class="label">Đang vận chuyển</div>
+            <div class="value" id="kpiInTransit">0</div>
+            <div class="sub">In transit</div>
+          </div>
+        </div>
+
+        <div class="kpi-item">
+          <div class="kpi-icon" style="background:#dcfce7;color:#15803d;"><i class="fas fa-circle-check"></i></div>
+          <div class="kpi-meta">
+            <div class="label">Giao thành công</div>
+            <div class="value" id="kpiDelivered">0</div>
+            <div class="sub">Delivered</div>
+          </div>
+        </div>
+
+        <div class="kpi-item">
+          <div class="kpi-icon" style="background:#fee2e2;color:#b91c1c;"><i class="fas fa-triangle-exclamation"></i></div>
+          <div class="kpi-meta">
+            <div class="label">Trễ SLA</div>
+            <div class="value" id="kpiLate">0</div>
+            <div class="sub">Alert</div>
+          </div>
+        </div>
+
+        <div class="kpi-item">
+          <div class="kpi-icon" style="background:#ede9fe;color:#6d28d9;"><i class="fas fa-rotate"></i></div>
+          <div class="kpi-meta">
+            <div class="label">Hoàn / Hủy</div>
+            <div class="value" id="kpiIssue">0</div>
+            <div class="sub">Issue</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card">
+      <div class="section-title">
+        <h3>Filter Panel</h3>
+        <div class="hint">CS dùng nhiều nhất: <b>Status</b> + <b>Exception</b>.</div>
+      </div>
+
+      <div class="filters-grid">
+        <!-- Keyword -->
+        <div class="fg" style="grid-column: span 3;">
+          <label>Keyword</label>
+          <input id="fKeyword" type="text" placeholder="Order Code / AWB...">
+        </div>
+
+        <!-- Customer -->
+        <div class="fg" style="grid-column: span 2;">
+          <label>Customer</label>
+          <select id="fCustomer">
+            <option value="">Tất cả</option>
+            <option>ABC Trading</option>
+            <option>DEF Logistics</option>
+            <option>Giga Retail</option>
+            <option>Soho SMB</option>
+          </select>
+        </div>
+
+        <!-- Service (Multi) -->
+        <div class="fg" style="grid-column: span 2;">
+          <label>Service (multi)</label>
+          <div class="multi-select" id="serviceDropdown">
+            <div class="selected-options" role="button" tabindex="0">
+              <div class="selected-text" data-default="Tất cả">Tất cả</div>
+              <div class="dropdown-icon"><i class="fas fa-chevron-down"></i></div>
+            </div>
+            <div class="options-list">
+              <div class="opt-head">
+                <div class="mini">Chọn nhiều</div>
+                <div class="opt-actions">
+                  <button class="mini-btn" type="button" data-action="all">All</button>
+                  <button class="mini-btn" type="button" data-action="none">None</button>
+                </div>
+              </div>
+              <label><input type="checkbox" value="Express"> Express</label>
+              <label><input type="checkbox" value="Economy"> Economy</label>
+              <label><input type="checkbox" value="Same-day"> Same-day</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Status (Multi) -->
+        <div class="fg" style="grid-column: span 3;">
+          <label>Status (multi)</label>
+          <div class="multi-select" id="statusDropdown">
+            <div class="selected-options" role="button" tabindex="0">
+              <div class="selected-text" data-default="Tất cả">Tất cả</div>
+              <div class="dropdown-icon"><i class="fas fa-chevron-down"></i></div>
+            </div>
+            <div class="options-list">
+              <div class="opt-head">
+                <div class="mini">Chuẩn logistics</div>
+                <div class="opt-actions">
+                  <button class="mini-btn" type="button" data-action="all">All</button>
+                  <button class="mini-btn" type="button" data-action="none">None</button>
+                </div>
+              </div>
+              <label><input type="checkbox" value="Created"> Created</label>
+              <label><input type="checkbox" value="Picked up"> Picked up</label>
+              <label><input type="checkbox" value="In Transit"> In Transit</label>
+              <label><input type="checkbox" value="Out for Delivery"> Out for Delivery</label>
+              <label><input type="checkbox" value="Delivered"> Delivered</label>
+              <label><input type="checkbox" value="Failed / Returned"> Failed / Returned</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Exception -->
+        <div class="fg" style="grid-column: span 2;">
+          <label>Exception</label>
+          <select id="fException">
+            <option value="">Tất cả</option>
+            <option value="yes">Yes (có lỗi)</option>
+            <option value="no">No (bình thường)</option>
+          </select>
+        </div>
+
+        <!-- Date range -->
+        <div class="fg" style="grid-column: span 2;">
+          <label>Date Range</label>
+          <input id="fDate" type="date">
+        </div>
+
+        <!-- Hub / Region -->
+        <div class="fg" style="grid-column: span 2;">
+          <label>Hub / Region</label>
+          <select id="fHub">
+            <option value="">Tất cả</option>
+            <option>HN Hub</option>
+            <option>HCM Hub</option>
+            <option>DN Hub</option>
+            <option>MEK Hub</option>
+          </select>
+        </div>
+
+        <!-- Apply -->
+        <div class="fg" style="grid-column: span 2; align-items:flex-end;">
+          <button class="btn btn-primary" type="button" id="btnApply" style="width:100%; justify-content:center;">
+            <i class="fas fa-filter"></i> Apply
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="card">
+      <div class="section-title">
+        <h3>Orders / Shipments</h3>
+        <div class="hint"><span id="resultCount">0</span> kết quả • Click 1 dòng để mở detail drawer.</div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Order Code</th>
+              <th>AWB</th>
+              <th>Customer</th>
+              <th>Service</th>
+              <th>Origin</th>
+              <th>Destination</th>
+              <th>Current Status</th>
+              <th>Last Update</th>
+              <th>SLA</th>
+              <th>Exception</th>
+              <th style="text-align:right;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="tbody">
+            <!-- render by JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Drawer -->
+  <div class="drawer-overlay" id="drawerOverlay"></div>
+  <aside class="drawer" id="drawer">
+    <div class="drawer-header">
+      <div class="drawer-title">
+        <div class="t1" id="dTitle">Order • --</div>
+        <div class="t2" id="dSub">AWB • --</div>
+      </div>
+      <button class="icon-close" type="button" id="btnCloseDrawer" title="Đóng">
+        <i class="fas fa-xmark"></i>
+      </button>
+    </div>
+
+    <div class="drawer-body">
+      <div class="kv">
+        <div class="item">
+          <div class="k">Current Status</div>
+          <div class="v" id="dStatus">--</div>
+        </div>
+        <div class="item">
+          <div class="k">SLA</div>
+          <div class="v" id="dSla">--</div>
+        </div>
+        <div class="item">
+          <div class="k">Service</div>
+          <div class="v" id="dService">--</div>
+        </div>
+        <div class="item">
+          <div class="k">COD</div>
+          <div class="v" id="dCod">--</div>
+        </div>
+      </div>
+
+      <div class="timeline">
+        <div class="section-title" style="margin:0 0 .5rem;">
+          <h3 style="font-size:.95rem;">Timeline Tracking</h3>
+          <div class="hint">Có timestamp + location (demo).</div>
+        </div>
+        <div id="dTimeline"></div>
+      </div>
+
+      <div class="card" style="margin:0; box-shadow:none;">
+        <div class="section-title">
+          <h3 style="font-size:.95rem;">Ghi chú / thao tác</h3>
+          <div class="hint">Role-based (demo hiển thị nút).</div>
+        </div>
+
+        <div class="fg" style="margin-bottom:.75rem;">
+          <label>Note</label>
+          <input id="dNote" type="text" placeholder="Thêm ghi chú xử lý...">
+        </div>
+
+        <div class="fg">
+          <label>Role (demo)</label>
+          <select id="dRole">
+            <option value="CS" selected>CS</option>
+            <option value="Ops">Ops</option>
+            <option value="Sales">Sales</option>
+            <option value="Manager">Manager</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="dExceptionBox" class="card" style="margin:.9rem 0 0; border-color: rgba(239,68,68,.35); background: rgba(239,68,68,.06);">
+        <div class="section-title" style="margin:0 0 .5rem;">
+          <h3 style="font-size:.95rem; color:#991b1b;">Exception & Alert</h3>
+          <div class="hint" id="dExceptionHint" style="color:#991b1b;">--</div>
+        </div>
+        <div class="muted" id="dExceptionDetail" style="color:#7f1d1d;">--</div>
+      </div>
+    </div>
+
+    <div class="drawer-footer">
+      <button class="btn btn-secondary" type="button" id="btnAddNote"><i class="fas fa-note-sticky"></i> Add Note</button>
+      <button class="btn btn-secondary" type="button" id="btnMarkException"><i class="fas fa-triangle-exclamation"></i> Mark Exception</button>
+      <button class="btn btn-primary" type="button" id="btnUpdateStatus"><i class="fas fa-pen-to-square"></i> Update Status</button>
+    </div>
+  </aside>
+
+  <script>
+    // =========================
+    // Mock Data (demo)
+    // =========================
+    const STATUSES = ["Created","Picked up","In Transit","Out for Delivery","Delivered","Failed / Returned"];
+    const SERVICES = ["Express","Economy","Same-day"];
+    const EX_TYPES = ["Delivery Failed","Delay","Address Issue","Damage"];
+
+    const now = () => new Date();
+    const fmtTime = (d) => {
+      const pad = (n)=> String(n).padStart(2,'0');
+      return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+    };
+    const fmtDateTime = (d) => {
+      const pad = (n)=> String(n).padStart(2,'0');
+      return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    };
+
+    function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+    function pick(arr){ return arr[randInt(0, arr.length-1)]; }
+
+    function buildMockOrders(){
+      const base = [
+        { order:"ORD-000812", awb:"AWB-99120018", customer:"ABC Trading", service:"Express", origin:"HN", dest:"HCM", hub:"HN Hub" },
+        { order:"ORD-000813", awb:"AWB-99120019", customer:"DEF Logistics", service:"Economy", origin:"HCM", dest:"DN", hub:"HCM Hub" },
+        { order:"ORD-000814", awb:"AWB-99120020", customer:"Giga Retail", service:"Same-day", origin:"HN", dest:"HN", hub:"HN Hub" },
+        { order:"ORD-000815", awb:"AWB-99120021", customer:"Soho SMB", service:"Express", origin:"DN", dest:"HCM", hub:"DN Hub" },
+        { order:"ORD-000816", awb:"AWB-99120022", customer:"ABC Trading", service:"Economy", origin:"MEK", dest:"HCM", hub:"MEK Hub" },
+        { order:"ORD-000817", awb:"AWB-99120023", customer:"DEF Logistics", service:"Express", origin:"HCM", dest:"HN", hub:"HCM Hub" }
+      ];
+
+      // enrich runtime fields
+      const t = now();
+      return base.map((x, idx) => {
+        const status = pick(STATUSES);
+        const last = new Date(t.getTime() - randInt(10, 360) * 60 * 1000); // minutes ago
+        const late = (status !== "Delivered") && (Math.random() < 0.25);
+        const isIssue = (status === "Failed / Returned") || (Math.random() < 0.12);
+        const hasException = isIssue || (Math.random() < 0.18);
+        const exType = hasException ? pick(EX_TYPES) : "";
+        const cod = Math.random() < 0.35 ? randInt(100, 2500)*1000 : 0;
+
+        return {
+          id: idx + 1,
+          order_code: x.order,
+          awb_code: x.awb,
+          customer: x.customer,
+          service: x.service,
+          origin: x.origin,
+          destination: x.dest,
+          hub: x.hub,
+          current_status: status,
+          last_update: last,
+          sla_target_hours: x.service === "Same-day" ? 12 : (x.service === "Express" ? 24 : 72),
+          sla_late: late,
+          exception: hasException,
+          exception_type: exType,
+          cod_amount: cod,
+          // timeline
+          tracking: buildTracking(status, last, x.hub)
+        };
+      });
+    }
+
+    function buildTracking(currentStatus, lastUpdate, hub){
+      // build a simple timeline up to current status
+      const idx = Math.max(0, STATUSES.indexOf(currentStatus));
+      const steps = STATUSES.slice(0, idx+1);
+
+      const baseTime = new Date(lastUpdate.getTime() - randInt(2, 14)*60*60*1000); // hours before
+      return steps.map((s, i) => {
+        const ts = new Date(baseTime.getTime() + i * randInt(30, 120) * 60 * 1000);
+        return { status: s, timestamp: ts, location: (i===0 ? "Origin" : (s==="In Transit" ? hub : "Last Mile")) };
+      });
+    }
+
+    // store
+    let orders = buildMockOrders();
+    let filtered = [...orders];
+
+    // =========================
+    // Multi-select helper
+    // =========================
+    function initMultiSelect(rootId){
+      const root = document.getElementById(rootId);
+      if(!root) return;
+
+      const toggle = root.querySelector('.selected-options');
+      const selectedText = root.querySelector('.selected-text');
+      const list = root.querySelector('.options-list');
+
+      function close(){ list.style.display = 'none'; }
+      function open(){ list.style.display = 'block'; }
+
+      toggle.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        list.style.display = (list.style.display === 'block') ? 'none' : 'block';
+      });
+      toggle.addEventListener('keydown', (e)=>{
+        if(e.key === 'Enter' || e.key === ' '){
+          e.preventDefault();
+          list.style.display = (list.style.display === 'block') ? 'none' : 'block';
+        }
+      });
+
+      // all/none
+      list.querySelectorAll('button[data-action]').forEach(btn=>{
+        btn.addEventListener('click', (e)=>{
+          e.preventDefault();
+          e.stopPropagation();
+          const action = btn.getAttribute('data-action');
+          const cbs = list.querySelectorAll('input[type="checkbox"]');
+          cbs.forEach(cb => cb.checked = (action === 'all'));
+          updateSelected();
+        });
+      });
+
+      // change
+      list.querySelectorAll('input[type="checkbox"]').forEach(cb=>{
+        cb.addEventListener('change', updateSelected);
+      });
+
+      function updateSelected(){
+        const checked = [...list.querySelectorAll('input[type="checkbox"]:checked')].map(x=>x.value);
+        const def = selectedText.getAttribute('data-default') || 'Tất cả';
+
+        if(checked.length === 0){
+          selectedText.innerHTML = def;
+          selectedText.dataset.values = '';
+          return;
+        }
+
+        // render chips
+        selectedText.dataset.values = checked.join('|');
+        selectedText.innerHTML = checked.map(v => (
+          `<span class="chip" data-v="${v}">${v}</span>`
+        )).join('');
+      }
+
+      // click outside closes
+      document.addEventListener('click', close);
+
+      // Expose getter
+      root.getValues = () => {
+        const v = selectedText.dataset.values || '';
+        if(!v) return [];
+        return v.split('|').filter(Boolean);
+      };
+
+      // initial state: none => all
+      updateSelected();
+    }
+
+    // =========================
+    // Rendering
+    // =========================
+    function statusBadge(status){
+      const map = {
+        "Delivered": ["b-success", "fa-circle-check"],
+        "In Transit": ["b-warning", "fa-truck-fast"],
+        "Out for Delivery": ["b-warning", "fa-route"],
+        "Picked up": ["b-neutral", "fa-box"],
+        "Created": ["b-neutral", "fa-file-circle-plus"],
+        "Failed / Returned": ["b-danger", "fa-triangle-exclamation"]
+      };
+      const [cls, icon] = map[status] || ["b-neutral","fa-circle-info"];
+      return `<span class="badge ${cls}"><i class="fa-solid ${icon}"></i> ${status}</span>`;
+    }
+
+    function slaView(o){
+      if(o.sla_late){
+        return `<span class="sla late"><i class="fa-solid fa-clock"></i> Late</span>`;
+      }
+      return `<span class="sla on"><i class="fa-solid fa-circle-check"></i> On-time</span>`;
+    }
+
+    function renderTable(){
+      const tbody = document.getElementById('tbody');
+      tbody.innerHTML = filtered.map(o => {
+        const ex = o.exception
+          ? `<span class="ex-flag"><i class="fa-solid fa-triangle-exclamation"></i> ${o.exception_type || 'Exception'}</span>`
+          : `<span class="muted">—</span>`;
+
+        return `
+          <tr data-id="${o.id}">
+            <td><b>${o.order_code}</b></td>
+            <td>${o.awb_code}</td>
+            <td>${o.customer}</td>
+            <td>${o.service}</td>
+            <td>${o.origin}</td>
+            <td>${o.destination}</td>
+            <td>${statusBadge(o.current_status)}</td>
+            <td class="muted">${fmtDateTime(o.last_update)}</td>
+            <td>${slaView(o)}</td>
+            <td>${ex}</td>
+            <td style="text-align:right;">
+              <button class="btn btn-secondary" type="button" data-action="view" style="padding:.35rem .65rem;font-size:.82rem;">
+                <i class="fas fa-eye"></i> View
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      document.getElementById('resultCount').textContent = filtered.length;
+
+      // row click => open drawer
+      tbody.querySelectorAll('tr').forEach(tr => {
+        tr.addEventListener('click', (e)=>{
+          // ignore clicking inside the button (still open drawer anyway)
+          const id = Number(tr.getAttribute('data-id'));
+          openDrawer(id);
+        });
+      });
+    }
+
+    function renderKPI(){
+      const total = orders.length;
+      const inTransit = orders.filter(o => ["Picked up","In Transit","Out for Delivery"].includes(o.current_status)).length;
+      const delivered = orders.filter(o => o.current_status === "Delivered").length;
+      const late = orders.filter(o => o.sla_late).length;
+      const issue = orders.filter(o => o.current_status === "Failed / Returned").length;
+
+      document.getElementById('kpiTotal').textContent = total;
+      document.getElementById('kpiInTransit').textContent = inTransit;
+      document.getElementById('kpiDelivered').textContent = delivered;
+      document.getElementById('kpiLate').textContent = late;
+      document.getElementById('kpiIssue').textContent = issue;
+    }
+
+    function setLastRefreshed(){
+      document.getElementById('lastRefreshed').innerHTML = `<i class="fa-regular fa-clock"></i> Cập nhật: ${fmtTime(now())}`;
+    }
+
+    // =========================
+    // Filtering
+    // =========================
+    function applyFilters(){
+      const kw = (document.getElementById('fKeyword').value || '').trim().toLowerCase();
+      const customer = document.getElementById('fCustomer').value;
+      const exception = document.getElementById('fException').value;
+      const date = document.getElementById('fDate').value; // yyyy-mm-dd
+      const hub = document.getElementById('fHub').value;
+
+      const services = document.getElementById('serviceDropdown')?.getValues?.() || [];
+      const statuses = document.getElementById('statusDropdown')?.getValues?.() || [];
+
+      filtered = orders.filter(o => {
+        // keyword (order/awb)
+        if(kw){
+          const hay = (o.order_code + ' ' + o.awb_code).toLowerCase();
+          if(!hay.includes(kw)) return false;
+        }
+        // customer
+        if(customer && o.customer !== customer) return false;
+        // hub
+        if(hub && o.hub !== hub) return false;
+
+        // services (if selected => must match)
+        if(services.length && !services.includes(o.service)) return false;
+
+        // statuses
+        if(statuses.length && !statuses.includes(o.current_status)) return false;
+
+        // exception yes/no
+        if(exception === 'yes' && !o.exception) return false;
+        if(exception === 'no' && o.exception) return false;
+
+        // date range (demo: match last_update date only)
+        if(date){
+          const d = o.last_update;
+          const ymd = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+          if(ymd !== date) return false;
+        }
+
+        return true;
+      });
+
+      renderTable();
+    }
+
+    function resetFilters(){
+      document.getElementById('fKeyword').value = '';
+      document.getElementById('fCustomer').value = '';
+      document.getElementById('fException').value = '';
+      document.getElementById('fDate').value = '';
+      document.getElementById('fHub').value = '';
+
+      // reset multi-selects
+      ["serviceDropdown","statusDropdown"].forEach(id=>{
+        const root = document.getElementById(id);
+        if(!root) return;
+        root.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+        // trigger updateSelected by simulating change
+        const first = root.querySelector('input[type="checkbox"]');
+        if(first) first.dispatchEvent(new Event('change'));
+      });
+
+      filtered = [...orders];
+      renderTable();
+    }
+
+    // =========================
+    // Drawer
+    // =========================
+    const overlay = document.getElementById('drawerOverlay');
+    const drawer = document.getElementById('drawer');
+
+    function closeDrawer(){
+      overlay.style.display = 'none';
+      drawer.classList.remove('open');
+    }
+    function openDrawer(id){
+      const o = orders.find(x => x.id === id);
+      if(!o) return;
+
+      document.getElementById('dTitle').textContent = `Order • ${o.order_code}`;
+      document.getElementById('dSub').textContent = `AWB • ${o.awb_code}`;
+      document.getElementById('dStatus').textContent = o.current_status;
+      document.getElementById('dSla').textContent = o.sla_late ? 'Late' : 'On-time';
+      document.getElementById('dService').textContent = o.service;
+      document.getElementById('dCod').textContent = o.cod_amount ? new Intl.NumberFormat('vi-VN',{style:'currency',currency:'VND'}).format(o.cod_amount) : '0';
+
+      // timeline
+      const curIdx = STATUSES.indexOf(o.current_status);
+      const html = (o.tracking || []).map((t, i)=>{
+        const cls = (i < curIdx) ? 'done' : (i === curIdx ? 'now' : '');
+        return `
+          <div class="row ${cls}">
+            <div class="dot"></div>
+            <div class="meta">
+              <div class="s">${t.status}</div>
+              <div class="t">${fmtDateTime(t.timestamp)}</div>
+              <div class="loc">${t.location}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+      document.getElementById('dTimeline').innerHTML = html || `<div class="muted">Chưa có tracking.</div>`;
+
+      // exception box
+      const exBox = document.getElementById('dExceptionBox');
+      if(o.exception){
+        exBox.style.display = '';
+        document.getElementById('dExceptionHint').textContent = o.exception_type || 'Exception';
+        document.getElementById('dExceptionDetail').textContent = o.exception_type
+          ? `Gợi ý xử lý: kiểm tra nguyên nhân "${o.exception_type}", liên hệ hub / shipper, cập nhật note.`
+          : 'Gợi ý xử lý: xác nhận lỗi và cập nhật trạng thái.';
+      }else{
+        exBox.style.display = 'none';
+      }
+
+      // role-based buttons (demo)
+      const role = document.getElementById('dRole').value;
+      applyRoleButtons(role);
+
+      overlay.style.display = 'block';
+      requestAnimationFrame(()=> drawer.classList.add('open'));
+    }
+
+    function applyRoleButtons(role){
+      const btnUpdate = document.getElementById('btnUpdateStatus');
+      const btnMark = document.getElementById('btnMarkException');
+      const btnNote = document.getElementById('btnAddNote');
+
+      // default: hidden all, then show per role
+      btnUpdate.style.display = 'none';
+      btnMark.style.display = 'none';
+      btnNote.style.display = 'none';
+
+      if(role === 'Ops'){
+        btnUpdate.style.display = '';
+        btnMark.style.display = '';
+      }else if(role === 'CS'){
+        btnNote.style.display = '';
+        btnMark.style.display = '';
+      }else if(role === 'Sales'){
+        btnNote.style.display = '';
+      }else if(role === 'Manager'){
+        // manager: view-only but can add note
+        btnNote.style.display = '';
+      }
+    }
+
+    // =========================
+    // Simulated realtime refresh
+    // =========================
+    function simulateUpdate(){
+      // randomly pick a row and advance status
+      const o = pick(orders);
+      const old = o.current_status;
+      const idx = STATUSES.indexOf(o.current_status);
+
+      // if already delivered/failed -> maybe keep
+      if(old === "Delivered" || old === "Failed / Returned"){
+        // small chance flip exception only
+        if(Math.random() < 0.2){
+          o.exception = true;
+          o.exception_type = pick(EX_TYPES);
+          o.sla_late = Math.random() < 0.5;
+        }
+      }else{
+        // advance status
+        o.current_status = STATUSES[Math.min(idx + 1, STATUSES.length - 1)];
+        o.last_update = now();
+        o.sla_late = Math.random() < 0.22;
+        // exception chance
+        o.exception = Math.random() < 0.18;
+        o.exception_type = o.exception ? pick(EX_TYPES) : "";
+        // update tracking
+        o.tracking = buildTracking(o.current_status, o.last_update, o.hub);
+      }
+
+      // refresh current view
+      renderKPI();
+      applyFilters();
+      setLastRefreshed();
+
+      // highlight the updated row if visible
+      const tr = document.querySelector(`tr[data-id="${o.id}"]`);
+      if(tr){
+        tr.classList.add('highlight');
+        setTimeout(()=>tr.classList.remove('highlight'), 1300);
+      }
+    }
+
+    // =========================
+    // Init
+    // =========================
+    document.addEventListener('DOMContentLoaded', ()=>{
+      initMultiSelect('serviceDropdown');
+      initMultiSelect('statusDropdown');
+
+      renderKPI();
+      filtered = [...orders];
+      renderTable();
+      setLastRefreshed();
+
+      document.getElementById('btnApply').addEventListener('click', applyFilters);
+      document.getElementById('btnReset').addEventListener('click', resetFilters);
+
+      // refresh button: regenerate mock & apply
+      document.getElementById('btnRefresh').addEventListener('click', ()=>{
+        orders = buildMockOrders();
+        renderKPI();
+        applyFilters();
+        setLastRefreshed();
+      });
+
+      // live polling demo (every 35s)
+      setInterval(simulateUpdate, 35000);
+
+      // drawer handlers
+      document.getElementById('btnCloseDrawer').addEventListener('click', closeDrawer);
+      document.getElementById('drawerOverlay').addEventListener('click', closeDrawer);
+      document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') closeDrawer(); });
+
+      // role change
+      document.getElementById('dRole').addEventListener('change', (e)=> applyRoleButtons(e.target.value));
+
+      // footer actions (demo)
+      document.getElementById('btnAddNote').addEventListener('click', ()=>{
+        const note = document.getElementById('dNote').value.trim();
+        alert(note ? `Đã thêm note (demo): ${note}` : 'Vui lòng nhập note.');
+      });
+      document.getElementById('btnMarkException').addEventListener('click', ()=>{
+        alert('Đã đánh dấu Exception (demo).');
+      });
+      document.getElementById('btnUpdateStatus').addEventListener('click', ()=>{
+        alert('Update Status (demo): mở form cập nhật / gọi API backend.');
+      });
+    });
+  </script>
+</body>
+</html>

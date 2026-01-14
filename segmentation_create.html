@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tạo Segment</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+  <style>
+    :root{
+      --primary-blue:#0f172a;
+      --accent-blue:#3b82f6;
+      --bg-light:#f8fafc;
+      --card-white:#ffffff;
+      --text-main:#334155;
+      --text-muted:#64748b;
+      --border-color:#e2e8f0;
+      --success:#10b981;
+      --danger:#ef4444;
+      --warning:#f59e0b;
+      --purple:#6d28d9;
+      --shadow: 0 12px 24px rgba(0,0,0,0.06);
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family:'Inter', sans-serif;
+      background: var(--bg-light);
+      color: var(--text-main);
+    }
+    a{ color: inherit; }
+
+    .page{ padding: 1.25rem; max-width: 1680px; margin: 0 auto; }
+
+    /* Buttons (match ticketing) */
+    .btn{
+      border: 1px solid var(--border-color);
+      background: #fff;
+      color: var(--text-main);
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: .85rem;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      transition: .2s;
+      text-decoration:none;
+      white-space: nowrap;
+    }
+    .btn:hover{ transform: translateY(-1px); box-shadow: 0 10px 18px rgba(0,0,0,0.06); border-color:#cbd5e1; }
+    .btn.primary{ background: var(--accent-blue); border-color: var(--accent-blue); color:#fff; }
+    .btn.primary:hover{ box-shadow: 0 14px 26px rgba(59,130,246,0.22); }
+    .btn.ghost{ background: transparent; border-color: transparent; color: var(--text-muted); }
+    .btn.ghost:hover{ transform:none; box-shadow:none; background:#fff; border-color: var(--border-color); color: var(--text-main); }
+
+    .pill{
+      font-size: .7rem;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-weight: 700;
+      border: 1px solid transparent;
+      display:inline-flex;
+      align-items:center;
+      gap: 6px;
+      line-height: 1;
+      white-space: nowrap;
+    }
+    .pill.blue{ background:#e0f2fe; color:#0369a1; border-color:#bae6fd; }
+    .pill.green{ background:#dcfce7; color:#15803d; border-color:#bbf7d0; }
+    .pill.yellow{ background:#fef9c3; color:#a16207; border-color:#fde68a; }
+    .pill.red{ background:#fee2e2; color:#b91c1c; border-color:#fecaca; }
+    .pill.purple{ background:#ede9fe; color:#5b21b6; border-color:#ddd6fe; }
+    .pill.gray{ background:#f1f5f9; color:#475569; border-color:#e2e8f0; }
+
+    /* Sticky topbar like ticket_create */
+    .topbar{
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(248,250,252,0.85);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid rgba(226,232,240,0.9);
+      margin: -1.25rem -1.25rem 1rem -1.25rem;
+      padding: 0.9rem 1.25rem;
+    }
+    .topbar-inner{
+      max-width: 1680px;
+      margin: 0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .title{
+      display:flex;
+      flex-direction:column;
+      gap: 6px;
+      min-width: 260px;
+    }
+    .title h1{
+      margin:0;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--primary-blue);
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      letter-spacing: .2px;
+    }
+    .title .sub{
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items:center;
+      color: var(--text-muted);
+      font-size: .82rem;
+      font-weight: 700;
+    }
+    .actions{
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      flex-wrap: wrap;
+      justify-content:flex-end;
+    }
+
+    /* Cards */
+    .card{
+      background:#fff;
+      border:1px solid var(--border-color);
+      border-radius: 16px;
+      box-shadow: 0 6px 14px rgba(0,0,0,0.03);
+    }
+    .card-head{
+      padding: 1rem;
+      border-bottom: 1px solid var(--border-color);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .card-head h3{
+      margin:0;
+      font-size: .92rem;
+      font-weight: 700;
+      color: var(--primary-blue);
+      display:flex;
+      align-items:center;
+      gap: 10px;
+    }
+    .card-body{ padding: 1rem; }
+
+    /* Layout */
+    .grid{
+      display:grid;
+      grid-template-columns: 2.05fr 1fr;
+      gap: 1rem;
+      align-items:start;
+    }
+
+    /* Fields */
+    .field{ margin-bottom: 12px; }
+    .field label{
+      display:block;
+      font-size: .72rem;
+      color: var(--text-muted);
+      font-weight: 700;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: .25px;
+    }
+    .req::after{ content:" *"; color: var(--danger); font-weight: 700; }
+    .input, select, textarea{
+      width:100%;
+      padding: 11px 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      outline:none;
+      background: #fff;
+      font-size: .9rem;
+      color: var(--text-main);
+      font-family:'Inter', sans-serif;
+    }
+    textarea{ min-height: 120px; resize: vertical; }
+    .input:focus, select:focus, textarea:focus{
+      border-color: rgba(59,130,246,0.6);
+      box-shadow: 0 0 0 4px rgba(59,130,246,0.15);
+    }
+    .two{ display:grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .three{ display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+
+    .help{
+      margin-top: 6px;
+      font-size: .8rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      line-height: 1.35;
+    }
+
+    /* Rule Builder mock */
+    .rule-wrap{
+      border:1px dashed var(--border-color);
+      border-radius: 16px;
+      padding: 12px;
+      background:#fff;
+    }
+    .rule-row{
+      display:grid;
+      grid-template-columns: 1fr 1fr 1fr auto;
+      gap: 10px;
+      align-items:center;
+      padding: 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      background:#fff;
+      margin-bottom: 10px;
+    }
+    .rule-row:last-child{ margin-bottom: 0; }
+    .mini-btn{
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      background:#fff;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color: var(--text-muted);
+      transition: .2s;
+    }
+    .mini-btn:hover{
+      border-color:#cbd5e1;
+      color: var(--text-main);
+      box-shadow: 0 10px 18px rgba(0,0,0,0.06);
+      transform: translateY(-1px);
+    }
+    .joiner{
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      margin: 8px 0 12px 0;
+      color: var(--text-muted);
+      font-weight: 700;
+      font-size: .75rem;
+      text-transform: uppercase;
+      letter-spacing: .25px;
+    }
+
+    /* Chips for tags */
+    .chips{
+      display:flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items:center;
+      border: 1px dashed var(--border-color);
+      border-radius: 14px;
+      padding: 10px;
+      min-height: 46px;
+    }
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background:#f1f5f9;
+      border:1px solid #e2e8f0;
+      font-weight: 700;
+      font-size: .82rem;
+      color: #475569;
+    }
+    .chip i{ cursor:pointer; color:#64748b; }
+    .chip i:hover{ color:#0f172a; }
+    .chip-input{
+      border:none;
+      outline:none;
+      font-size: .9rem;
+      padding: 6px 6px;
+      flex: 1 1 160px;
+      min-width: 140px;
+      background: transparent;
+      color: var(--text-main);
+      font-weight: 700;
+    }
+
+    /* Right: Quick preview */
+    .kv{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .kv .item{
+      border:1px dashed var(--border-color);
+      border-radius: 14px;
+      padding: 10px 12px;
+      background:#fff;
+    }
+    .kv .k{ font-size:.72rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: .25px; }
+    .kv .v{ margin-top: 6px; font-size: .88rem; font-weight: 700; color: var(--primary-blue); display:flex; align-items:center; gap: 8px; flex-wrap: wrap; }
+
+    .note{
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 12px;
+      background: #fff;
+      color: var(--text-main);
+      font-size: .88rem;
+      line-height: 1.5;
+      font-weight: 600;
+    }
+
+    /* Members preview table */
+    .table-wrap{
+      border:1px solid var(--border-color);
+      border-radius: 14px;
+      overflow:auto;
+      max-height: 320px;
+    }
+    table{
+      width:100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: .88rem;
+    }
+    thead th{
+      text-align:left;
+      padding: 10px 12px;
+      color: var(--text-muted);
+      font-size: .72rem;
+      text-transform: uppercase;
+      letter-spacing: .25px;
+      font-weight: 700;
+      border-bottom: 1px solid var(--border-color);
+      background: #fff;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      white-space: nowrap;
+    }
+    tbody td{
+      padding: 12px 12px;
+      border-bottom: 1px solid var(--border-color);
+      vertical-align: top;
+    }
+    tbody tr:hover{ background:#f8fafc; }
+
+    /* Responsive */
+    @media (max-width: 1100px){
+      .grid{ grid-template-columns: 1fr; }
+      .three{ grid-template-columns: 1fr; }
+      .two{ grid-template-columns: 1fr; }
+      .kv{ grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 560px){
+      .kv{ grid-template-columns: 1fr; }
+      .topbar{ margin: -0.9rem -0.9rem 1rem -0.9rem; padding: .75rem .9rem; }
+      .page{ padding: .9rem; }
+      .actions{ justify-content:flex-start; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="title">
+        <h1><i class="fa-solid fa-square-plus" style="color:var(--accent-blue)"></i> Tạo Segment</h1>
+        <div class="sub">
+          <span class="pill gray"><i class="fa-solid fa-bullhorn"></i> Marketing</span>
+          <span class="pill blue"><i class="fa-solid fa-diagram-project"></i> Segmentation</span>
+          <span class="pill purple" id="navType"><i class="fa-solid fa-diagram-project"></i> Type: <b>Dynamic</b></span>
+          <span class="pill gray" id="navSource"><i class="fa-solid fa-database"></i> Source: <b>CRM</b></span>
+        </div>
+      </div>
+
+      <div class="actions">
+        <a class="btn" href="segmentation_wide_v3.html"><i class="fa-solid fa-arrow-left"></i> Quay lại</a>
+        <button class="btn ghost" data-action="reset"><i class="fa-solid fa-rotate"></i> Reset</button>
+        <button class="btn" data-action="save_draft"><i class="fa-regular fa-floppy-disk"></i> Lưu nháp</button>
+        <button class="btn primary" data-action="submit"><i class="fa-solid fa-check"></i> Tạo Segment</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="page">
+    <div class="grid">
+      <!-- LEFT: Main form -->
+      <div class="card">
+        <div class="card-head">
+          <h3><i class="fa-solid fa-pen-to-square" style="color:var(--accent-blue)"></i> Thông tin Segment</h3>
+          <span class="pill gray"><i class="fa-solid fa-circle-info"></i> Fields có dấu * là bắt buộc</span>
+        </div>
+
+        <div class="card-body">
+          <div class="two">
+            <div class="field">
+              <label class="req">Tên Segment</label>
+              <input id="segName" class="input" value="VIP Repeat Buyers (LTV ≥ 5M, 60 days)" placeholder="VD: VIP customers, Dormant customers..." />
+              <div class="help">Tên rõ ràng để team Marketing/Sales hiểu ngay mục đích.</div>
+            </div>
+
+            <div class="field">
+              <label class="req">Status</label>
+              <select id="status">
+                <option>Draft</option>
+                <option selected>Active</option>
+                <option>Paused</option>
+                <option>Archived</option>
+              </select>
+              <div class="help">Khi Active, segment có thể được dùng để chạy campaign.</div>
+            </div>
+          </div>
+
+          <div class="three">
+            <div class="field">
+              <label class="req">Type</label>
+              <select id="type">
+                <option selected>Dynamic</option>
+                <option>Static</option>
+              </select>
+              <div class="help">Dynamic = rule-based, tự refresh members. Static = import/manual list.</div>
+            </div>
+
+            <div class="field">
+              <label class="req">Source</label>
+              <select id="source">
+                <option selected>CRM</option>
+                <option>E-commerce</option>
+                <option>POS</option>
+                <option>Import</option>
+                <option>Finance Risk</option>
+              </select>
+              <div class="help">Chọn nguồn dữ liệu chính để gợi ý field trong rule.</div>
+            </div>
+
+            <div class="field">
+              <label>Refresh schedule</label>
+              <select id="schedule">
+                <option selected>Daily</option>
+                <option>Hourly</option>
+                <option>Weekly</option>
+                <option>Manual</option>
+              </select>
+              <div class="help">Sắp tới: cấu hình giờ chạy và SLA refresh.</div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Mô tả</label>
+            <textarea id="desc" placeholder="Mục đích sử dụng, note nội bộ...">Nhóm khách hàng mua lặp lại với giá trị cao. Dùng cho ưu đãi VIP / upsell combo.</textarea>
+          </div>
+
+          <div class="field">
+            <label>Tags</label>
+            <div class="chips" id="chips">
+              <span class="chip">vip <i class="fa-solid fa-xmark" title="remove"></i></span>
+              <span class="chip">repeat <i class="fa-solid fa-xmark" title="remove"></i></span>
+              <span class="chip">high_ltv <i class="fa-solid fa-xmark" title="remove"></i></span>
+              <input class="chip-input" id="chipInput" placeholder="Gõ tag rồi Enter..." />
+            </div>
+            <div class="help">Tag giúp filter nhanh trong segmentation.html (sắp tới).</div>
+          </div>
+
+          
+          <!-- Conditions Table -->
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:16px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span class="pill blue"><i class="fa-solid fa-filter"></i> Conditions</span>
+              <span class="pill gray"><i class="fa-solid fa-circle-info"></i> OR trống = AND</span>
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+              <button class="btn" id="addRow"><i class="fa-solid fa-plus"></i> Add Row</button>
+            </div>
+          </div>
+
+          <div class="table-wrap" style="margin-top:10px;">
+            <table id="conditionTable">
+              <thead>
+                <tr>
+                  <th style="width:40px"></th>
+                  <th style="width:60px">No.</th>
+                  <th style="width:90px">OR</th>
+                  <th style="width:60px">(</th>
+                  <th>Condition</th>
+                  <th style="width:120px">Operator</th>
+                  <th>Value</th>
+                  <th style="width:60px">)</th>
+                  <th style="width:60px"></th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+
+          <div class="help">
+            • Nếu cột OR để trống, hệ thống hiểu là <b>AND</b><br/>
+            • Dòng đầu tiên luôn bỏ qua OR<br/>
+            • Dấu ngoặc dùng cho điều kiện nâng cao
+          </div>
+<div style="margin-top: 12px;">
+            <div class="note" id="rulePreview" style="background:#f0f7ff;border-color:#bae6fd;color:#0b3b7b">
+              • LTV >= 5,000,000 AND Last Purchase <= 60 days AND Opt-in = TRUE
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Preview -->
+      <div class="card">
+        <div class="card-head">
+          <h3><i class="fa-solid fa-bolt" style="color:var(--warning)"></i> Quick Preview</h3>
+          <span class="pill gray"><i class="fa-solid fa-wand-magic-sparkles"></i> Live</span>
+        </div>
+
+        <div class="card-body">
+          <div class="kv">
+            <div class="item">
+              <div class="k">Type</div>
+              <div class="v" id="pvType"><span class="pill blue"><i class="fa-solid fa-diagram-project"></i> Dynamic</span></div>
+            </div>
+            <div class="item">
+              <div class="k">Source</div>
+              <div class="v" id="pvSource"><span class="pill gray"><i class="fa-solid fa-database"></i> CRM</span></div>
+            </div>
+            <div class="item">
+              <div class="k">Status</div>
+              <div class="v" id="pvStatus"><span class="pill green"><i class="fa-solid fa-circle"></i> Active</span></div>
+            </div>
+            <div class="item">
+              <div class="k">Est. Members</div>
+              <div class="v" id="pvMembers"><span class="pill gray"><i class="fa-solid fa-users"></i> 1.284</span></div>
+            </div>
+          </div>
+
+          <div style="margin-top:12px;">
+            <div class="note">
+              <b>Rule summary</b><br/>
+              <span class="pill gray" id="pvRuleShort">LTV ≥ 5M • 60 days • Opt-in</span>
+              <div class="help" style="margin-top:8px;">Khi đổi rule/type/source, preview sẽ cập nhật.</div>
+            </div>
+          </div>
+
+          <div style="margin-top:12px;">
+            <div class="note">
+              <b>Gợi ý sử dụng</b><br/>
+              • Nếu chạy campaign: check opt-in + blacklist + quota<br/>
+              • Với segment lớn: chia theo City/Channel để tối ưu hiệu quả<br/>
+              • Segment Static: nhớ cập nhật danh sách định kỳ
+            </div>
+          </div>
+
+          <div style="margin-top:12px;">
+            <div class="note">
+              <b>Members Preview</b><br/>
+              <span class="pill gray" id="mpMeta"><i class="fa-regular fa-eye"></i> 5 mẫu gần nhất</span>
+              <div class="table-wrap" style="margin-top:10px;">
+                <table>
+                  <thead>
+                    <tr>
+                      <th style="width:180px">Customer</th>
+                      <th style="width:140px">Phone</th>
+                      <th>Email</th>
+                      <th style="width:120px">LTV</th>
+                    </tr>
+                  </thead>
+                  <tbody id="mpTbody"></tbody>
+                </table>
+              </div>
+              <div class="help">Sắp tới: mở <b>segmentation_detail.html</b> để xem full list + export.</div>
+            </div>
+          </div>
+
+          <div style="margin-top:12px;">
+            <div class="note">
+              <b>Liên kết sắp phát triển</b><br/>
+              <span class="pill gray">segmentation_detail.html</span>
+              <span class="pill gray">segment_rules.html</span>
+              <span class="pill gray">campaign_create.html</span>
+              <span class="pill gray">automation_rules.html</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  
+  <script>
+    function openPage(page, params = {}) {
+      const qs = new URLSearchParams(params).toString();
+      window.location.href = qs ? `${page}?${qs}` : page;
+    }
+    const $ = (id) => document.getElementById(id);
+
+    // ===== Tags (chips) =====
+    function bindChipEvents(){
+      document.querySelectorAll("#chips .chip i").forEach(x => {
+        x.onclick = () => x.closest(".chip").remove();
+      });
+    }
+    bindChipEvents();
+
+    $("chipInput").addEventListener("keydown", (e) => {
+      if(e.key !== "Enter") return;
+      e.preventDefault();
+      const val = e.target.value.trim();
+      if(!val) return;
+
+      const chip = document.createElement("span");
+      chip.className = "chip";
+      chip.innerHTML = `${val} <i class="fa-solid fa-xmark" title="remove"></i>`;
+      $("chips").insertBefore(chip, $("chipInput"));
+      e.target.value = "";
+      bindChipEvents();
+    });
+
+    // ===== Condition Table Logic (OR empty => AND) =====
+    const CONDITIONS = ["Customer Group","Country","City","LTV","Total Orders","Avg Order","Last Purchase","Channel","Opt-in","Blacklist"];
+    const OPERATORS = ["=","!=","<",">","<=",">=","IN","NOT IN","CONTAINS"];
+
+    const tbody = document.querySelector("#conditionTable tbody");
+
+    function renumber(){
+      Array.from(tbody.children).forEach((tr, i) => {
+        const noCell = tr.querySelector("td[data-col='no']");
+        if(noCell) noCell.textContent = String(i+1);
+        // first row: disable OR selector
+        const logic = tr.querySelector("select.logic");
+        if(logic){
+          logic.disabled = (i === 0);
+          if(i === 0) logic.value = "";
+        }
+      });
+    }
+
+    function addConditionRow(data = {}) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td><input type="checkbox" /></td>
+        <td data-col="no"></td>
+        <td>
+          <select class="input logic">
+            <option value=""></option>
+            <option value="OR" ${data.or==="OR"?"selected":""}>OR</option>
+          </select>
+        </td>
+        <td>
+          <select class="input openp">
+            <option value=""></option>
+            <option value="(" ${(data.open==="(")?"selected":""}>(</option>
+          </select>
+        </td>
+        <td>
+          <select class="input field">
+            ${CONDITIONS.map(c=>`<option value="${c}" ${c===data.field?"selected":""}>${c}</option>`).join("")}
+          </select>
+        </td>
+        <td>
+          <select class="input op">
+            ${OPERATORS.map(o=>`<option value="${o}" ${o===data.op?"selected":""}>${o}</option>`).join("")}
+          </select>
+        </td>
+        <td><input class="input value" value="${data.value||""}" placeholder="Value..." /></td>
+        <td>
+          <select class="input closep">
+            <option value=""></option>
+            <option value=")" ${(data.close===")")?"selected":""}>)</option>
+          </select>
+        </td>
+        <td>
+          <button type="button" class="mini-btn remove" title="Remove"><i class="fa-solid fa-trash"></i></button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+
+      tr.querySelector(".remove").addEventListener("click", (e) => {
+        e.preventDefault();
+        tr.remove();
+        renumber();
+        updatePreview();
+      });
+
+      // Update preview on any change
+      tr.querySelectorAll("select, input").forEach(el => {
+        el.addEventListener("change", updatePreview);
+        el.addEventListener("input", updatePreview);
+      });
+
+      renumber();
+      updatePreview();
+    }
+
+    document.getElementById("addRow").addEventListener("click", (e) => {
+      e.preventDefault();
+      addConditionRow({ field:"City", op:"IN", value:"HCM, HN" });
+    });
+
+    function buildExpression(){
+      const rows = Array.from(tbody.querySelectorAll("tr"));
+      if(!rows.length) return "";
+      const parts = [];
+      rows.forEach((tr, idx) => {
+        const orVal = tr.querySelector("select.logic")?.value || "";
+        const openp = tr.querySelector("select.openp")?.value || "";
+        const field = tr.querySelector("select.field")?.value || "";
+        const op = tr.querySelector("select.op")?.value || "";
+        const value = (tr.querySelector("input.value")?.value || "").trim();
+        const closep = tr.querySelector("select.closep")?.value || "";
+
+        const logic = (idx === 0) ? "" : (orVal === "OR" ? "OR" : "AND"); // OR empty => AND
+        const cond = `${openp}${field} ${op} ${value}${closep}`.trim();
+
+        parts.push((logic ? `${logic} ` : "") + cond);
+      });
+      return parts.join(" ").replace(/\s+/g, " ").trim();
+    }
+
+    // ===== Members preview mock =====
+    const membersSample = [
+      { name:"ABC Trading", phone:"0909 111 222", email:"ops@abctrading.vn", ltv: "8,200,000" },
+      { name:"Nova Retail", phone:"0933 222 111", email:"cs@novaretail.vn", ltv: "6,500,000" },
+      { name:"XYZ Logistics", phone:"0901 888 999", email:"sale@xyzlog.vn", ltv: "12,900,000" },
+      { name:"Cửa hàng Minh Phát", phone:"0977 000 888", email:"minhphat@gmail.com", ltv: "5,100,000" },
+      { name:"Sendo Shop", phone:"0912 444 333", email:"owner@sendoshop.vn", ltv: "7,300,000" }
+    ];
+    function renderMembers(){
+      $("mpTbody").innerHTML = membersSample.map(m => `
+        <tr>
+          <td style="font-weight:800;color:var(--primary-blue)">${m.name}</td>
+          <td style="color:var(--text-muted);font-weight:700">${m.phone}</td>
+          <td>${m.email}</td>
+          <td><span class="pill gray"><i class="fa-solid fa-coins"></i> ${m.ltv}</span></td>
+        </tr>
+      `).join("");
+    }
+
+    function updatePreview(){
+      const type = $("type").value;
+      const source = $("source").value;
+      const status = $("status").value;
+
+      $("navType").innerHTML = `<i class="fa-solid fa-diagram-project"></i> Type: <b>${type}</b>`;
+      $("navSource").innerHTML = `<i class="fa-solid fa-database"></i> Source: <b>${source}</b>`;
+
+      $("pvType").innerHTML = `<span class="pill ${type==="Dynamic"?"blue":"purple"}"><i class="fa-solid fa-diagram-project"></i> ${type}</span>`;
+      $("pvSource").innerHTML = `<span class="pill gray"><i class="fa-solid fa-database"></i> ${source}</span>`;
+
+      const stCls = status==="Active"?"green":(status==="Paused"?"yellow":(status==="Draft"?"gray":"gray"));
+      $("pvStatus").innerHTML = `<span class="pill ${stCls}"><i class="fa-solid fa-circle"></i> ${status}</span>`;
+
+      const expr = buildExpression();
+      $("rulePreview").textContent = expr ? `• ${expr}` : "• (No conditions)";
+
+      // short
+      const short = expr ? expr.split("AND").join("•").split("OR").join("•").slice(0, 70) : "—";
+      $("pvRuleShort").textContent = short;
+
+      // mock members estimation
+      const rows = tbody.querySelectorAll("tr").length || 1;
+      const base = type==="Dynamic" ? 1284 : 58;
+      const factor = source==="E-commerce" ? 1.2 : (source==="Finance Risk" ? 0.3 : 1.0);
+      const est = Math.max(0, Math.round(base * factor * (rows >= 3 ? 1.0 : 1.15)));
+      $("pvMembers").innerHTML = `<span class="pill gray"><i class="fa-solid fa-users"></i> ${est.toLocaleString('vi-VN')}</span>`;
+    }
+
+    // ===== Top actions =====
+    document.addEventListener("click", (e) => {
+      const el = e.target.closest("[data-action]");
+      if(!el) return;
+      const action = el.dataset.action;
+
+      if(action === "reset"){
+        if(confirm("Reset về dữ liệu mẫu?")) window.location.reload();
+        return;
+      }
+      if(action === "save_draft"){
+        alert("Đã lưu nháp (mock).");
+        openPage("segmentation_wide_v3.html");
+        return;
+      }
+      if(action === "submit"){
+        alert("Đã tạo Segment (mock).");
+        openPage("segmentation_detail.html", { id: "SEG-NEW-001" });
+        return;
+      }
+    });
+
+    // Bind updates
+    ["type","source","status","segName","desc","schedule"].forEach(id => {
+      $(id).addEventListener("input", updatePreview);
+      $(id).addEventListener("change", updatePreview);
+    });
+
+    // ===== Init sample rows (with parentheses + OR like screenshot) =====
+    addConditionRow({ open:"(", field:"Customer Group", op:"=", value:"A", close:")" });
+    addConditionRow({ or:"OR", open:"(", field:"Customer Group", op:"=", value:"B", close:")" });
+    addConditionRow({ or:"", open:"(", field:"Country", op:">=", value:"3", close:")" });
+
+    renderMembers();
+    updatePreview();
+  </script>
+
+</body>
+</html>

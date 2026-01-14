@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Danh sách khách hàng</title>
+  <!-- Import fonts and icons matching the main portal -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary-blue:#0f172a;
+      --accent-blue:#3b82f6;
+      --bg-light:#f8fafc;
+      --card-white:#ffffff;
+      --text-main:#334155;
+      --text-muted:#64748b;
+      --border-color:#e2e8f0;
+    }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:'Inter', sans-serif; background:var(--bg-light); color:var(--text-main); }
+
+    /* Ensure the page fills the viewport height when embedded in the main portal */
+    html, body { height: 100%; }
+    .page { min-height: 100vh; }
+    .page { padding:1.5rem 2rem; }
+    .page h1 { font-size:1.4rem; font-weight:700; margin:0 0 0.3rem 0; }
+    .page p.desc { font-size:0.85rem; color:var(--text-muted); margin:0 0 1rem 0; }
+    .widget { background:var(--card-white); border:1px solid var(--border-color); border-radius:12px; padding:1rem; margin-bottom:1.5rem; }
+    .widget h3 { font-size:1rem; font-weight:600; margin-bottom:0.8rem; }
+    .filters { display:flex; flex-wrap:wrap; gap:1rem; margin-bottom:0.8rem; }
+    .filter { display:flex; flex-direction:column; font-size:0.8rem; }
+    .filter label { margin-bottom:0.3rem; color:var(--text-muted); font-size:0.75rem; }
+    .filter select, .filter input { padding:0.4rem 0.6rem; border:1px solid var(--border-color); border-radius:6px; background:var(--card-white); color:var(--text-main); font-size:0.8rem; min-width:150px; }
+    .filter input:focus, .filter select:focus { outline:none; border-color:var(--accent-blue); }
+    .table-wrapper { overflow-x:auto; }
+    table.customer-table { width:100%; border-collapse:collapse; font-size:0.8rem; }
+    table.customer-table th,
+    table.customer-table td {
+      padding:0.7rem 0.6rem;
+      border-bottom:1px solid var(--border-color);
+      text-align:left;
+      font-size:0.85rem;
+    }
+    table.customer-table th {
+      color:var(--text-muted);
+      font-weight:600;
+      position:sticky;
+      top:0;
+      background:var(--card-white);
+      z-index:1;
+    }
+
+    /* Row edit link in table */
+    .row-edit-link {
+      background:var(--accent-blue);
+      color:#fff;
+      text-decoration:none;
+      border:none;
+      border-radius:6px;
+      padding:0.3rem 0.8rem;
+      font-size:0.75rem;
+      cursor:pointer;
+      display:inline-block;
+    }
+    .row-edit-link:hover {
+      background:rgba(59,130,246,0.8);
+    }
+    table.customer-table tr.module-card {
+      cursor:pointer;
+      transition: background-color .15s, transform .05s;
+    }
+    table.customer-table tr.module-card:hover {
+      background:#f1f5f9;
+      transform: translateX(3px);
+    }
+
+    /* Header row and back button for navigation */
+    .header-row {
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:1rem;
+      margin-bottom:1rem;
+    }
+    .back-button {
+      background: var(--border-color);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 0.4rem 0.8rem;
+      font-size: 0.8rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .back-button i {
+      font-size: 0.85rem;
+    }
+    .back-button:hover {
+      background: var(--accent-blue);
+      color: #fff;
+      border-color: var(--accent-blue);
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <!-- Header with back button and title -->
+    <div class="header-row">
+      <a href="javascript:history.back()" class="back-button">
+        <i class="fas fa-arrow-left"></i>
+        <span>Quay lại</span>
+      </a>
+      <div>
+        <h1>Khách hàng (360º)</h1>
+        <p class="desc">Quản lý danh sách khách hàng, tra cứu và lọc theo nhiều tiêu chí.</p>
+      </div>
+    </div>
+    <div class="widget">
+      <h3>Danh sách khách hàng</h3>
+      <div class="filters">
+        <div class="filter">
+          <label for="filterType">Loại khách</label>
+          <select id="filterType">
+            <option value="">Tất cả</option>
+            <option value="b2b">B2B</option>
+            <option value="b2c">B2C</option>
+          </select>
+        </div>
+        <div class="filter">
+          <label for="filterSegment">Phân khúc</label>
+          <select id="filterSegment">
+            <option value="">Tất cả</option>
+            <option value="key account">Key Account</option>
+            <option value="smb">SMB</option>
+          </select>
+        </div>
+        <div class="filter">
+          <label for="filterName">Tìm kiếm</label>
+          <input type="text" id="filterName" placeholder="Tên khách hàng...">
+        </div>
+      </div>
+      <div class="table-wrapper">
+        <table class="customer-table" id="customerTable">
+          <thead>
+            <tr>
+              <th>Tên khách hàng</th>
+              <th>Loại khách</th>
+              <th>Phân khúc</th>
+              <th>#Đơn</th>
+              <th>Doanh thu</th>
+              <th>Chỉnh sửa</th>
+            </tr>
+          </thead>
+            <tbody>
+            <tr class="module-card" data-page="customer_detail_abc.html">
+              <td>Cty ABC Trading</td>
+              <td>B2B</td>
+              <td>Key Account</td>
+              <td>2,560</td>
+              <td>4.5B</td>
+              <td><a href="master_data_form.html" class="row-edit-link" onclick="event.stopPropagation();">Chỉnh sửa</a></td>
+            </tr>
+            <tr class="module-card" data-page="customer_detail_xyz.html">
+              <td>Shop XYZ</td>
+              <td>B2C</td>
+              <td>SMB</td>
+              <td>1,800</td>
+              <td>2.8B</td>
+              <td><a href="master_data_form.html" class="row-edit-link" onclick="event.stopPropagation();">Chỉnh sửa</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Filter functionality: hide/show rows based on type, segment, name
+    document.addEventListener('DOMContentLoaded', function() {
+      function applyFilters() {
+        const typeVal = document.getElementById('filterType').value.toLowerCase();
+        const segVal = document.getElementById('filterSegment').value.toLowerCase();
+        const nameVal = document.getElementById('filterName').value.toLowerCase();
+        const rows = document.querySelectorAll('#customerTable tbody tr');
+        rows.forEach(row => {
+          const cells = row.children;
+          const name = cells[0].textContent.trim().toLowerCase();
+          const type = cells[1].textContent.trim().toLowerCase();
+          const seg = cells[2].textContent.trim().toLowerCase();
+          let show = true;
+          if (typeVal && type !== typeVal) show = false;
+          if (segVal && seg !== segVal) show = false;
+          if (nameVal && !name.includes(nameVal)) show = false;
+          row.style.display = show ? '' : 'none';
+        });
+      }
+      document.getElementById('filterType').addEventListener('change', applyFilters);
+      document.getElementById('filterSegment').addEventListener('change', applyFilters);
+      document.getElementById('filterName').addEventListener('input', applyFilters);
+
+      // Navigate to customer detail page when clicking a row
+      // Each row has data-page attribute specifying the detail HTML file.
+      // When a row is clicked, navigate within the current iframe; this allows
+      // the parent page (with sidebar) to remain unchanged while the detail
+      // page loads as a new view.
+      const customerRows = document.querySelectorAll('#customerTable tbody tr[data-page]');
+      customerRows.forEach(row => {
+        row.addEventListener('click', () => {
+          const page = row.getAttribute('data-page');
+          if (page) {
+            window.location.href = page;
+          }
+        });
+      });
+
+      // Data for customers (used to prefill edit form)
+      const customersData = {
+        'Cty ABC Trading': {
+          name: 'Cty ABC Trading',
+          type: 'b2b',
+          segment: 'key account',
+          orders: 2560,
+          revenue: '4.5B',
+          contactName: 'Nguyễn Văn A',
+          contactEmail: 'a.nguyen@abc.com',
+          contactPhone: '0901 234 567'
+        },
+        'Shop XYZ': {
+          name: 'Shop XYZ',
+          type: 'b2c',
+          segment: 'smb',
+          orders: 1800,
+          revenue: '2.8B',
+          contactName: 'Phạm Văn D',
+          contactEmail: 'd.pham@xyzshop.com',
+          contactPhone: '0910 123 456'
+        }
+      };
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tạo Ticket</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+  <style>
+    :root{
+      --primary-blue:#0f172a;
+      --accent-blue:#3b82f6;
+      --bg-light:#f8fafc;
+      --card-white:#ffffff;
+      --text-main:#334155;
+      --text-muted:#64748b;
+      --border-color:#e2e8f0;
+      --success:#10b981;
+      --danger:#ef4444;
+      --warning:#f59e0b;
+      --purple:#6d28d9;
+      --shadow: 0 12px 24px rgba(0,0,0,0.06);
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family:'Inter', sans-serif;
+      background: var(--bg-light);
+      color: var(--text-main);
+    }
+    a{ color: inherit; }
+
+    .page{
+      padding: 1.25rem;
+      max-width: 1650px;
+      margin: 0 auto;
+    }
+
+    /* Buttons */
+    .btn{
+      border: 1px solid var(--border-color);
+      background: #fff;
+      color: var(--text-main);
+      padding: 9px 10px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: .82rem;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      transition: .2s;
+      text-decoration:none;
+      white-space: nowrap;
+    }
+    .btn:hover{ transform: translateY(-1px); box-shadow: 0 10px 18px rgba(0,0,0,0.06); border-color:#cbd5e1; }
+    .btn.primary{
+      background: var(--accent-blue);
+      border-color: var(--accent-blue);
+      color: #fff;
+    }
+    .btn.primary:hover{ box-shadow: 0 14px 26px rgba(59,130,246,0.22); }
+    .btn.danger{
+      background: var(--danger);
+      border-color: var(--danger);
+      color:#fff;
+    }
+    .btn.ghost{
+      background: transparent;
+      border-color: transparent;
+      color: var(--text-muted);
+    }
+    .btn.ghost:hover{ transform:none; box-shadow:none; background:#fff; border-color: var(--border-color); color: var(--text-main); }
+
+    /* Pills */
+    .pill{
+      font-size: .72rem;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-weight: 700;
+      border: 1px solid transparent;
+      display:inline-flex;
+      align-items:center;
+      gap: 6px;
+      line-height: 1;
+      white-space: nowrap;
+    }
+    .pill.blue{ background:#e0f2fe; color:#0369a1; border-color:#bae6fd; }
+    .pill.green{ background:#dcfce7; color:#15803d; border-color:#bbf7d0; }
+    .pill.yellow{ background:#fef9c3; color:#a16207; border-color:#fde68a; }
+    .pill.red{ background:#fee2e2; color:#b91c1c; border-color:#fecaca; }
+    .pill.purple{ background:#ede9fe; color:#5b21b6; border-color:#ddd6fe; }
+    .pill.gray{ background:#f1f5f9; color:#475569; border-color:#e2e8f0; }
+
+    /* Header / Sticky bar */
+    .topbar{
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(248,250,252,0.85);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid rgba(226,232,240,0.9);
+      margin: -1.25rem -1.25rem 1rem -1.25rem;
+      padding: 0.9rem 1.25rem;
+    }
+    .topbar-inner{
+      max-width: 1650;
+      margin: 0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .title{
+      display:flex;
+      flex-direction:column;
+      gap: 6px;
+      min-width: 260px;
+    }
+    .title h1{
+      margin:0;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--primary-blue);
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      letter-spacing: .2px;
+    }
+    .title .sub{
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items:center;
+      color: var(--text-muted);
+      font-size: .82rem;
+      font-weight: 700;
+    }
+    .actions{
+      display:flex;
+      gap: 8px;
+      align-items:center;
+      flex-wrap: wrap;
+      justify-content:flex-end;
+    }
+
+    /* Cards + layout */
+    .grid{
+      display:grid;
+      grid-template-columns: 2.05fr 1fr;
+      gap: 1rem;
+      align-items:start;
+    }
+    .card{
+      background:#fff;
+      border:1px solid var(--border-color);
+      border-radius: 16px;
+      box-shadow: 0 6px 14px rgba(0,0,0,0.03);
+    }
+    .card-head{
+      padding: 1rem;
+      border-bottom: 1px solid var(--border-color);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .card-head h3{
+      margin:0;
+      font-size: .92rem;
+      font-weight: 700;
+      color: var(--primary-blue);
+      display:flex;
+      align-items:center;
+      gap: 10px;
+    }
+    .card-body{ padding: 1rem; }
+
+    /* Fields */
+    .field{
+      position:relative;
+      margin-bottom: 12px;
+    }
+    .field label{
+      display:block;
+      font-size: .72rem;
+      color: var(--text-muted);
+      font-weight: 700;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: .25px;
+    }
+    .req::after{
+      content:" *";
+      color: var(--danger);
+      font-weight: 700;
+    }
+    .input, select, textarea{
+      width:100%;
+      padding: 11px 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      outline:none;
+      background: #fff;
+      font-size: .9rem;
+      color: var(--text-main);
+      font-family:'Inter', sans-serif;
+    }
+    textarea{ min-height: 120px; resize: vertical; }
+    .input:focus, select:focus, textarea:focus{
+      border-color: rgba(59,130,246,0.6);
+      box-shadow: 0 0 0 4px rgba(59,130,246,0.15);
+    }
+    .two{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .three{
+      display:grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+    }
+    .help{
+      margin-top: 6px;
+      font-size: .8rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      line-height: 1.35;
+    }
+
+    /* Tag chips */
+    .chips{
+      display:flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items:center;
+      border: 1px dashed var(--border-color);
+      border-radius: 14px;
+      padding: 10px;
+      min-height: 46px;
+    }
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background:#f1f5f9;
+      border:1px solid #e2e8f0;
+      font-weight: 700;
+      font-size: .82rem;
+      color: #475569;
+    }
+    .chip i{ cursor:pointer; color:#64748b; }
+    .chip i:hover{ color:#0f172a; }
+    .chip-input{
+      border:none;
+      outline:none;
+      font-size: .9rem;
+      padding: 6px 6px;
+      flex: 1 1 160px;
+      min-width: 140px;
+      background: transparent;
+      color: var(--text-main);
+      font-weight: 700;
+    }
+
+    /* Related Alerts table */
+    table{
+      width:100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: .88rem;
+    }
+    thead th{
+      text-align:left;
+      padding: 10px 12px;
+      color: var(--text-muted);
+      font-size: .72rem;
+      text-transform: uppercase;
+      letter-spacing: .25px;
+      font-weight: 700;
+      border-bottom: 1px solid var(--border-color);
+      background: #fff;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+    tbody td{
+      padding: 12px 12px;
+      border-bottom: 1px solid var(--border-color);
+      vertical-align: top;
+    }
+    tbody tr:hover{ background: #f8fafc; }
+    .table-wrap{
+      border:1px solid var(--border-color);
+      border-radius: 14px;
+      overflow:auto;
+      max-height: 360px;
+    }
+    .row-actions{
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      white-space: nowrap;
+    }
+    .row-actions i{ cursor:pointer; }
+    .row-actions i:hover{ transform: translateY(-1px); }
+
+    /* Right: Quick Preview */
+    .kv{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .kv .item{
+      border:1px dashed var(--border-color);
+      border-radius: 14px;
+      padding: 10px 12px;
+      background:#fff;
+    }
+    .kv .k{ font-size:.72rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: .25px; }
+    .kv .v{ margin-top: 6px; font-size: .88rem; font-weight: 700; color: var(--primary-blue); display:flex; align-items:center; gap: 8px; flex-wrap: wrap; }
+
+    .note{
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 12px;
+      background: #fff;
+      color: var(--text-main);
+      font-size: .88rem;
+      line-height: 1.5;
+    }
+    .muted{ color: var(--text-muted); font-weight: 700; }
+
+    /* Modal (select alerts) */
+    .modal{
+      position: fixed;
+      inset: 0;
+      background: rgba(15,23,42,0.55);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding: 1rem;
+      z-index: 100;
+    }
+    .modal.open{ display:flex; }
+    .modal-card{
+      width: min(1120px, 100%);
+      background:#fff;
+      border-radius: 18px;
+      border:1px solid var(--border-color);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .modal-head{
+      padding: 1rem;
+      border-bottom: 1px solid var(--border-color);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .modal-head h3{
+      margin:0;
+      font-size: .95rem;
+      font-weight: 700;
+      color: var(--primary-blue);
+      display:flex;
+      align-items:center;
+      gap: 10px;
+    }
+    .modal-body{ padding: 1rem; }
+    .modal-grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .modal-foot{
+      padding: 1rem;
+      border-top: 1px solid var(--border-color);
+      display:flex;
+      justify-content:flex-end;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .pick-list{
+      border:1px solid var(--border-color);
+      border-radius: 14px;
+      overflow:auto;
+      max-height: 320px;
+    }
+    .pick-row{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap: 10px;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border-color);
+      cursor:pointer;
+    }
+    .pick-row:hover{ background:#f8fafc; }
+    .pick-row:last-child{ border-bottom:none; }
+    .pick-row .left{
+      display:flex;
+      flex-direction:column;
+      gap: 4px;
+    }
+    .pick-row .code{ font-weight: 700; color: var(--primary-blue); }
+    .pick-row .small{ font-size: .82rem; color: var(--text-muted); font-weight: 650; }
+    .pick-row input{ transform: translateY(2px); }
+
+
+    /* Wider layout tune */
+    @media (min-width: 1200px){
+      .card-body{ padding: 1.1rem; }
+      .kv .item{ padding: 12px 14px; }
+      textarea{ min-height: 150px; }
+    }
+
+
+    /* Topbar buttons responsive fix */
+    .actions .btn{ line-height: 1; }
+    @media (max-width: 900px){
+      .topbar-inner{ gap: .75rem; }
+      .actions{ width: 100%; justify-content: flex-start; }
+      .actions .btn{ padding: 8px 10px; font-size: .8rem; }
+      .title{ min-width: 0; }
+    }
+    @media (max-width: 560px){
+      .actions{ gap: 6px; }
+      .actions .btn{ padding: 8px 9px; font-size: .78rem; border-radius: 12px; }
+      /* ensure primary button doesn't overflow */
+      .btn.primary{ white-space: nowrap; }
+    }
+
+    /* Responsive */
+    @media (max-width: 1100px){
+      .grid{ grid-template-columns: 1fr; }
+      .three{ grid-template-columns: 1fr; }
+      .two{ grid-template-columns: 1fr; }
+      .kv{ grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 560px){
+      .kv{ grid-template-columns: 1fr; }
+      .topbar{ margin: -0.9rem -0.9rem 1rem -0.9rem; padding: .75rem .9rem; }
+      .page{ padding: .9rem; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="title">
+        <h1><i class="fa-solid fa-square-plus" style="color:var(--accent-blue)"></i> Tạo Ticket</h1>
+        <div class="sub">
+          <span class="pill gray"><i class="fa-solid fa-route"></i> CSKH</span>
+          <span class="pill blue"><i class="fa-solid fa-ticket"></i> Ticketing</span>
+          <span class="pill purple" id="navSeverity"><i class="fa-solid fa-triangle-exclamation"></i> Severity: <b>Medium</b></span>
+          <span class="pill gray" id="navChannel"><i class="fa-solid fa-share-nodes"></i> Channel: <b>Hotline</b></span>
+        </div>
+      </div>
+
+      <div class="actions">
+        <a class="btn" href="ticketing.html"><i class="fa-solid fa-arrow-left"></i> Quay lại</a>
+        <button class="btn ghost" data-action="reset"><i class="fa-solid fa-rotate"></i> Reset</button>
+        <button class="btn" data-action="save_draft"><i class="fa-regular fa-floppy-disk"></i> Lưu nháp</button>
+        <button class="btn primary" data-action="submit"><i class="fa-solid fa-paper-plane"></i> Tạo Ticket</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="page">
+    <div class="grid">
+      <!-- LEFT: Main form -->
+      <div class="card">
+        <div class="card-head">
+          <h3><i class="fa-solid fa-pen-to-square" style="color:var(--accent-blue)"></i> Thông tin Ticket</h3>
+          <span class="pill gray"><i class="fa-solid fa-circle-info"></i> Fields có dấu * là bắt buộc</span>
+        </div>
+
+        <div class="card-body">
+          <div class="two">
+            <div class="field">
+              <label class="req">Khách hàng</label>
+              <select id="customer">
+                <option selected>ABC Trading</option>
+                <option>XYZ Logistics</option>
+                <option>Nova Retail</option>
+                <option>Sendo Shop</option>
+                <option>Cửa hàng Minh Phát</option>
+              </select>
+              <div class="help">Gợi ý: chọn khách hàng để tự động gợi ý người liên hệ & kênh ưu tiên.</div>
+            </div>
+
+            <div class="field">
+              <label>Người liên hệ</label>
+              <select id="contact">
+                <option selected>Nguyễn Thu Huyền • 0909 111 222</option>
+                <option>Trần Minh • 0933 222 111</option>
+                <option>Lê An • 0901 888 999</option>
+              </select>
+              <div class="help">Có thể link sang contact_detail.html sau.</div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="req">Subject</label>
+            <input id="subject" class="input" value="Khiếu nại giao trễ - đơn HCM → HN" placeholder="VD: Khiếu nại giao trễ, Mất kiện hàng..." />
+          </div>
+
+          <div class="three">
+            <div class="field">
+              <label class="req">Channel</label>
+              <select id="channel">
+                <option selected>Hotline</option>
+                <option>Email</option>
+                <option>Zalo</option>
+                <option>Web</option>
+                <option>Facebook</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label class="req">Severity</label>
+              <select id="severity">
+                <option>Low</option>
+                <option selected>Medium</option>
+                <option>High</option>
+                <option>Critical</option>
+              </select>
+              <div class="help">Severity sẽ cập nhật trên thanh top bar & Quick Preview.</div>
+            </div>
+
+            <div class="field">
+              <label class="req">Priority</label>
+              <select id="priority">
+                <option>Low</option>
+                <option selected>Medium</option>
+                <option>High</option>
+                <option>Critical</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="two">
+            <div class="field">
+              <label>Order / Vận đơn liên quan</label>
+              <input id="refOrder" class="input" value="ORD-102884" placeholder="VD: ORD-xxxxx, AWB-xxxxx..." />
+            </div>
+            <div class="field">
+              <label>Nhóm vấn đề</label>
+              <select id="category">
+                <option selected>Delivery Delay</option>
+                <option>Lost / Missing</option>
+                <option>COD Discrepancy</option>
+                <option>Address Change</option>
+                <option>Driver Attitude</option>
+                <option>Damaged</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Mô tả chi tiết</label>
+            <textarea id="desc" placeholder="Nhập mô tả sự cố, bối cảnh, yêu cầu từ khách...">Khách phản ánh đơn giao trễ 1 ngày. Đề nghị kiểm tra tuyến và cập nhật ETA cụ thể.</textarea>
+          </div>
+
+          <div class="field">
+            <label>Tags</label>
+            <div class="chips" id="chips">
+              <span class="chip">delay <i class="fa-solid fa-xmark" title="remove"></i></span>
+              <span class="chip">urgent <i class="fa-solid fa-xmark" title="remove"></i></span>
+              <input class="chip-input" id="chipInput" placeholder="Gõ tag rồi Enter..." />
+            </div>
+            <div class="help">Tag giúp filter nhanh trong ticketing.html (sắp tới).</div>
+          </div>
+
+          <!-- Related alerts -->
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:16px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span class="pill gray"><i class="fa-solid fa-link"></i> Related Alerts</span>
+              <span class="muted" id="alertsCount">2 alerts linked</span>
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+              <button class="btn" data-action="add_alert"><i class="fa-solid fa-plus"></i> Add Alerts</button>
+              <button class="btn ghost" data-action="clear_alerts"><i class="fa-solid fa-broom"></i> Clear</button>
+            </div>
+          </div>
+
+          <div class="table-wrap" style="margin-top:10px;">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:140px">Alert</th>
+                  <th>Title</th>
+                  <th style="width:140px">Severity</th>
+                  <th style="width:140px">Created</th>
+                  <th style="width:90px">Action</th>
+                </tr>
+              </thead>
+              <tbody id="alertsTbody">
+                <!-- injected -->
+              </tbody>
+            </table>
+          </div>
+
+          <div class="help" style="margin-top:10px;">
+            Gợi ý: Alerts có thể đến từ <b>incidents_alerts.html</b>. Khi triển khai thật, bảng này sẽ pull theo API/DB.
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Quick preview -->
+      <div class="card">
+        <div class="card-head">
+          <h3><i class="fa-solid fa-bolt" style="color:var(--warning)"></i> Quick Preview</h3>
+          <span class="pill gray"><i class="fa-solid fa-wand-magic-sparkles"></i> Live</span>
+        </div>
+
+        <div class="card-body">
+          <div class="kv">
+            <div class="item">
+              <div class="k">Channel</div>
+              <div class="v" id="pvChannel"><span class="pill gray"><i class="fa-solid fa-share-nodes"></i> Hotline</span></div>
+            </div>
+            <div class="item">
+              <div class="k">Severity</div>
+              <div class="v" id="pvSeverity"><span class="pill blue"><i class="fa-solid fa-triangle-exclamation"></i> Medium</span></div>
+            </div>
+            <div class="item">
+              <div class="k">Priority</div>
+              <div class="v" id="pvPriority"><span class="pill blue"><i class="fa-solid fa-flag"></i> Medium</span></div>
+            </div>
+            <div class="item">
+              <div class="k">Category</div>
+              <div class="v" id="pvCategory"><span class="pill gray"><i class="fa-solid fa-folder-open"></i> Delivery Delay</span></div>
+            </div>
+          </div>
+
+          <div style="margin-top:12px;">
+            <div class="note" id="pvSummary" style="background:#f0f7ff;border-color:#bae6fd;color:#0b3b7b">
+              <b>Tóm tắt:</b> Khiếu nại giao trễ (Delivery Delay) • Ưu tiên Medium • Kênh Hotline<br/>
+              <span class="muted">Mẹo:</span> xác minh vận đơn + ETA + cập nhật khách trong 30 phút đầu để đạt SLA.
+            </div>
+          </div>
+
+          <div style="margin-top:12px;">
+            <div class="note">
+              <b>Checklist nhanh</b><br/>
+              • Xác minh: Order/Vận đơn + người nhận + tuyến<br/>
+              • Phân loại: nguyên nhân (hub, tuyến, thời tiết...)<br/>
+              • Hẹn phản hồi tiếp theo (timebox)<br/>
+              • Nếu rủi ro SLA: <b>Escalate</b> cho vận hành
+            </div>
+          </div>
+
+          <div style="margin-top:12px;">
+            <div class="note">
+              <b>Liên kết sắp phát triển</b><br/>
+              <span class="pill gray">ticket_detail.html</span>
+              <span class="pill gray">ticket_edit.html</span>
+              <span class="pill gray">ticket_escalate.html</span>
+              <span class="pill gray">sla_rules.html</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: pick alerts -->
+  <div class="modal" id="alertModal" aria-hidden="true">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3><i class="fa-solid fa-bell" style="color:var(--accent-blue)"></i> Chọn Alerts để liên kết</h3>
+        <button class="btn ghost" data-action="close_modal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="modal-grid">
+          <div class="field" style="margin:0;">
+            <label>Tìm kiếm</label>
+            <input id="alertSearch" class="input" placeholder="ALT-xxx, keyword..." />
+          </div>
+          <div class="field" style="margin:0;">
+            <label>Severity</label>
+            <select id="alertSeverityFilter">
+              <option value="" selected>Tất cả</option>
+              <option>Low</option>
+              <option>Medium</option>
+              <option>High</option>
+              <option>Critical</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="pick-list" id="alertPickList">
+          <!-- injected -->
+        </div>
+
+        <div class="help" style="margin-top:10px;">
+          Dữ liệu mẫu để bạn test UI (đúng yêu cầu “bảng add Alerts phải có thông tin mẫu”).
+        </div>
+      </div>
+
+      <div class="modal-foot">
+        <button class="btn" data-action="close_modal"><i class="fa-solid fa-xmark"></i> Đóng</button>
+        <button class="btn primary" data-action="confirm_alerts"><i class="fa-solid fa-link"></i> Link đã chọn</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function openPage(page, params = {}) {
+      const qs = new URLSearchParams(params).toString();
+      window.location.href = qs ? `${page}?${qs}` : page;
+    }
+
+    // =========================
+    // Sample Alerts (mock)
+    // =========================
+    const ALERTS_POOL = [
+      { code:"ALT-014", title:"Hub HN quá tải - nguy cơ giao trễ", severity:"High", created:"09:12", source:"Ops Monitor" },
+      { code:"ALT-021", title:"Scan thiếu tại hub trung chuyển", severity:"Medium", created:"08:40", source:"Scan Audit" },
+      { code:"ALT-033", title:"Mưa lớn khu vực miền Trung", severity:"Low", created:"Hôm qua", source:"Weather" },
+      { code:"ALT-055", title:"Sự cố tuyến HCM → HN (xe thay)", severity:"Critical", created:"07:20", source:"Fleet" },
+      { code:"ALT-061", title:"Tồn kho tăng bất thường tại Hub HCM", severity:"Medium", created:"2 ngày", source:"Ops Monitor" },
+      { code:"ALT-073", title:"Thiếu POD ảnh với đơn COD", severity:"High", created:"2 ngày", source:"Finance Risk" }
+    ];
+
+    // Linked alerts default
+    let linkedAlerts = [
+      { code:"ALT-014", title:"Hub HN quá tải - nguy cơ giao trễ", severity:"High", created:"09:12" },
+      { code:"ALT-021", title:"Scan thiếu tại hub trung chuyển", severity:"Medium", created:"08:40" }
+    ];
+
+    // Selection buffer in modal
+    let picked = new Set(linkedAlerts.map(a => a.code));
+
+    // =========================
+    // UI helpers
+    // =========================
+    const $ = (id) => document.getElementById(id);
+
+    function pillClassByLevel(level){
+      if(level === "Critical") return "red";
+      if(level === "High") return "yellow";
+      if(level === "Medium") return "blue";
+      if(level === "Low") return "gray";
+      return "gray";
+    }
+
+    function renderLinkedAlerts(){
+      const tb = $("alertsTbody");
+      tb.innerHTML = linkedAlerts.map(a => `
+        <tr>
+          <td><span class="pill gray"><i class="fa-solid fa-bell"></i> ${a.code}</span></td>
+          <td>
+            <div style="font-weight: 700;color:var(--primary-blue)">${a.title}</div>
+            <div style="margin-top:4px;color:var(--text-muted);font-weight:700;font-size:.82rem">
+              <i class="fa-solid fa-link"></i> Linked to this ticket
+            </div>
+          </td>
+          <td><span class="pill ${pillClassByLevel(a.severity)}"><i class="fa-solid fa-triangle-exclamation"></i> ${a.severity}</span></td>
+          <td style="color:var(--text-muted);font-weight: 700">${a.created}</td>
+          <td>
+            <div class="row-actions">
+              <i class="fa-solid fa-eye" title="View alert" style="color:var(--accent-blue)" data-action="view_alert" data-code="${a.code}"></i>
+              <i class="fa-solid fa-trash" title="Remove" style="color:var(--danger)" data-action="remove_alert" data-code="${a.code}"></i>
+            </div>
+          </td>
+        </tr>
+      `).join("");
+
+      $("alertsCount").textContent = `${linkedAlerts.length} alerts linked`;
+    }
+
+    function renderPickList(){
+      const q = ($("alertSearch").value || "").trim().toLowerCase();
+      const sev = $("alertSeverityFilter").value;
+
+      const list = ALERTS_POOL.filter(a => {
+        const matchQ = !q || a.code.toLowerCase().includes(q) || a.title.toLowerCase().includes(q) || (a.source||"").toLowerCase().includes(q);
+        const matchS = !sev || a.severity === sev;
+        return matchQ && matchS;
+      });
+
+      const wrap = $("alertPickList");
+      wrap.innerHTML = list.map(a => `
+        <div class="pick-row" data-action="toggle_pick" data-code="${a.code}">
+          <div class="left">
+            <div class="code">${a.code} <span class="pill ${pillClassByLevel(a.severity)}" style="margin-left:6px;"><i class="fa-solid fa-triangle-exclamation"></i> ${a.severity}</span></div>
+            <div class="small">${a.title}</div>
+            <div class="small"><i class="fa-solid fa-database"></i> Source: <b>${a.source}</b> • Created: <b>${a.created}</b></div>
+          </div>
+          <input type="checkbox" ${picked.has(a.code) ? "checked" : ""} />
+        </div>
+      `).join("") || `<div style="padding:14px;color:var(--text-muted);font-weight: 700">Không có dữ liệu phù hợp.</div>`;
+    }
+
+    function updatePreview(){
+      const channel = $("channel").value;
+      const severity = $("severity").value;
+      const priority = $("priority").value;
+      const category = $("category").value;
+
+      $("navChannel").innerHTML = `<i class="fa-solid fa-share-nodes"></i> Channel: <b>${channel}</b>`;
+      $("navSeverity").innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Severity: <b>${severity}</b>`;
+
+      $("pvChannel").innerHTML = `<span class="pill gray"><i class="fa-solid fa-share-nodes"></i> ${channel}</span>`;
+      $("pvSeverity").innerHTML = `<span class="pill ${pillClassByLevel(severity)}"><i class="fa-solid fa-triangle-exclamation"></i> ${severity}</span>`;
+      $("pvPriority").innerHTML = `<span class="pill ${pillClassByLevel(priority)}"><i class="fa-solid fa-flag"></i> ${priority}</span>`;
+      $("pvCategory").innerHTML = `<span class="pill gray"><i class="fa-solid fa-folder-open"></i> ${category}</span>`;
+
+      const subj = ($("subject").value || "").trim();
+      const ref = ($("refOrder").value || "").trim();
+
+      const tip = (severity === "Critical" || priority === "Critical" || priority === "High")
+        ? "Mẹo: Escalate ngay cho vận hành, cập nhật khách 15–30 phút/lần để tránh SLA breach."
+        : "Mẹo: Cập nhật ETA rõ ràng + hẹn mốc phản hồi tiếp theo để khách an tâm.";
+
+      $("pvSummary").innerHTML =
+        `<b>Tóm tắt:</b> ${subj || "—"} • <b>${category}</b> • Ưu tiên <b>${priority}</b> • Kênh <b>${channel}</b>` +
+        (ref ? `<br/><span class="muted">Ref:</span> <b>${ref}</b>` : "") +
+        `<br/><span class="muted">${tip}</span>`;
+    }
+
+    // =========================
+    // Tags
+    // =========================
+    function bindChipEvents(){
+      $("chips").querySelectorAll(".chip i").forEach(x => {
+        x.onclick = () => x.closest(".chip").remove();
+      });
+    }
+    bindChipEvents();
+
+    $("chipInput").addEventListener("keydown", (e) => {
+      if(e.key !== "Enter") return;
+      e.preventDefault();
+      const val = e.target.value.trim();
+      if(!val) return;
+
+      const chip = document.createElement("span");
+      chip.className = "chip";
+      chip.innerHTML = `${val} <i class="fa-solid fa-xmark" title="remove"></i>`;
+      $("chips").insertBefore(chip, $("chipInput"));
+      e.target.value = "";
+      bindChipEvents();
+    });
+
+    // =========================
+    // Actions router (future links as .html)
+    // =========================
+    document.addEventListener("click", (e) => {
+      const el = e.target.closest("[data-action]");
+      if(!el) return;
+
+      const action = el.dataset.action;
+
+      // Form toolbar
+      if(action === "reset"){
+        if(confirm("Reset form về dữ liệu mẫu?")) window.location.reload();
+        return;
+      }
+      if(action === "save_draft"){
+        // mock: save draft then navigate back
+        alert("Đã lưu nháp (mock). Sắp tới sẽ lưu vào DB.");
+        openPage("ticketing.html");
+        return;
+      }
+      if(action === "submit"){
+        // mock: create ticket then navigate
+        alert("Đã tạo Ticket (mock). Sắp tới sẽ tạo record & mở ticket_detail.html.");
+        openPage("ticket_detail.html", { id: "TIC-NEW-0001" });
+        return;
+      }
+
+      // Related Alerts
+      if(action === "add_alert"){
+        $("alertModal").classList.add("open");
+        $("alertModal").setAttribute("aria-hidden", "false");
+        renderPickList();
+        return;
+      }
+      if(action === "clear_alerts"){
+        linkedAlerts = [];
+        picked = new Set();
+        renderLinkedAlerts();
+        return;
+      }
+      if(action === "remove_alert"){
+        const code = el.dataset.code;
+        linkedAlerts = linkedAlerts.filter(a => a.code !== code);
+        picked.delete(code);
+        renderLinkedAlerts();
+        return;
+      }
+      if(action === "view_alert"){
+        const code = el.dataset.code;
+        // future: link to alert detail page
+        openPage("incidents_alerts.html", { alert: code });
+        return;
+      }
+
+      // Modal actions
+      if(action === "close_modal"){
+        $("alertModal").classList.remove("open");
+        $("alertModal").setAttribute("aria-hidden", "true");
+        return;
+      }
+      if(action === "toggle_pick"){
+        const code = el.dataset.code;
+        if(picked.has(code)) picked.delete(code);
+        else picked.add(code);
+        renderPickList();
+        return;
+      }
+      if(action === "confirm_alerts"){
+        const selected = ALERTS_POOL.filter(a => picked.has(a.code))
+          .map(a => ({ code:a.code, title:a.title, severity:a.severity, created:a.created }));
+        linkedAlerts = selected;
+        renderLinkedAlerts();
+        $("alertModal").classList.remove("open");
+        $("alertModal").setAttribute("aria-hidden", "true");
+        return;
+      }
+    });
+
+    // close modal when clicking backdrop
+    $("alertModal").addEventListener("click", (e) => {
+      if(e.target === $("alertModal")){
+        $("alertModal").classList.remove("open");
+        $("alertModal").setAttribute("aria-hidden", "true");
+      }
+    });
+
+    // modal filters
+    $("alertSearch").addEventListener("input", renderPickList);
+    $("alertSeverityFilter").addEventListener("change", renderPickList);
+
+    // Live preview binds
+    ["channel","severity","priority","category","subject","refOrder"].forEach(id => {
+      $(id).addEventListener("input", updatePreview);
+      $(id).addEventListener("change", updatePreview);
+    });
+
+    // Init
+    renderLinkedAlerts();
+    updatePreview();
+  </script>
+</body>
+</html>

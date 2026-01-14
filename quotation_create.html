@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tạo/Chỉnh sửa Báo giá</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary-blue:#0f172a;
+      --accent-blue:#3b82f6;
+      --bg-light:#f8fafc;
+      --card-white:#ffffff;
+      --text-main:#334155;
+      --text-muted:#64748b;
+      --border-color:#e2e8f0;
+    }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:'Inter', sans-serif; background:var(--bg-light); color:var(--text-main); }
+    html, body { height:100%; }
+    .page { min-height:100vh; padding:1.5rem 2rem; }
+    /* Header */
+    .header-row { display:flex; align-items:center; gap:1rem; margin-bottom:1.2rem; }
+    .back-button { background: var(--border-color); color: var(--text-main); border: 1px solid var(--border-color); border-radius:8px; padding:0.4rem 0.8rem; font-size:0.8rem; display:inline-flex; align-items:center; gap:0.4rem; text-decoration:none; cursor:pointer; }
+    .back-button i { font-size:0.85rem; }
+    .back-button:hover { background: var(--accent-blue); color:#fff; border-color: var(--accent-blue); }
+    h1 { font-size:1.4rem; font-weight:700; margin:0; }
+    .desc { font-size:0.85rem; color:var(--text-muted); margin-top:0.3rem; }
+    /* Card */
+    .card { background:var(--card-white); border:1px solid var(--border-color); border-radius:12px; padding:1rem; margin-bottom:1.5rem; }
+    .card h3 { font-size:1rem; font-weight:600; margin-bottom:0.8rem; }
+    /* Form grids */
+    .form-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(220px,1fr)); gap:1rem; }
+    .form-group { display:flex; flex-direction:column; font-size:0.8rem; }
+    .form-group label { color:var(--text-muted); font-size:0.75rem; margin-bottom:0.3rem; }
+    .form-group input, .form-group select, .form-group textarea { padding:0.45rem 0.6rem; border:1px solid var(--border-color); border-radius:6px; font-size:0.85rem; background:var(--card-white); color:var(--text-main); }
+    .form-group textarea { resize:vertical; }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline:none; border-color:var(--accent-blue); }
+    /* Line items table */
+    .items-table { width:100%; border-collapse:collapse; font-size:0.8rem; }
+    .items-table th, .items-table td { padding:0.55rem; border-bottom:1px solid var(--border-color); text-align:left; vertical-align:middle; }
+    .items-table th { color:var(--text-muted); font-weight:600; }
+    .items-table input, .items-table select { width:100%; padding:0.3rem 0.4rem; border:1px solid var(--border-color); border-radius:4px; font-size:0.8rem; background:var(--card-white); color:var(--text-main); }
+    .items-table input[readonly] { background:#f1f5f9; }
+    .add-line-btn { margin-top:0.5rem; padding:0.4rem 0.8rem; border:none; border-radius:6px; background:var(--accent-blue); color:#fff; font-size:0.8rem; cursor:pointer; }
+    .add-line-btn:hover { background:rgba(59,130,246,0.8); }
+    .remove-line-btn { background:var(--danger); color:#fff; border:none; border-radius:4px; padding:0.2rem 0.5rem; cursor:pointer; }
+    .remove-line-btn:hover { background:#c53030; }
+
+    /* Error highlighting for invalid rows */
+    .items-table tr.error-row {
+      background-color: #fee2e2;
+    }
+    .items-table tr.error-row input,
+    .items-table tr.error-row select {
+      border-color: #f87171;
+    }
+    /* Summary section */
+    .summary-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px,1fr)); gap:0.8rem; font-size:0.85rem; }
+    .summary-item { display:flex; justify-content:space-between; align-items:center; }
+    .summary-item span { display:inline-block; }
+    .summary-item .label { color:var(--text-muted); }
+    .summary-item .value { font-weight:600; }
+    /* Form actions */
+    .form-actions { display:flex; justify-content:flex-end; gap:0.8rem; margin-top:1rem; }
+    .form-actions button { padding:0.5rem 1rem; border:none; border-radius:6px; font-size:0.85rem; cursor:pointer; }
+    .cancel-btn { background:var(--border-color); color:var(--text-main); }
+    .save-btn { background:var(--accent-blue); color:#fff; }
+    .cancel-btn:hover { background:#e2e8f0; }
+    .save-btn:hover { background:rgba(59,130,246,0.8); }
+
+    .preview-btn { background:var(--border-color); color:var(--text-main); }
+    .preview-btn:hover { background:#e2e8f0; }
+    .send-btn { background:#10b981; color:#fff; }
+    .send-btn:hover { background:#059669; }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="header-row">
+      <a href="quotation_management.html" class="back-button"><i class="fas fa-arrow-left"></i> <span>Quay lại</span></a>
+      <div>
+        <h1>Tạo/Chỉnh sửa Báo giá</h1>
+        <p class="desc">Nhập thông tin để tạo báo giá vận chuyển.</p>
+      </div>
+    </div>
+    <!-- Section A: General Info -->
+    <div class="card">
+      <h3>Thông tin chung</h3>
+      <div class="form-grid" style="display:grid; grid-template-columns: repeat(3, minmax(260px, 1fr)); gap: 1rem 1.2rem;">
+  <!-- Row 1 -->
+  <div class="form-group">
+    <label for="opportunity">Cơ hội <span style="color:red">*</span></label>
+    <select id="opportunity" required>
+      <option value="">Chọn cơ hội</option>
+      <option>Opportunity A</option>
+      <option>Opportunity B</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label for="customerName">Khách hàng</label>
+    <input type="text" id="customerName" readonly placeholder="Tự động theo cơ hội">
+  </div>
+  <div class="form-group">
+    <label for="contactName">Người liên hệ</label>
+    <input type="text" id="contactName" readonly placeholder="Tự động theo cơ hội">
+  </div>
+
+  <!-- Row 2 -->
+  <div class="form-group">
+    <label for="currency">Tiền tệ <span style="color:red">*</span></label>
+    <select id="currency">
+      <option>VND</option>
+      <option>USD</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label for="validFrom">Hiệu lực từ <span style="color:red">*</span></label>
+    <input type="date" id="validFrom">
+  </div>
+  <div class="form-group">
+    <label for="validTo">Hiệu lực đến <span style="color:red">*</span></label>
+    <input type="date" id="validTo">
+  </div>
+
+  <!-- Row 3 -->
+  <div class="form-group">
+    <label for="paymentTerm">Điều kiện thanh toán</label>
+    <select id="paymentTerm">
+      <option>COD</option>
+      <option>Chuyển khoản</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label for="quoteStatus">Trạng thái</label>
+    <select id="quoteStatus" disabled>
+      <option value="Draft">Draft</option>
+      <option value="Sent">Sent</option>
+      <option value="Approved">Approved</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label for="createdBy">Người tạo</label>
+    <input type="text" id="createdBy" readonly value="Sales A">
+  </div>
+
+  <!-- Row 4 -->
+  <div class="form-group">
+    <label for="salesOwner">Sales phụ trách</label>
+    <input type="text" id="salesOwner" readonly value="Sales A">
+  </div>
+  <div class="form-group">
+    <label for="quoteCode">Mã báo giá (tự động)</label>
+    <input type="text" id="quoteCode" readonly value="Tự sinh">
+  </div>
+  <div></div> <!-- Empty to balance grid -->
+
+  <!-- Row 5 -->
+  <div class="form-group" style="grid-column: span 3;">
+    <label for="notes">Ghi chú</label>
+    <textarea id="notes" rows="3" placeholder="Thêm ghi chú nếu có…"></textarea>
+  </div>
+</div>
+
+    </div>
+    <!-- Section B: Pricing Table -->
+    <div class="card">
+      <h3>Bảng tính giá</h3>
+      <table class="items-table" id="itemsTable">
+        <thead>
+          <tr>
+            <th style="width:110px;">Dịch vụ</th>
+            <th>Điểm đi</th>
+            <th>Điểm đến</th>
+            <th style="width:80px;">Kg</th>
+            <th style="width:80px;">CBM</th>
+            <th style="width:100px;">Cân tính giá</th>
+            <th>Giá gốc</th>
+            <th>Phụ phí NL</th>
+            <th>Phụ phí vùng xa</th>
+            <th>Chiết khấu (%)</th>
+            <th>Tổng dòng</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="itemsBody">
+          <!-- Rows will be inserted by JS -->
+        </tbody>
+      </table>
+      <button class="add-line-btn" type="button" id="addLineBtn"><i class="fas fa-plus"></i> Thêm dòng</button>
+      <!-- Summary for totals -->
+      <div style="margin-top:1rem;">
+        <div class="summary-grid">
+          <div class="summary-item"><span class="label">Subtotal:</span><span class="value" id="subtotal">0 đ</span></div>
+          <div class="summary-item"><span class="label">VAT (%)</span><input type="number" id="vatPercent" value="10" style="width:60px; padding:0.3rem; border:1px solid var(--border-color); border-radius:4px; font-size:0.8rem;"></div>
+          <div class="summary-item"><span class="label">VAT Amount:</span><span class="value" id="vatAmount">0 đ</span></div>
+          <div class="summary-item"><span class="label">Grand Total:</span><span class="value" id="grandTotal">0 đ</span></div>
+        </div>
+      </div>
+    </div>
+    <!-- Actions -->
+    <div class="form-actions">
+      <button class="cancel-btn" type="button" onclick="window.location.href='quotation_management.html'">Huỷ</button>
+      <button class="preview-btn" type="button" onclick="previewPDF()">Xem trước PDF</button>
+      <button class="send-btn" type="button" onclick="sendQuotation()">Gửi báo giá</button>
+      <button class="save-btn" type="button" onclick="saveQuotation()">Lưu</button>
+    </div>
+  </div>
+  <script>
+    // Helper function: format VND currency
+    function formatVND(val) {
+      return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val);
+    }
+
+    // User role and discount policy
+    const userRole = 'Sales';
+    const discountLimits = {
+      sales: 10,
+      manager: 30,
+      admin: 100
+    };
+    function getMaxDiscount() {
+      const key = userRole.toLowerCase();
+      return discountLimits[key] !== undefined ? discountLimits[key] : 100;
+    }
+
+    // Opportunity dataset mapping to customer and contact
+    const opportunityData = {
+      'Opp #001': { customer: 'ABC Trading', contact: 'Mr. Huy' },
+      'Opp #002': { customer: 'Shop XYZ', contact: 'Ms. Lan' },
+      'Opp #003': { customer: 'DEF Logistics', contact: 'Mr. Dũng' },
+      'Opp #004': { customer: 'MNO', contact: 'Ms. Trang' },
+      'Opp #005': { customer: 'Kane Logistics', contact: 'Mr. Hoàng' }
+    };
+
+    // When selecting an opportunity, auto-fill customer and contact
+    function selectOpportunity() {
+      const oppSelect = document.getElementById('opportunity');
+      const selected = oppSelect.value;
+      const customerInput = document.getElementById('customerName');
+      const contactInput = document.getElementById('contactName');
+      if (selected && opportunityData[selected]) {
+        customerInput.value = opportunityData[selected].customer;
+        contactInput.value = opportunityData[selected].contact;
+      } else {
+        customerInput.value = '';
+        contactInput.value = '';
+      }
+    }
+    // Add a new line item row
+    function addLineItem(data = {}) {
+      const tbody = document.getElementById('itemsBody');
+      const tr = document.createElement('tr');
+      // Data defaults
+      const rowData = {
+        service: data.service || 'Express',
+        origin: data.origin || 'Hà Nội',
+        destination: data.destination || 'TP. Hồ Chí Minh',
+        weight: data.weight || 0,
+        volume: data.volume || 0,
+        discount: data.discount || 0,
+        basePrice: 0,
+        fuelSurcharge: 0,
+        remoteFee: 0,
+        chargeable: 0,
+        lineTotal: 0,
+      };
+      // Row creation
+      tr.innerHTML = `
+        <td>
+          <select class="service">
+            <option value="Express" ${rowData.service === 'Express' ? 'selected' : ''}>Express</option>
+            <option value="Economy" ${rowData.service === 'Economy' ? 'selected' : ''}>Economy</option>
+          </select>
+        </td>
+        <td>
+          <select class="origin">
+            <option value="Hà Nội" ${rowData.origin === 'Hà Nội' ? 'selected' : ''}>Hà Nội</option>
+            <option value="TP. Hồ Chí Minh" ${rowData.origin === 'TP. Hồ Chí Minh' ? 'selected' : ''}>TP. Hồ Chí Minh</option>
+            <option value="Đà Nẵng" ${rowData.origin === 'Đà Nẵng' ? 'selected' : ''}>Đà Nẵng</option>
+          </select>
+        </td>
+        <td>
+          <select class="destination">
+            <option value="Hà Nội" ${rowData.destination === 'Hà Nội' ? 'selected' : ''}>Hà Nội</option>
+            <option value="TP. Hồ Chí Minh" ${rowData.destination === 'TP. Hồ Chí Minh' ? 'selected' : ''}>TP. Hồ Chí Minh</option>
+            <option value="Đà Nẵng" ${rowData.destination === 'Đà Nẵng' ? 'selected' : ''}>Đà Nẵng</option>
+          </select>
+        </td>
+        <td><input type="number" class="weight" min="0" value="${rowData.weight}"></td>
+        <td><input type="number" class="volume" min="0" value="${rowData.volume}"></td>
+        <td><input type="number" class="chargeableWeight" value="${rowData.chargeable}" readonly></td>
+        <td><input type="text" class="basePrice" value="${formatVND(rowData.basePrice)}" readonly></td>
+        <td><input type="text" class="fuelSurcharge" value="${formatVND(rowData.fuelSurcharge)}" readonly></td>
+        <td><input type="text" class="remoteFee" value="${formatVND(rowData.remoteFee)}" readonly></td>
+        <td><input type="number" class="discount" min="0" value="${rowData.discount}"></td>
+        <td><input type="text" class="lineTotal" value="${formatVND(rowData.lineTotal)}" readonly></td>
+        <td><button type="button" class="remove-line-btn">–</button></td>
+      `;
+      tbody.appendChild(tr);
+      // Attach events
+      const selects = tr.querySelectorAll('select');
+      selects.forEach(sel => sel.addEventListener('change', () => updateRow(tr)));
+      const inputs = tr.querySelectorAll('input');
+      inputs.forEach(inp => inp.addEventListener('input', () => updateRow(tr)));
+      // Apply discount limit based on role for new row
+      const discInput = tr.querySelector('.discount');
+      const maxDisc = getMaxDiscount();
+      discInput.setAttribute('max', maxDisc);
+      tr.querySelector('.remove-line-btn').addEventListener('click', () => {
+        tr.remove();
+        updateTotals();
+      });
+      // Initial calculation
+      updateRow(tr);
+    }
+    // Update a row's computed fields
+    function updateRow(tr) {
+      const weight = parseFloat(tr.querySelector('.weight').value) || 0;
+      const volume = parseFloat(tr.querySelector('.volume').value) || 0;
+      let discount = parseFloat(tr.querySelector('.discount').value) || 0;
+      // Apply role-based discount limit
+      const maxDisc = getMaxDiscount();
+      if (discount > maxDisc) {
+        discount = maxDisc;
+        tr.querySelector('.discount').value = maxDisc;
+      }
+      // Calculate chargeable weight: maximum of weight and volume*factor
+      const cbmFactor = 250; // 1 CBM = 250 Kg equivalent for chargeable weight
+      const chargeable = Math.max(weight, volume * cbmFactor);
+      // Base price based on chargeable weight
+      let base = chargeable * 100000;
+      // Fuel surcharge: 10% of base
+      let fuel = base * 0.10;
+      // Remote fee: 0 for now
+      let remote = 0;
+      // Discount amount on base
+      let discAmount = base * (discount / 100);
+      let total = base + fuel + remote - discAmount;
+      // Update fields
+      tr.querySelector('.chargeableWeight').value = chargeable.toFixed(2);
+      tr.querySelector('.basePrice').value = formatVND(base);
+      tr.querySelector('.fuelSurcharge').value = formatVND(fuel);
+      tr.querySelector('.remoteFee').value = formatVND(remote);
+      tr.querySelector('.lineTotal').value = formatVND(total);
+      // Validate row: weight & volume > 0 and different origin/destination
+      const origin = tr.querySelector('.origin').value;
+      const destination = tr.querySelector('.destination').value;
+      let hasError = false;
+      if (weight <= 0 && volume <= 0) hasError = true;
+      if (origin === destination) hasError = true;
+      tr.classList.toggle('error-row', hasError);
+      updateTotals();
+    }
+    // Calculate totals across all rows
+    function updateTotals() {
+      const rows = document.querySelectorAll('#itemsBody tr');
+      let subtotal = 0;
+      rows.forEach(tr => {
+        const totalStr = tr.querySelector('.lineTotal').value;
+        const number = Number(totalStr.replace(/[^0-9.-]+/g, ''));
+        subtotal += number;
+      });
+      document.getElementById('subtotal').textContent = formatVND(subtotal);
+      const vatPercent = parseFloat(document.getElementById('vatPercent').value) || 0;
+      const vatAmount = subtotal * vatPercent / 100;
+      document.getElementById('vatAmount').textContent = formatVND(vatAmount);
+      document.getElementById('grandTotal').textContent = formatVND(subtotal + vatAmount);
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('addLineBtn').addEventListener('click', () => addLineItem());
+      document.getElementById('vatPercent').addEventListener('input', updateTotals);
+      // Opportunity change event: auto-fill customer/contact
+      const oppSelect = document.getElementById('opportunity');
+      if (oppSelect) {
+        oppSelect.addEventListener('change', selectOpportunity);
+      }
+      // Initial line and initial opportunity sync
+      addLineItem();
+      selectOpportunity();
+    });
+    function saveQuotation() {
+      alert('Báo giá đã được lưu (demo)!');
+      window.location.href = 'quotation_management.html';
+    }
+
+    // Preview PDF (placeholder)
+    function previewPDF() {
+      alert('Tính năng xem trước PDF đang được phát triển.');
+    }
+
+    // Send quotation: change status to sent and lock editing (demo)
+    function sendQuotation() {
+      // Ensure opportunity is selected
+      const oppSelect = document.getElementById('opportunity');
+      if (!oppSelect.value) {
+        alert('Vui lòng chọn cơ hội trước khi gửi báo giá.');
+        return;
+      }
+      // Change status to sent
+      const statusSelect = document.getElementById('quoteStatus');
+      if (statusSelect) statusSelect.value = 'sent';
+      alert('Báo giá đã được gửi (demo)!');
+      // Disable form to prevent edits after sending
+      const controls = document.querySelectorAll('.page input, .page select, .page textarea, .page button');
+      controls.forEach(ctrl => {
+        if (!ctrl.classList.contains('cancel-btn')) {
+          ctrl.disabled = true;
+        }
+      });
+    }
+  </script>
+</body>
+</html>

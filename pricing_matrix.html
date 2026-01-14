@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ma trận giá & Phụ phí</title>
+
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      /* MATCH Index.html + contract_detail.html tokens */
+      --primary-blue:#0f172a;
+      --accent-blue:#3b82f6;
+      --bg-light:#f8fafc;
+      --card-white:#ffffff;
+      --text-main:#334155;
+      --text-muted:#64748b;
+      --border-color:#e2e8f0;
+      --shadow: 0 1px 3px rgba(0,0,0,.06);
+
+      --success:#10b981;
+      --danger:#ef4444;
+      --warning:#f59e0b;
+
+      --status-draft-bg:#f1f5f9; --status-draft-color:#334155;
+      --status-active-bg:#d1fae5; --status-active-color:#059669;
+      --status-expired-bg:#ffedd5; --status-expired-color:#c2410c;
+      --status-disabled-bg:#fee2e2; --status-disabled-color:#b91c1c;
+    }
+
+    *{box-sizing:border-box}
+    body{margin:0;font-family:'Inter',sans-serif;background:var(--bg-light);color:var(--text-main)}
+    .page{min-height:100vh;padding:1.5rem 2rem}
+
+    /* ===== Header / Toolbar like contract_detail ===== */
+    .header-row{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:.75rem}
+    .header-left h1{font-size:1.4rem;font-weight:700;margin:0}
+    .header-left .desc{font-size:.85rem;color:var(--text-muted);margin:.35rem 0 0}
+    .back-button{
+      background: var(--border-color);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      border-radius:10px;
+      padding:0.45rem 0.85rem;
+      font-size:0.85rem;
+      display:inline-flex;
+      align-items:center;
+      gap:0.5rem;
+      text-decoration:none;
+    }
+    .back-button:hover{background:var(--accent-blue);color:#fff;border-color:var(--accent-blue)}
+
+    .pill{
+      display:inline-flex;align-items:center;gap:.4rem;
+      padding:.25rem .55rem;border-radius:999px;font-size:.75rem;font-weight:600;
+      border:1px solid var(--border-color);background:#fff;color:var(--text-main);
+    }
+    .btn{
+      padding:.45rem .9rem;border-radius:10px;font-size:.85rem;cursor:pointer;display:inline-flex;align-items:center;gap:.45rem;
+      border:1px solid transparent;user-select:none;white-space:nowrap
+    }
+    .btn-secondary{background:var(--card-white);color:var(--text-main);border-color:var(--border-color)}
+    .btn-secondary:hover{background:#f1f5f9}
+    .btn-primary{background:var(--accent-blue);color:#fff;border-color:var(--accent-blue)}
+    .btn-primary:hover{opacity:.92}
+    .btn-danger{background:#fee2e2;color:#b91c1c;border-color:#fecaca}
+    .btn-danger:hover{background:#fecaca}
+
+    .toolbar{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin:.75rem 0 1rem}
+    .toolbar-left,.toolbar-right{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+
+    /* ===== Summary cards ===== */
+    .summary-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;margin-bottom:1rem}
+    .summary-item{padding:1rem;border:1px solid var(--border-color);border-radius:12px;background:var(--card-white);box-shadow:var(--shadow)}
+    .summary-item .k{font-size:.75rem;color:var(--text-muted);margin-bottom:.25rem}
+    .summary-item .v{font-size:1.05rem;font-weight:800;color:var(--text-main)}
+    .summary-item .sub{margin-top:.25rem;font-size:.78rem;color:var(--text-muted)}
+
+    /* ===== Card + Tabs ===== */
+    .card{background:var(--card-white);border:1px solid var(--border-color);border-radius:12px;padding:1rem;box-shadow:var(--shadow)}
+    .tabs{display:flex;gap:.6rem;flex-wrap:wrap;margin:.25rem 0 1rem}
+    .tab{padding:.55rem .9rem;border:1px solid var(--border-color);background:var(--card-white);border-radius:10px;cursor:pointer;font-weight:800;font-size:.85rem;color:var(--text-main)}
+    .tab.active{border-color:var(--accent-blue);background:#eff6ff;color:var(--accent-blue)}
+    .tab-panel{display:none}
+    .tab-panel.active{display:block}
+
+    .section-title{display:flex;align-items:center;justify-content:space-between;margin:0 0 .75rem}
+    .section-title h3{margin:0;font-size:1rem;font-weight:900}
+    .hint{font-size:.78rem;color:var(--text-muted)}
+    .divider{height:1px;background:var(--border-color);margin: .9rem 0}
+
+    /* ===== Filters (inline, clean) ===== */
+    .filters{
+      display:grid;
+      grid-template-columns: 1.1fr .9fr .9fr .9fr;
+      gap:.75rem;
+      align-items:end;
+      margin-bottom: .75rem;
+    }
+    @media (max-width: 1100px){
+      .filters{grid-template-columns: 1fr 1fr}
+    }
+    @media (max-width: 700px){
+      .filters{grid-template-columns: 1fr}
+    }
+    .field{display:flex;flex-direction:column;gap:.35rem}
+    .field label{font-size:.75rem;color:var(--text-muted);font-weight:700}
+    .input, select{
+      width:100%;
+      background:#fff;
+      border:1px solid var(--border-color);
+      border-radius:10px;
+      padding:.55rem .65rem;
+      font-size:.85rem;
+      outline:none;
+    }
+    .input:focus, select:focus{border-color: rgba(59,130,246,.55); box-shadow: 0 0 0 3px rgba(59,130,246,.12)}
+
+    /* Multi-select (toggle + tick, not fully expanded) */
+    .multi-select{
+      position:relative;
+      border:1px solid var(--border-color);
+      border-radius:10px;
+      padding:.55rem .65rem;
+      cursor:pointer;
+      user-select:none;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:.6rem;
+      background:#fff;
+    }
+    .multi-select .selected-options{
+      font-size:.85rem;
+      color:var(--text-main);
+      overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+    }
+    .multi-select .dropdown-icon{color:var(--text-muted);font-size:.85rem}
+    .options-list{
+      position:absolute;
+      top:calc(100% + 8px);
+      left:0;
+      width:100%;
+      background:#fff;
+      border:1px solid var(--border-color);
+      border-radius:12px;
+      box-shadow: var(--shadow);
+      padding:.45rem;
+      display:none;
+      z-index:50;
+      max-height:220px;
+      overflow:auto;
+    }
+    .multi-select.open .options-list{display:block}
+    .options-list label{
+      display:flex;align-items:center;gap:.55rem;
+      padding:.55rem .55rem;
+      border-radius:10px;
+      cursor:pointer;
+      font-size:.85rem;
+      color:var(--text-main);
+    }
+    .options-list label:hover{background:#f8fafc}
+    .options-list input{transform: translateY(1px);}
+
+    /* ===== Table like contract_detail ===== */
+    table{width:100%;border-collapse:collapse;font-size:.85rem}
+    thead th{padding:.65rem .6rem;color:var(--text-muted);font-weight:700;border-bottom:1px solid var(--border-color);text-align:left}
+    tbody td{padding:.65rem .6rem;border-bottom:1px solid var(--border-color);vertical-align:middle}
+    tbody tr:hover{background:#f8fafc}
+
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}
+    .status-pill{display:inline-block;padding:.22rem .55rem;border-radius:999px;font-size:.75rem;font-weight:800}
+    .status-draft{background:var(--status-draft-bg);color:var(--status-draft-color)}
+    .status-active{background:var(--status-active-bg);color:var(--status-active-color)}
+    .status-expired{background:var(--status-expired-bg);color:var(--status-expired-color)}
+    .status-disabled{background:var(--status-disabled-bg);color:var(--status-disabled-color)}
+
+    .actions i{margin-right:.55rem;cursor:pointer;color:var(--accent-blue)}
+    .actions i:hover{color:rgba(59,130,246,.85)}
+    .actions i:last-child{margin-right:0}
+
+    /* ===== Small util cards in tabs ===== */
+    .list{display:flex;flex-direction:column;gap:.6rem}
+    .row-card{display:flex;gap:.75rem;align-items:flex-start;padding:.6rem .75rem;border:1px solid var(--border-color);border-radius:12px;background:var(--card-white)}
+    .row-card i{margin-top:.15rem;color:var(--text-muted)}
+    a{color:var(--accent-blue);text-decoration:none}
+    a:hover{text-decoration:underline}
+  </style>
+</head>
+
+<body>
+  <div class="page">
+
+    <!-- Header row (match contract_detail) -->
+    <div class="header-row">
+      <div style="display:flex;gap:1rem;align-items:flex-start;flex-wrap:wrap;">
+        <a class="back-button" href="contract_management.html"><i class="fas fa-arrow-left"></i> Quay lại</a>
+        <div class="header-left">
+          <h1>Ma trận giá &amp; Phụ phí</h1>
+          <p class="desc">Thiết lập pricing rule theo Service · Segment · Zone/Lane · Effective Date (có versioning &amp; chống trùng).</p>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;">
+        <span class="pill"><i class="fa-regular fa-clock"></i> Cập nhật: <span id="lastUpdated">13/01/2026 13:00</span></span>
+        <span class="pill"><i class="fa-regular fa-shield"></i> Rule key: Service + Segment + Zone + Effective</span>
+      </div>
+    </div>
+
+    <!-- Toolbar (match contract_detail pattern) -->
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <span class="pill"><i class="fa-solid fa-tags"></i> Price Engine</span>
+        <span class="pill"><i class="fa-regular fa-circle-check"></i> Kiểm tra trùng: <b style="margin-left:.25rem;">ON</b></span>
+        <span class="pill"><i class="fa-solid fa-code-branch"></i> Versioning: <b style="margin-left:.25rem;">ON</b></span>
+      </div>
+      <div class="toolbar-right">
+        <button class="btn btn-secondary" id="btnImport"><i class="fa-solid fa-file-import"></i> Import</button>
+        <button class="btn btn-secondary" id="btnExport"><i class="fa-solid fa-file-export"></i> Export</button>
+        <button class="btn btn-primary" id="btnCreate"><i class="fa-solid fa-plus"></i> Tạo Rule</button>
+      </div>
+    </div>
+
+    <!-- Summary cards -->
+    <div class="summary-cards">
+      <div class="summary-item">
+        <div class="k">Active rules</div>
+        <div class="v" id="kpiActive">12</div>
+        <div class="sub">Đang áp dụng theo effective date</div>
+      </div>
+      <div class="summary-item">
+        <div class="k">Draft rules</div>
+        <div class="v" id="kpiDraft">5</div>
+        <div class="sub">Chờ duyệt / hoàn thiện dữ liệu</div>
+      </div>
+      <div class="summary-item">
+        <div class="k">Conflicts</div>
+        <div class="v" id="kpiConflicts">1</div>
+        <div class="sub">Trùng key + overlap thời gian</div>
+      </div>
+      <div class="summary-item">
+        <div class="k">Latest version</div>
+        <div class="v" id="kpiVersion">v3</div>
+        <div class="sub">Gợi ý: renew/duplicate theo version</div>
+      </div>
+    </div>
+
+    <!-- Main card with tabs -->
+    <div class="card">
+      <div class="tabs">
+        <div class="tab active" data-tab="rules">Pricing Rules</div>
+        <div class="tab" data-tab="surcharges">Surcharges</div>
+        <div class="tab" data-tab="discounts">Discounts</div>
+        <div class="tab" data-tab="audit">Audit Log</div>
+      </div>
+
+      <!-- TAB: Rules -->
+      <div class="tab-panel active" id="tab-rules">
+        <div class="section-title">
+          <h3>Pricing Rules</h3>
+          <div style="display:flex;gap:.6rem;flex-wrap:wrap;">
+            <button class="btn btn-secondary" id="btnReset"><i class="fa-solid fa-rotate"></i> Reset</button>
+            <button class="btn btn-secondary" id="btnApply"><i class="fa-solid fa-filter"></i> Apply</button>
+          </div>
+        </div>
+        <p class="hint" style="margin-top:0;">
+          Rule key gợi ý: <b>Service + Segment + Zone/Lane + Effective Date</b>. Nếu trùng key và overlap thời gian → đánh dấu conflict.
+        </p>
+
+        <div class="divider"></div>
+
+        <!-- Filters row -->
+        <div class="filters">
+          <div class="field">
+            <label>Tìm nhanh (code/service/zone)</label>
+            <input class="input" id="q" placeholder="VD: PM-EXP-001, HCM→HN, Enterprise..." />
+          </div>
+
+          <div class="field">
+            <label>Service</label>
+            <select id="service">
+              <option value="">Tất cả</option>
+              <option>Express</option>
+              <option>Economy</option>
+              <option>Same-day</option>
+              <option>International</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Segment</label>
+            <select id="segment">
+              <option value="">Tất cả</option>
+              <option>SMB</option>
+              <option>Enterprise</option>
+              <option>Retail</option>
+              <option>Key Account</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Status (multi)</label>
+            <div class="multi-select" id="statusDropdown">
+              <div class="selected-options">Active, Draft</div>
+              <div class="dropdown-icon"><i class="fas fa-chevron-down"></i></div>
+              <div class="options-list">
+                <label><input type="checkbox" value="active" checked> Active</label>
+                <label><input type="checkbox" value="draft" checked> Draft</label>
+                <label><input type="checkbox" value="expired"> Expired</label>
+                <label><input type="checkbox" value="disabled"> Disabled</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Zone / Lane</label>
+            <input class="input" id="zone" placeholder="VD: HCM → HN, Zone 1, VN-NORTH..." />
+          </div>
+
+          <div class="field">
+            <label>Effective date</label>
+            <input class="input" id="effective" type="date" />
+          </div>
+
+          <div class="field">
+            <label>Version</label>
+            <select id="version">
+              <option value="">Tất cả</option>
+              <option>v1</option>
+              <option>v2</option>
+              <option>v3</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>&nbsp;</label>
+            <div style="display:flex;gap:.6rem;flex-wrap:wrap;">
+              <button class="btn btn-secondary" id="btnDetect"><i class="fa-solid fa-triangle-exclamation"></i> Detect conflicts</button>
+              <button class="btn btn-secondary" id="btnTest"><i class="fa-solid fa-flask"></i> Test pricing</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Table -->
+        <table style="margin-top:.25rem;">
+          <thead>
+            <tr>
+              <th style="width:140px;">Rule Code</th>
+              <th style="width:140px;">Status</th>
+              <th style="width:140px;">Service</th>
+              <th style="width:160px;">Segment</th>
+              <th>Zone / Lane</th>
+              <th style="width:140px;">Type</th>
+              <th style="width:140px;">Effective</th>
+              <th style="width:120px;">Version</th>
+              <th style="width:130px;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="rulesBody"></tbody>
+        </table>
+      </div>
+
+      <!-- TAB: Surcharges -->
+      <div class="tab-panel" id="tab-surcharges">
+        <div class="section-title">
+          <h3>Surcharges</h3>
+          <button class="btn btn-secondary" id="btnAddSurcharge"><i class="fa-solid fa-plus"></i> Add</button>
+        </div>
+        <p class="hint" style="margin-top:0;">Phụ phí ví dụ: Fuel, Remote Area, Oversize, Peak Season… (áp theo điều kiện).</p>
+
+        <div class="list" id="surchargeList"></div>
+      </div>
+
+      <!-- TAB: Discounts -->
+      <div class="tab-panel" id="tab-discounts">
+        <div class="section-title">
+          <h3>Discounts</h3>
+          <button class="btn btn-secondary" id="btnAddDiscount"><i class="fa-solid fa-plus"></i> Add</button>
+        </div>
+        <p class="hint" style="margin-top:0;">Chiết khấu ví dụ: Volume tier, Customer loyalty, Promo code…</p>
+
+        <div class="list" id="discountList"></div>
+      </div>
+
+      <!-- TAB: Audit -->
+      <div class="tab-panel" id="tab-audit">
+        <div class="section-title"><h3>Audit Log</h3></div>
+        <div class="list" id="auditList"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ===== Demo data =====
+    const rules = [
+      {code:"PM-EXP-001", status:"active", service:"Express", segment:"Enterprise", zone:"HCM → HN", type:"Weight Slab", effective:"2026-01-01", version:"v3"},
+      {code:"PM-ECO-014", status:"draft", service:"Economy", segment:"SMB", zone:"Zone 1", type:"Flat + Fuel", effective:"2026-02-01", version:"v2"},
+      {code:"PM-INT-003", status:"expired", service:"International", segment:"Key Account", zone:"VN → SG", type:"Zone Rate", effective:"2025-06-01", version:"v1"},
+      {code:"PM-EXP-009", status:"disabled", service:"Express", segment:"Retail", zone:"Zone 2", type:"Zone Rate", effective:"2025-12-01", version:"v2"},
+    ];
+
+    const surcharges = [
+      {name:"Fuel surcharge", rule:"+8% trên Base", when:"Service ∈ {Express, Economy}", note:"Theo kỳ tháng"},
+      {name:"Remote area", rule:"+15.000₫/bill", when:"Postcode match danh sách Remote", note:"Có thể override theo Key Account"},
+      {name:"Oversize", rule:"+25.000₫", when:"Dài+rộng+cao > 120cm", note:"Áp cho tất cả service"},
+    ];
+
+    const discounts = [
+      {name:"Volume tier", rule:"-5%", when:">= 200 đơn/tháng", note:"Tính theo customer + billing cycle"},
+      {name:"Key Account special", rule:"-8%", when:"Segment = Key Account", note:"Ưu tiên cao hơn promo"},
+      {name:"Promo code", rule:"-20.000₫", when:"Mã hợp lệ + within campaign", note:"Có hạn mức"},
+    ];
+
+    const audit = [
+      {at:"2026-01-13 10:05", who:"Lê Văn Admin", action:"Imported pricing rules (v3) from template"},
+      {at:"2026-01-12 17:40", who:"Nguyễn Văn A", action:"Created rule PM-EXP-001 (Draft → Active)"},
+      {at:"2026-01-08 09:15", who:"Pricing Team", action:"Detected conflict: PM-ECO-014 overlaps Zone 1 (2026-02-01)"},
+    ];
+
+    // ===== Tabs (match contract_detail behavior) =====
+    function initTabs(){
+      const tabs = document.querySelectorAll('.tab');
+      function activate(name){
+        tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        document.getElementById('tab-' + name).classList.add('active');
+      }
+      tabs.forEach(t => t.addEventListener('click', () => activate(t.dataset.tab)));
+      activate('rules');
+    }
+
+    // ===== Status multi-select =====
+    const statusDropdown = document.getElementById("statusDropdown");
+    const statusSelected = statusDropdown.querySelector(".selected-options");
+    const statusChecks = statusDropdown.querySelectorAll('input[type="checkbox"]');
+
+    function updateSelectedText(){
+      const checked = Array.from(statusChecks).filter(x => x.checked).map(x => x.parentElement.textContent.trim());
+      statusSelected.textContent = checked.length ? checked.join(", ") : "Tất cả";
+    }
+
+    statusDropdown.addEventListener("click", (e) => {
+      // Clicking inside options should not close immediately
+      if (e.target.closest(".options-list")) return;
+      statusDropdown.classList.toggle("open");
+    });
+
+    statusChecks.forEach(chk => chk.addEventListener("change", updateSelectedText));
+    updateSelectedText();
+
+    document.addEventListener("click", (e) => {
+      if (!statusDropdown.contains(e.target)) statusDropdown.classList.remove("open");
+    });
+
+    // ===== Renderers =====
+    function statusPill(status){
+      const map = {
+        active:  {cls:"status-active",  text:"Active"},
+        draft:   {cls:"status-draft",   text:"Draft"},
+        expired: {cls:"status-expired", text:"Expired"},
+        disabled:{cls:"status-disabled",text:"Disabled"},
+      };
+      const x = map[status] || map.draft;
+      return `<span class="status-pill ${x.cls}">${x.text}</span>`;
+    }
+
+    function renderRules(list){
+      const body = document.getElementById("rulesBody");
+      body.innerHTML = "";
+      list.forEach(r => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td class="mono"><b>${r.code}</b></td>
+          <td>${statusPill(r.status)}</td>
+          <td>${r.service}</td>
+          <td>${r.segment}</td>
+          <td>${r.zone}</td>
+          <td>${r.type}</td>
+          <td class="mono">${r.effective}</td>
+          <td class="mono">${r.version}</td>
+          <td class="actions">
+            <i class="fas fa-eye" title="View" data-action="view" data-code="${r.code}"></i>
+            <i class="fas fa-pen" title="Edit" data-action="edit" data-code="${r.code}"></i>
+            <i class="fas fa-copy" title="Duplicate" data-action="duplicate" data-code="${r.code}"></i>
+          </td>
+        `;
+        body.appendChild(tr);
+      });
+    }
+
+    function renderList(targetId, items, icon){
+      const wrap = document.getElementById(targetId);
+      wrap.innerHTML = "";
+      items.forEach(x => {
+        const row = document.createElement("div");
+        row.className = "row-card";
+        row.innerHTML = `
+          <i class="${icon}"></i>
+          <div style="flex:1;">
+            <div style="font-weight:900;">${x.name}</div>
+            <div class="hint"><b>Rule:</b> ${x.rule}</div>
+            <div class="hint"><b>When:</b> ${x.when}</div>
+            <div class="hint">${x.note}</div>
+          </div>
+          <div style="display:flex;gap:.45rem;flex-wrap:wrap;align-items:flex-start;">
+            <button class="btn btn-secondary" style="padding:.35rem .6rem" data-row-action="edit" data-row-name="${encodeURIComponent(x.name)}"><i class="fa-regular fa-pen-to-square"></i></button>
+            <button class="btn btn-danger" style="padding:.35rem .6rem" data-row-action="delete" data-row-name="${encodeURIComponent(x.name)}"><i class="fa-regular fa-trash-can"></i></button>
+          </div>
+        `;
+        wrap.appendChild(row);
+      });
+    }
+
+    function renderAudit(){
+      const wrap = document.getElementById("auditList");
+      wrap.innerHTML = "";
+      audit.forEach(x => {
+        const row = document.createElement("div");
+        row.className = "row-card";
+        row.innerHTML = `
+          <i class="fa-regular fa-clock"></i>
+          <div>
+            <div style="font-weight:900;">${x.action}</div>
+            <div class="hint">${x.at} · ${x.who}</div>
+          </div>
+        `;
+        wrap.appendChild(row);
+      });
+    }
+
+    // ===== Filtering (demo) =====
+    function currentStatuses(){
+      return Array.from(statusChecks).filter(x => x.checked).map(x => x.value);
+    }
+
+    function applyFilters(){
+      const q = (document.getElementById("q").value || "").trim().toLowerCase();
+      const service = document.getElementById("service").value;
+      const segment = document.getElementById("segment").value;
+      const zone = (document.getElementById("zone").value || "").trim().toLowerCase();
+      const effective = document.getElementById("effective").value;
+      const version = document.getElementById("version").value;
+      const statuses = currentStatuses();
+
+      const filtered = rules.filter(r => {
+        if (statuses.length && !statuses.includes(r.status)) return false;
+        if (service && r.service !== service) return false;
+        if (segment && r.segment !== segment) return false;
+        if (version && r.version !== version) return false;
+        if (effective && r.effective !== effective) return false;
+
+        const hay = `${r.code} ${r.service} ${r.segment} ${r.zone} ${r.type} ${r.version} ${r.effective}`.toLowerCase();
+        if (q && !hay.includes(q)) return false;
+        if (zone && !r.zone.toLowerCase().includes(zone)) return false;
+        return true;
+      });
+
+      renderRules(filtered);
+    }
+
+    function resetFilters(){
+      document.getElementById("q").value = "";
+      document.getElementById("service").value = "";
+      document.getElementById("segment").value = "";
+      document.getElementById("zone").value = "";
+      document.getElementById("effective").value = "";
+      document.getElementById("version").value = "";
+      statusChecks.forEach(chk => chk.checked = (chk.value === "active" || chk.value === "draft"));
+      updateSelectedText();
+      applyFilters();
+    }
+
+    // ===== Actions (demo) =====
+    document.addEventListener("click", (e) => {
+  const icon = e.target.closest("i[data-action]");
+  if (!icon) return;
+
+  const action = icon.dataset.action;
+  const code = icon.dataset.code;
+
+  if (action === "view") {
+    window.location.href = "pricing_rule_detail.html?code=" + code;
+  }
+
+  if (action === "edit") {
+    window.location.href = "pricing_rule_edit.html?code=" + code;
+  }
+
+  if (action === "duplicate") {
+    window.location.href = "pricing_rule_duplicate.html?code=" + code;
+  }
+});
+
+    // ===== Row actions (Surcharges / Discounts) =====
+    document.addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-row-action]");
+      if (!btn) return;
+
+      const action = btn.getAttribute("data-row-action");
+      const name = btn.getAttribute("data-row-name") || "";
+
+      // Determine list type by closest container id
+      const inSurcharge = !!btn.closest("#surchargeList");
+      const inDiscount = !!btn.closest("#discountList");
+
+      if (inSurcharge) {
+        if (action === "edit") return window.location.href = `surcharge_detail.html?name=${name}`;
+        if (action === "delete") return window.location.href = `surcharge_delete.html?name=${name}`;
+      }
+
+      if (inDiscount) {
+        if (action === "edit") return window.location.href = `discount_detail.html?name=${name}`;
+        if (action === "delete") return window.location.href = `discount_delete.html?name=${name}`;
+      }
+    });
+
+
+    // ===== Init =====
+    document.addEventListener("DOMContentLoaded", () => {
+      initTabs();
+      renderRules(rules);
+      renderList("surchargeList", surcharges, "fa-solid fa-gas-pump");
+      renderList("discountList", discounts, "fa-solid fa-percent");
+      renderAudit();
+
+      document.getElementById("btnApply").addEventListener("click", applyFilters);
+      document.getElementById("btnReset").addEventListener("click", resetFilters);
+
+      document.getElementById("btnCreate").addEventListener("click", () => window.location.href = "pricing_rule_create.html");
+      document.getElementById("btnImport").addEventListener("click", () => window.location.href = "pricing_import.html");
+      document.getElementById("btnExport").addEventListener("click", () => window.location.href = "pricing_export.html");
+      document.getElementById("btnDetect").addEventListener("click", () => window.location.href = "pricing_rule_conflict.html");
+      document.getElementById("btnTest").addEventListener("click", () => window.location.href = "pricing_rule_test.html");
+
+      document.getElementById("btnAddSurcharge").addEventListener("click", () => window.location.href = "surcharge_create.html");
+      document.getElementById("btnAddDiscount").addEventListener("click", () => window.location.href = "discount_create.html");
+
+      // quick search enter
+      document.getElementById("q").addEventListener("keydown", (ev)=>{
+        if(ev.key === "Enter") applyFilters();
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Danh sách người liên hệ</title>
+
+  <!-- External resources (đồng bộ style) -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary-blue:#0f172a;
+      --accent-blue:#3b82f6;
+      --bg-light:#f8fafc;
+      --card-white:#ffffff;
+      --text-main:#334155;
+      --text-muted:#64748b;
+      --border-color:#e2e8f0;
+      --success:#10b981;
+      --warning:#f59e0b;
+      --danger:#ef4444;
+      --shadow: 0 10px 25px rgba(0,0,0,0.06);
+      --radius: 12px;
+    }
+
+    * { box-sizing:border-box; }
+    html, body { height:100%; }
+    body { margin:0; font-family:'Inter', sans-serif; background:var(--bg-light); color:var(--text-main); }
+
+    /* Page shell */
+    .page { min-height:100vh; padding:1.5rem 2rem; }
+    .card { background:var(--card-white); border:1px solid var(--border-color); border-radius:var(--radius); box-shadow:none; padding:1rem; }
+    .stack { display:flex; flex-direction:column; gap:1rem; }
+
+    /* Common controls */
+    .btn {
+      display:inline-flex; align-items:center; gap:.5rem;
+      border:1px solid var(--border-color);
+      background:var(--card-white);
+      color:var(--text-main);
+      padding:.55rem .9rem;
+      border-radius:10px;
+      font-size:.85rem;
+      cursor:pointer;
+      text-decoration:none;
+      user-select:none;
+      transition: all .15s ease;
+    }
+    .btn:hover { border-color: rgba(59,130,246,.4); box-shadow: 0 6px 18px rgba(59,130,246,.10); }
+    .btn-primary {
+      background:var(--accent-blue);
+      border-color:var(--accent-blue);
+      color:#fff;
+    }
+    .btn-primary:hover { opacity:.9; }
+    .btn-danger {
+      background: #fff;
+      border-color: rgba(239,68,68,.35);
+      color: var(--danger);
+    }
+    .btn-danger:hover { background: rgba(239,68,68,.06); }
+
+    .pill {
+      display:inline-flex; align-items:center; justify-content:center;
+      padding:.2rem .55rem;
+      border-radius:999px;
+      font-size:.75rem;
+      border:1px solid var(--border-color);
+      color:var(--text-muted);
+      background:#fff;
+    }
+
+    /* Layout blocks */
+    .layout { display:flex; flex-direction:column; gap:1rem; }
+    .grid-2 { display:grid; grid-template-columns: 1fr; gap:1rem; }
+    @media (min-width: 1024px) {
+      .grid-2 { grid-template-columns: 1.35fr .65fr; }
+    }
+
+    /* Utility */
+    .muted { color:var(--text-muted); }
+    .hidden { display:none !important; }
+  </style>
+</head>
+
+<body>
+  <div class="page">
+    <div class="layout stack">
+
+      <!-- (A) Header -->
+      <section data-include="partials/contacts/header.html"></section>
+
+      <!-- (B) Search + Filters -->
+      <section data-include="partials/contacts/search_filters.html"></section>
+
+      <!-- (C) Table -->
+      <section data-include="partials/contacts/table.html"></section>
+
+      <!-- (D) Empty State (ẩn mặc định, JS sẽ bật khi cần) -->
+      <section class="hidden" id="emptyStateWrap" data-include="partials/contacts/empty_state.html"></section>
+
+      <!-- (E) Pagination -->
+      <section data-include="partials/contacts/pagination.html"></section>
+
+      <!-- (F) Confirm Modal -->
+      <section data-include="partials/contacts/confirm_modal.html"></section>
+
+    </div>
+  </div>
+
+  <script>
+    // ==============================
+    // Simple HTML includes (no build)
+    // ==============================
+    async function includePartials() {
+      const nodes = document.querySelectorAll('[data-include]');
+      await Promise.all([...nodes].map(async (node) => {
+        const url = node.getAttribute('data-include');
+        try {
+          const res = await fetch(url);
+          node.innerHTML = await res.text();
+        } catch (e) {
+          node.innerHTML = `<div class="card"><b>Lỗi tải module:</b> <span class="muted">${url}</span></div>`;
+        }
+      }));
+    }
+
+    // =========================================
+    // Demo data + filtering/sorting (front-end)
+    // =========================================
+    const state = {
+      q: '',
+      customer: 'all',
+      role: 'all',
+      status: 'all',
+      primary: 'all',
+      sortBy: 'created_at',
+      sortDir: 'desc',
+      pageSize: 20,
+      page: 1,
+      data: [
+        { id: 'CT-0001', name:'Phạm Văn D', customer:'Shop XYZ', role:'Chủ cửa hàng', email:'d.pham@xyzshop.com', phone:'0910 123 456', status:'active', primary:true, created_at:'2026-01-10' },
+        { id: 'CT-0002', name:'Đặng Thị E', customer:'Shop XYZ', role:'Quản lý kho', email:'e.dang@xyzshop.com', phone:'0911 234 567', status:'active', primary:false, created_at:'2026-01-08' },
+        { id: 'CT-0003', name:'Nguyễn Thu Huyền', customer:'ABC Trading', role:'Kế toán', email:'huyen.nt@abctrading.com', phone:'0909 222 111', status:'inactive', primary:false, created_at:'2025-12-21' },
+        { id: 'CT-0004', name:'Trần Minh Khang', customer:'ABC Trading', role:'Decision Maker', email:'khang.tm@abctrading.com', phone:'0903 888 777', status:'active', primary:true, created_at:'2025-12-15' },
+      ]
+    };
+
+    function normalize(s){ return (s || '').toString().trim().toLowerCase(); }
+
+    function getFiltered() {
+      const q = normalize(state.q);
+      return state.data.filter(r => {
+        const matchQ = !q || [r.name, r.email, r.phone].some(v => normalize(v).includes(q));
+        const matchCustomer = state.customer === 'all' || r.customer === state.customer;
+        const matchRole = state.role === 'all' || r.role === state.role;
+        const matchStatus = state.status === 'all' || r.status === state.status;
+        const matchPrimary = state.primary === 'all' || (state.primary === 'primary' ? r.primary : !r.primary);
+        return matchQ && matchCustomer && matchRole && matchStatus && matchPrimary;
+      });
+    }
+
+    function sortRows(rows) {
+      const { sortBy, sortDir } = state;
+      const dir = sortDir === 'asc' ? 1 : -1;
+      return rows.slice().sort((a,b) => {
+        const av = a[sortBy], bv = b[sortBy];
+        if (av == null && bv == null) return 0;
+        if (av == null) return -1 * dir;
+        if (bv == null) return 1 * dir;
+        return (av > bv ? 1 : av < bv ? -1 : 0) * dir;
+      });
+    }
+
+    function paginate(rows) {
+      const start = (state.page - 1) * state.pageSize;
+      const end = start + state.pageSize;
+      return rows.slice(start, end);
+    }
+
+    function render() {
+      const rows = sortRows(getFiltered());
+      const total = rows.length;
+      const totalPages = Math.max(1, Math.ceil(total / state.pageSize));
+      state.page = Math.min(state.page, totalPages);
+
+      // Header counters
+      const countBadge = document.getElementById('contactsCountBadge');
+      const resultsHint = document.getElementById('resultsHint');
+      if (countBadge) countBadge.textContent = total.toLocaleString('vi-VN');
+      if (resultsHint) resultsHint.textContent = `${total.toLocaleString('vi-VN')} kết quả`;
+
+      // Empty state toggle
+      const emptyWrap = document.getElementById('emptyStateWrap');
+      const tableCard = document.getElementById('contactsTableCard');
+      if (emptyWrap && tableCard) {
+        if (total === 0) {
+          emptyWrap.classList.remove('hidden');
+          tableCard.classList.add('hidden');
+        } else {
+          emptyWrap.classList.add('hidden');
+          tableCard.classList.remove('hidden');
+        }
+      }
+
+      // Render table body
+      const tbody = document.getElementById('contactsTbody');
+      if (tbody) {
+        const pageRows = paginate(rows);
+        tbody.innerHTML = pageRows.map(r => `
+          <tr class="${r.status === 'inactive' ? 'row-inactive' : ''}">
+            <td>
+              <a class="link" href="contact_detail.html?id=${encodeURIComponent(r.id)}">${r.name}</a>
+              ${r.primary ? '<span class="star" title="Liên hệ chính"><i class="fas fa-star"></i></span>' : ''}
+              <div class="sub">${r.id}</div>
+            </td>
+            <td><a class="link muted" href="customer_detail_xyz.html">${r.customer}</a></td>
+            <td>${r.role}</td>
+            <td><a class="link" href="mailto:${r.email}">${r.email}</a></td>
+            <td><a class="link" href="tel:${r.phone}">${r.phone}</a></td>
+            <td>
+              ${r.status === 'active'
+                ? '<span class="badge badge-active">Đang hoạt động</span>'
+                : '<span class="badge badge-inactive">Ngưng</span>'}
+            </td>
+            <td>${r.primary ? 'Primary' : '-'}</td>
+            <td>${r.created_at}</td>
+            <td class="actions">
+              <div class="actions-wrap">
+                <a class="icon-btn" title="Xem chi tiết" href="contact_detail.html?id=${encodeURIComponent(r.id)}"><i class="fas fa-eye"></i></a>
+                <a class="icon-btn" title="Chỉnh sửa" href="contact_edit.html?id=${encodeURIComponent(r.id)}"><i class="fas fa-pen"></i></a>
+                <button class="icon-btn" title="Đánh dấu Primary" onclick="markPrimary('${r.id}')"><i class="fas fa-star"></i></button>
+                <button class="icon-btn danger" title="Ngưng sử dụng" onclick="confirmDeactivate('${r.id}')"><i class="fas fa-ban"></i></button>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+      }
+
+      // Pagination render
+      const pageInfo = document.getElementById('pageInfo');
+      const prevBtn = document.getElementById('pagePrev');
+      const nextBtn = document.getElementById('pageNext');
+      if (pageInfo) pageInfo.textContent = `Trang ${state.page}/${totalPages}`;
+      if (prevBtn) prevBtn.disabled = state.page <= 1;
+      if (nextBtn) nextBtn.disabled = state.page >= totalPages;
+    }
+
+    // ======================
+    // Actions (demo handlers)
+    // ======================
+    function markPrimary(id) {
+      state.data = state.data.map(r => r.id === id ? { ...r, primary: true } : { ...r, primary: false });
+      render();
+      toast(`Đã đánh dấu ${id} là liên hệ chính`);
+    }
+
+    function confirmDeactivate(id) {
+      const modal = document.getElementById('confirmModal');
+      const msg = document.getElementById('confirmMessage');
+      const ok = document.getElementById('confirmOk');
+      if (!modal || !msg || !ok) return;
+
+      msg.textContent = `Bạn chắc chắn muốn ngưng sử dụng liên hệ ${id}?`;
+      ok.onclick = () => {
+        state.data = state.data.map(r => r.id === id ? { ...r, status:'inactive' } : r);
+        closeConfirm();
+        render();
+        toast(`Đã ngưng sử dụng ${id}`);
+      };
+      modal.style.display = 'flex';
+    }
+
+    function closeConfirm() {
+      const modal = document.getElementById('confirmModal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    function toast(text) {
+      const el = document.getElementById('toast');
+      if (!el) return;
+      el.textContent = text;
+      el.classList.add('show');
+      setTimeout(() => el.classList.remove('show'), 2200);
+    }
+
+    // Expose to global for inline onclick
+    window.markPrimary = markPrimary;
+    window.confirmDeactivate = confirmDeactivate;
+    window.closeConfirm = closeConfirm;
+
+    // =========
+    // Wire UI
+    // =========
+    function wireEvents() {
+      // Search
+      const search = document.getElementById('searchInput');
+      let t;
+      if (search) {
+        search.addEventListener('input', (e) => {
+          clearTimeout(t);
+          t = setTimeout(() => {
+            state.q = e.target.value || '';
+            state.page = 1;
+            render();
+          }, 180);
+        });
+      }
+
+      // Filters
+      const customer = document.getElementById('filterCustomer');
+      const role = document.getElementById('filterRole');
+      const status = document.getElementById('filterStatus');
+      const primary = document.getElementById('filterPrimary');
+
+      function onFilterChange() {
+        state.customer = customer?.value || 'all';
+        state.role = role?.value || 'all';
+        state.status = status?.value || 'all';
+        state.primary = primary?.value || 'all';
+        state.page = 1;
+        render();
+      }
+
+      [customer, role, status, primary].forEach(el => el && el.addEventListener('change', onFilterChange));
+
+      // Clear filters
+      const clearBtn = document.getElementById('clearFilters');
+      if (clearBtn) {
+        clearBtn.addEventListener('click', () => {
+          if (search) search.value = '';
+          if (customer) customer.value = 'all';
+          if (role) role.value = 'all';
+          if (status) status.value = 'all';
+          if (primary) primary.value = 'all';
+          state.q = '';
+          state.customer = 'all';
+          state.role = 'all';
+          state.status = 'all';
+          state.primary = 'all';
+          state.page = 1;
+          render();
+        });
+      }
+
+      // Collapsible filters
+      const toggleBtn = document.getElementById('toggleFilters');
+      const filterPanel = document.getElementById('filtersPanel');
+      if (toggleBtn && filterPanel) {
+        toggleBtn.addEventListener('click', () => {
+          filterPanel.classList.toggle('collapsed');
+          toggleBtn.querySelector('i')?.classList.toggle('fa-chevron-down');
+          toggleBtn.querySelector('i')?.classList.toggle('fa-chevron-up');
+        });
+      }
+
+      // Sorting: click header
+      document.querySelectorAll('[data-sort]').forEach(th => {
+        th.addEventListener('click', () => {
+          const key = th.getAttribute('data-sort');
+          if (!key) return;
+          if (state.sortBy === key) state.sortDir = (state.sortDir === 'asc' ? 'desc' : 'asc');
+          else { state.sortBy = key; state.sortDir = 'asc'; }
+          render();
+        });
+      });
+
+      // Pagination
+      const prev = document.getElementById('pagePrev');
+      const next = document.getElementById('pageNext');
+      const size = document.getElementById('pageSize');
+      if (prev) prev.addEventListener('click', () => { state.page = Math.max(1, state.page - 1); render(); });
+      if (next) next.addEventListener('click', () => { state.page = state.page + 1; render(); });
+      if (size) size.addEventListener('change', () => { state.pageSize = parseInt(size.value || '20', 10); state.page = 1; render(); });
+
+      // Modal close
+      const cancel = document.getElementById('confirmCancel');
+      const overlay = document.getElementById('confirmModal');
+      if (cancel) cancel.addEventListener('click', closeConfirm);
+      if (overlay) overlay.addEventListener('click', (e) => { if (e.target === overlay) closeConfirm(); });
+    }
+
+    (async function init(){
+      await includePartials();
+      wireEvents();
+      render();
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Incidents & Alerts</title>
+
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --primary-blue:#0f172a;
+      --accent-blue:#3b82f6;
+      --bg-light:#f8fafc;
+      --card-white:#ffffff;
+      --text-main:#334155;
+      --text-muted:#64748b;
+      --border-color:#e2e8f0;
+      --shadow: 0 1px 3px rgba(0,0,0,.06);
+
+      --success:#10b981;
+      --danger:#ef4444;
+      --warning:#f59e0b;
+      --info:#0ea5e9;
+
+      --sev-critical-bg:#fee2e2; --sev-critical-tx:#b91c1c;
+      --sev-high-bg:#ffedd5; --sev-high-tx:#c2410c;
+      --sev-medium-bg:#fef9c3; --sev-medium-tx:#a16207;
+      --sev-low-bg:#e0f2fe; --sev-low-tx:#075985;
+
+      --st-open-bg:#e0f2fe; --st-open-tx:#075985;
+      --st-ack-bg:#eff6ff; --st-ack-tx:#1d4ed8;
+      --st-resolved-bg:#d1fae5; --st-resolved-tx:#059669;
+      --st-suppressed-bg:#f1f5f9; --st-suppressed-tx:#334155;
+    }
+
+    *{box-sizing:border-box}
+    body{margin:0;font-family:'Inter',sans-serif;background:var(--bg-light);color:var(--text-main)}
+    .page{min-height:100vh;padding:1.5rem 2rem}
+    @media (max-width: 900px){ .page{padding:1rem 1rem} }
+
+    .header-row{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:.75rem}
+    .header-left{display:flex;gap:1rem;align-items:flex-start;flex-wrap:wrap}
+    .header-left h1{font-size:1.4rem;font-weight:700;margin:0}
+    .header-left .desc{font-size:.85rem;color:var(--text-muted);margin:.35rem 0 0}
+    .back-button{
+      background: var(--border-color);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      border-radius:10px;
+      padding:0.45rem 0.85rem;
+      font-size:0.85rem;
+      display:inline-flex;
+      align-items:center;
+      gap:0.5rem;
+      text-decoration:none;
+      cursor:pointer;
+      user-select:none;
+      height:fit-content;
+    }
+    .back-button:hover{background:var(--accent-blue);color:#fff;border-color:var(--accent-blue)}
+
+    .pill{
+      display:inline-flex;align-items:center;gap:.4rem;
+      padding:.25rem .55rem;border-radius:999px;font-size:.75rem;font-weight:600;
+      border:1px solid var(--border-color);background:#fff;color:var(--text-main);
+      white-space:nowrap;
+    }
+
+    .btn{
+      padding:.45rem .9rem;border-radius:10px;font-size:.85rem;cursor:pointer;display:inline-flex;align-items:center;gap:.45rem;
+      border:1px solid transparent;user-select:none;white-space:nowrap
+    }
+    .btn-secondary{background:var(--card-white);color:var(--text-main);border-color:var(--border-color)}
+    .btn-secondary:hover{background:#f1f5f9}
+    .btn-primary{background:var(--accent-blue);color:#fff;border-color:var(--accent-blue)}
+    .btn-primary:hover{opacity:.92}
+    .btn-danger{background:#fee2e2;color:#b91c1c;border-color:#fecaca}
+    .btn-danger:hover{background:#fecaca}
+
+    .toolbar{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin:.75rem 0 1rem}
+    .toolbar-left,.toolbar-right{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+
+    .summary-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;margin-bottom:1rem}
+    .summary-item{padding:1rem;border:1px solid var(--border-color);border-radius:12px;background:var(--card-white);box-shadow:var(--shadow)}
+    .summary-item .k{font-size:.75rem;color:var(--text-muted);margin-bottom:.25rem}
+    .summary-item .v{font-size:1.05rem;font-weight:800;color:var(--text-main)}
+    .summary-item .sub{margin-top:.25rem;font-size:.78rem;color:var(--text-muted)}
+    .badge-dot{display:inline-flex;align-items:center;gap:.4rem}
+    .dot{width:8px;height:8px;border-radius:999px;background:var(--info)}
+
+    .card{background:var(--card-white);border:1px solid var(--border-color);border-radius:12px;padding:1rem;box-shadow:var(--shadow)}
+    .tabs{display:flex;gap:.6rem;flex-wrap:wrap;margin:.25rem 0 1rem}
+    .tab{padding:.55rem .9rem;border:1px solid var(--border-color);background:var(--card-white);border-radius:10px;cursor:pointer;font-weight:800;font-size:.85rem;color:var(--text-main);user-select:none}
+    .tab.active{border-color:var(--accent-blue);background:#eff6ff;color:var(--accent-blue)}
+    .tab-panel{display:none}
+    .tab-panel.active{display:block}
+
+    .section-title{display:flex;align-items:center;justify-content:space-between;margin:0 0 .75rem;gap:1rem;flex-wrap:wrap}
+    .section-title h3{margin:0;font-size:1rem;font-weight:900}
+    .hint{font-size:.78rem;color:var(--text-muted);line-height:1.45}
+    .divider{height:1px;background:var(--border-color);margin: .9rem 0}
+
+    .filters{
+      display:grid;
+      grid-template-columns: 1.1fr .8fr .8fr .8fr .9fr;
+      gap:.75rem;
+      align-items:end;
+      margin-bottom: .75rem;
+    }
+    @media (max-width: 1200px){ .filters{grid-template-columns: 1fr 1fr 1fr} }
+    @media (max-width: 800px){ .filters{grid-template-columns: 1fr} }
+    .field{display:flex;flex-direction:column;gap:.35rem}
+    .field label{font-size:.75rem;color:var(--text-muted);font-weight:800}
+    .input, select{
+      width:100%;
+      background:#fff;
+      border:1px solid var(--border-color);
+      border-radius:10px;
+      padding:.55rem .65rem;
+      font-size:.85rem;
+      outline:none;
+    }
+    .input:focus, select:focus{border-color: rgba(59,130,246,.55); box-shadow: 0 0 0 3px rgba(59,130,246,.12)}
+
+    .multi-select{
+      position:relative;
+      border:1px solid var(--border-color);
+      border-radius:10px;
+      padding:.55rem .65rem;
+      cursor:pointer;
+      user-select:none;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:.6rem;
+      background:#fff;
+    }
+    .multi-select .selected-options{
+      font-size:.85rem;color:var(--text-main);
+      overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+    }
+    .multi-select .dropdown-icon{color:var(--text-muted);font-size:.85rem}
+    .options-list{
+      position:absolute;
+      top:calc(100% + 8px);
+      left:0;
+      width:100%;
+      background:#fff;
+      border:1px solid var(--border-color);
+      border-radius:12px;
+      box-shadow: var(--shadow);
+      padding:.45rem;
+      display:none;
+      z-index:50;
+      max-height:220px;
+      overflow:auto;
+    }
+    .multi-select.open .options-list{display:block}
+    .options-list label{
+      display:flex;align-items:center;gap:.55rem;
+      padding:.55rem .55rem;
+      border-radius:10px;
+      cursor:pointer;
+      font-size:.85rem;
+      color:var(--text-main);
+    }
+    .options-list label:hover{background:#f8fafc}
+    .options-list input{transform: translateY(1px);}
+
+    .table-wrap{border:1px solid var(--border-color);border-radius:12px;overflow:auto}
+    table{width:100%;border-collapse:collapse;font-size:.85rem;min-width:980px}
+    thead th{padding:.65rem .6rem;color:var(--text-muted);font-weight:900;border-bottom:1px solid var(--border-color);text-align:left;background:#fbfdff;position:sticky;top:0;z-index:1}
+    tbody td{padding:.65rem .6rem;border-bottom:1px solid var(--border-color);vertical-align:middle}
+    tbody tr:hover{background:#f8fafc}
+
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}
+
+    .sev{display:inline-block;padding:.22rem .55rem;border-radius:999px;font-size:.75rem;font-weight:900}
+    .sev-critical{background:var(--sev-critical-bg);color:var(--sev-critical-tx)}
+    .sev-high{background:var(--sev-high-bg);color:var(--sev-high-tx)}
+    .sev-medium{background:var(--sev-medium-bg);color:var(--sev-medium-tx)}
+    .sev-low{background:var(--sev-low-bg);color:var(--sev-low-tx)}
+
+    .st{display:inline-block;padding:.22rem .55rem;border-radius:999px;font-size:.75rem;font-weight:900}
+    .st-open{background:var(--st-open-bg);color:var(--st-open-tx)}
+    .st-ack{background:var(--st-ack-bg);color:var(--st-ack-tx)}
+    .st-resolved{background:var(--st-resolved-bg);color:var(--st-resolved-tx)}
+    .st-suppressed{background:var(--st-suppressed-bg);color:var(--st-suppressed-tx)}
+
+    .actions i{margin-right:.55rem;cursor:pointer;color:var(--accent-blue)}
+    .actions i:hover{color:rgba(59,130,246,.85)}
+    .actions i:last-child{margin-right:0}
+
+    .list{display:flex;flex-direction:column;gap:.6rem}
+    .row-card{display:flex;gap:.75rem;align-items:flex-start;padding:.6rem .75rem;border:1px solid var(--border-color);border-radius:12px;background:var(--card-white)}
+    .row-card i{margin-top:.15rem;color:var(--text-muted)}
+    .row-card .title{font-weight:900}
+  </style>
+</head>
+
+<body>
+  <div class="page">
+
+    <div class="header-row">
+      <div class="header-left">
+        <a class="back-button" href="index.html"><i class="fas fa-arrow-left"></i> Quay lại</a>
+        <div>
+          <h1>Incidents &amp; Alerts</h1>
+          <p class="desc">Giám sát sự cố vận hành, cảnh báo (SLA, delay, exception queue) và rule tự động (auto-ack / suppress).</p>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;">
+        <span class="pill"><i class="fa-regular fa-clock"></i> Cập nhật: <span id="lastUpdated">13/01/2026 13:15</span></span>
+        <span class="pill"><i class="fa-solid fa-bolt"></i> Realtime: <b style="margin-left:.25rem;">ON</b></span>
+        <span class="pill"><i class="fa-solid fa-shield"></i> Escalation: <b style="margin-left:.25rem;">ON</b></span>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <span class="pill"><i class="fa-solid fa-triangle-exclamation"></i> Critical: <b id="kpiCritical">2</b></span>
+        <span class="pill"><i class="fa-regular fa-bell"></i> Open alerts: <b id="kpiOpen">7</b></span>
+        <span class="pill"><i class="fa-solid fa-person-running"></i> On-call: <b>Ops Team</b></span>
+      </div>
+      <div class="toolbar-right">
+        <button class="btn btn-secondary" id="btnExport"><i class="fa-solid fa-file-export"></i> Export</button>
+        <button class="btn btn-secondary" id="btnRules"><i class="fa-solid fa-sliders"></i> Alert Rules</button>
+        <button class="btn btn-primary" id="btnCreateIncident"><i class="fa-solid fa-plus"></i> Tạo Incident</button>
+      </div>
+    </div>
+
+    <div class="summary-cards">
+      <div class="summary-item">
+        <div class="k">Alerts hôm nay</div>
+        <div class="v">18</div>
+        <div class="sub"><span class="badge-dot"><span class="dot"></span> 7 đang Open</span></div>
+      </div>
+      <div class="summary-item">
+        <div class="k">Incidents đang xử lý</div>
+        <div class="v">4</div>
+        <div class="sub">2 High · 1 Medium · 1 Low</div>
+      </div>
+      <div class="summary-item">
+        <div class="k">SLA at risk (24h)</div>
+        <div class="v">6</div>
+        <div class="sub">Nguy cơ trễ giao / delay hub</div>
+      </div>
+      <div class="summary-item">
+        <div class="k">Auto-suppressed</div>
+        <div class="v">11</div>
+        <div class="sub">Do rule (noise reduction)</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="tabs">
+        <div class="tab active" data-tab="alerts">Alerts</div>
+        <div class="tab" data-tab="incidents">Incidents</div>
+        <div class="tab" data-tab="rules">Rules</div>
+        <div class="tab" data-tab="audit">Audit</div>
+      </div>
+
+      <div class="tab-panel active" id="tab-alerts">
+        <div class="section-title">
+          <h3>Alerts</h3>
+          <div style="display:flex;gap:.6rem;flex-wrap:wrap;">
+            <button class="btn btn-secondary" id="btnReset"><i class="fa-solid fa-rotate"></i> Reset</button>
+            <button class="btn btn-secondary" id="btnApply"><i class="fa-solid fa-filter"></i> Apply</button>
+            <button class="btn btn-secondary" id="btnBulkAck"><i class="fa-regular fa-circle-check"></i> Bulk Ack</button>
+          </div>
+        </div>
+        <p class="hint" style="margin-top:0;">
+          Alert có thể sinh từ: Exception Queue, SLA breach prediction, shipment status stuck, route delay, customer complaint spike.
+        </p>
+
+        <div class="divider"></div>
+
+        <div class="filters">
+          <div class="field">
+            <label>Tìm nhanh (code/order/waybill)</label>
+            <input class="input" id="q" placeholder="VD: ALT-00021, WB123..., ABC Trading..." />
+          </div>
+
+          <div class="field">
+            <label>Source</label>
+            <select id="source">
+              <option value="">Tất cả</option>
+              <option>Exception Queue</option>
+              <option>SLA Monitor</option>
+              <option>Tracking Stuck</option>
+              <option>Customer Complaints</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Severity (multi)</label>
+            <div class="multi-select" id="severityDropdown">
+              <div class="selected-options">Critical, High</div>
+              <div class="dropdown-icon"><i class="fas fa-chevron-down"></i></div>
+              <div class="options-list">
+                <label><input type="checkbox" value="critical" checked> Critical</label>
+                <label><input type="checkbox" value="high" checked> High</label>
+                <label><input type="checkbox" value="medium"> Medium</label>
+                <label><input type="checkbox" value="low"> Low</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Status (multi)</label>
+            <div class="multi-select" id="statusDropdown">
+              <div class="selected-options">Open, Acknowledged</div>
+              <div class="dropdown-icon"><i class="fas fa-chevron-down"></i></div>
+              <div class="options-list">
+                <label><input type="checkbox" value="open" checked> Open</label>
+                <label><input type="checkbox" value="ack" checked> Acknowledged</label>
+                <label><input type="checkbox" value="resolved"> Resolved</label>
+                <label><input type="checkbox" value="suppressed"> Suppressed</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Time range</label>
+            <select id="timeRange">
+              <option value="today" selected>Hôm nay</option>
+              <option value="24h">24 giờ</option>
+              <option value="7d">7 ngày</option>
+              <option value="30d">30 ngày</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:140px;">Alert ID</th>
+                <th style="width:140px;">Severity</th>
+                <th style="width:160px;">Status</th>
+                <th style="width:180px;">Source</th>
+                <th>Title</th>
+                <th style="width:200px;">Entity</th>
+                <th style="width:170px;">Created</th>
+                <th style="width:130px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="alertsBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="tab-panel" id="tab-incidents">
+        <div class="section-title">
+          <h3>Incidents</h3>
+          <div style="display:flex;gap:.6rem;flex-wrap:wrap;">
+            <button class="btn btn-secondary" id="btnCreateIncident2"><i class="fa-solid fa-plus"></i> New</button>
+            <button class="btn btn-secondary" id="btnKanban"><i class="fa-solid fa-layer-group"></i> Kanban (placeholder)</button>
+          </div>
+        </div>
+        <p class="hint" style="margin-top:0;">Incident gom nhiều alerts lại thành một case xử lý (assign, timeline, RCA, post-mortem).</p>
+
+        <div class="divider"></div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:150px;">Incident ID</th>
+                <th style="width:140px;">Severity</th>
+                <th style="width:160px;">Status</th>
+                <th>Summary</th>
+                <th style="width:180px;">Owner</th>
+                <th style="width:160px;">Opened</th>
+                <th style="width:160px;">SLA</th>
+                <th style="width:130px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="incidentsBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="tab-panel" id="tab-rules">
+        <div class="section-title">
+          <h3>Alert Rules</h3>
+          <div style="display:flex;gap:.6rem;flex-wrap:wrap;">
+            <button class="btn btn-secondary" id="btnCreateRule"><i class="fa-solid fa-plus"></i> Create rule</button>
+            <button class="btn btn-secondary" id="btnRuleLibrary"><i class="fa-regular fa-folder-open"></i> Rule library</button>
+          </div>
+        </div>
+        <p class="hint" style="margin-top:0;">
+          Rule dùng để giảm noise: auto-ack, auto-suppress, route theo owner, escalation theo SLA/Severity.
+        </p>
+
+        <div class="divider"></div>
+
+        <div class="list" id="rulesList"></div>
+      </div>
+
+      <div class="tab-panel" id="tab-audit">
+        <div class="section-title">
+          <h3>Audit Log</h3>
+          <button class="btn btn-secondary" id="btnAuditExport"><i class="fa-solid fa-file-export"></i> Export</button>
+        </div>
+        <div class="list" id="auditList"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    function openPage(page, params = {}) {
+      const qs = new URLSearchParams(params).toString();
+      window.location.href = qs ? `${page}?${qs}` : page;
+    }
+
+    (function initTabs(){
+      const tabs = document.querySelectorAll('.tab');
+      function activate(name){
+        tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        document.getElementById('tab-' + name).classList.add('active');
+      }
+      tabs.forEach(t => t.addEventListener('click', () => activate(t.dataset.tab)));
+      activate('alerts');
+    })();
+
+    function initMultiSelect(wrapperId, defaultText){
+      const dd = document.getElementById(wrapperId);
+      const selected = dd?.querySelector(".selected-options");
+      const checks = dd?.querySelectorAll('input[type="checkbox"]') || [];
+
+      function updateText(){
+        const checked = Array.from(checks).filter(x => x.checked).map(x => x.parentElement.textContent.trim());
+        selected.textContent = checked.length ? checked.join(", ") : (defaultText || "Tất cả");
+      }
+
+      dd.addEventListener("click", (e) => {
+        if (e.target.closest(".options-list")) return;
+        dd.classList.toggle("open");
+      });
+
+      checks.forEach(chk => chk.addEventListener("change", () => { updateText(); applyFilters(); }));
+      updateText();
+
+      document.addEventListener("click", (e) => {
+        if (!dd.contains(e.target)) dd.classList.remove("open");
+      });
+
+      return () => Array.from(checks).filter(x => x.checked).map(x => x.value);
+    }
+
+    const alerts = [
+      {id:"ALT-00021", sev:"critical", st:"open", src:"SLA Monitor", title:"SLA breach predicted (HCM→HN)", entity:"WB-23490123", created:"2026-01-13 11:05"},
+      {id:"ALT-00022", sev:"high", st:"open", src:"Exception Queue", title:"Label mismatch (SKU/Service)", entity:"SO-900128", created:"2026-01-13 11:22"},
+      {id:"ALT-00023", sev:"high", st:"ack", src:"Tracking Stuck", title:"Tracking stuck > 12h", entity:"WB-77881290", created:"2026-01-13 09:40"},
+      {id:"ALT-00024", sev:"medium", st:"open", src:"Customer Complaints", title:"Complaint spike - ABC Trading", entity:"CUST-ABC", created:"2026-01-13 10:10"},
+      {id:"ALT-00025", sev:"low", st:"suppressed", src:"SLA Monitor", title:"Minor delay risk (Zone 2)", entity:"WB-11230019", created:"2026-01-13 08:05"},
+    ];
+
+    const incidents = [
+      {id:"INC-00007", sev:"high", st:"open", sum:"Delay hub HCM - outbound backlog", owner:"Ops HCM", opened:"2026-01-13 08:30", sla:"T-4h"},
+      {id:"INC-00008", sev:"medium", st:"ack", sum:"Exception queue surge - label mismatch", owner:"CS Team", opened:"2026-01-13 09:10", sla:"T-8h"},
+      {id:"INC-00009", sev:"low", st:"resolved", sum:"Auto-billing warning false positive", owner:"Billing", opened:"2026-01-12 16:40", sla:"Closed"},
+    ];
+
+    const rules = [
+      {name:"Suppress duplicate tracking-stuck", desc:"Nếu WB đã có alert tracking-stuck trong 6h → suppress alert mới", action:"Suppress", when:"source=Tracking Stuck, window=6h", owner:"Ops"},
+      {name:"Auto-ack low severity", desc:"Low severity auto-ack sau 10 phút nếu không có escalation", action:"Auto-ack", when:"sev=low, idle=10m", owner:"Ops"},
+      {name:"Escalate critical to on-call", desc:"Critical alert → ping on-call + create incident if count>=3", action:"Escalate", when:"sev=critical, threshold=3", owner:"On-call"},
+    ];
+
+    const audit = [
+      {at:"2026-01-13 11:25", who:"Ops Team", action:"ACK alert ALT-00023 (tracking stuck)"},
+      {at:"2026-01-13 10:15", who:"System", action:"SUPPRESS alert ALT-00025 (matched rule: Auto-ack low severity)"},
+      {at:"2026-01-13 08:35", who:"Ops HCM", action:"CREATE incident INC-00007 (from 3 alerts)"},
+    ];
+
+    function sevPill(sev){
+      const map = {
+        critical:{cls:"sev sev-critical", text:"Critical"},
+        high:{cls:"sev sev-high", text:"High"},
+        medium:{cls:"sev sev-medium", text:"Medium"},
+        low:{cls:"sev sev-low", text:"Low"},
+      };
+      const x = map[sev] || map.medium;
+      return `<span class="${x.cls}">${x.text}</span>`;
+    }
+
+    function stPill(st){
+      const map = {
+        open:{cls:"st st-open", text:"Open"},
+        ack:{cls:"st st-ack", text:"Acknowledged"},
+        resolved:{cls:"st st-resolved", text:"Resolved"},
+        suppressed:{cls:"st st-suppressed", text:"Suppressed"},
+      };
+      const x = map[st] || map.open;
+      return `<span class="${x.cls}">${x.text}</span>`;
+    }
+
+    function renderAlerts(list){
+      const body = document.getElementById("alertsBody");
+      body.innerHTML = "";
+      list.forEach(a => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td class="mono"><b>${a.id}</b></td>
+          <td>${sevPill(a.sev)}</td>
+          <td>${stPill(a.st)}</td>
+          <td>${a.src}</td>
+          <td>${a.title}</td>
+          <td class="mono">${a.entity}</td>
+          <td class="mono">${a.created}</td>
+          <td class="actions">
+            <i class="fas fa-eye" title="View" data-action="alert_view" data-id="${a.id}"></i>
+            <i class="fas fa-check" title="Ack" data-action="alert_ack" data-id="${a.id}"></i>
+            <i class="fas fa-link" title="Create incident" data-action="alert_to_incident" data-id="${a.id}"></i>
+          </td>
+        `;
+        body.appendChild(tr);
+      });
+    }
+
+    function renderIncidents(list){
+      const body = document.getElementById("incidentsBody");
+      body.innerHTML = "";
+      list.forEach(i => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td class="mono"><b>${i.id}</b></td>
+          <td>${sevPill(i.sev)}</td>
+          <td>${stPill(i.st)}</td>
+          <td>${i.sum}</td>
+          <td>${i.owner}</td>
+          <td class="mono">${i.opened}</td>
+          <td class="mono">${i.sla}</td>
+          <td class="actions">
+            <i class="fas fa-eye" title="View" data-action="inc_view" data-id="${i.id}"></i>
+            <i class="fas fa-pen" title="Edit" data-action="inc_edit" data-id="${i.id}"></i>
+            <i class="fas fa-flag-checkered" title="Resolve" data-action="inc_resolve" data-id="${i.id}"></i>
+          </td>
+        `;
+        body.appendChild(tr);
+      });
+    }
+
+    function renderRules(){
+      const wrap = document.getElementById("rulesList");
+      wrap.innerHTML = "";
+      rules.forEach((r, idx) => {
+        const row = document.createElement("div");
+        row.className = "row-card";
+        row.innerHTML = `
+          <i class="fa-solid fa-sliders"></i>
+          <div style="flex:1;">
+            <div class="title">${r.name}</div>
+            <div class="hint">${r.desc}</div>
+            <div class="hint"><b>When:</b> ${r.when} · <b>Action:</b> ${r.action} · <b>Owner:</b> ${r.owner}</div>
+          </div>
+          <div style="display:flex;gap:.45rem;flex-wrap:wrap;align-items:flex-start;">
+            <button class="btn btn-secondary" style="padding:.35rem .6rem" data-action="rule_view" data-id="${idx}"><i class="fa-regular fa-eye"></i></button>
+            <button class="btn btn-secondary" style="padding:.35rem .6rem" data-action="rule_edit" data-id="${idx}"><i class="fa-regular fa-pen-to-square"></i></button>
+          </div>
+        `;
+        wrap.appendChild(row);
+      });
+    }
+
+    function renderAudit(){
+      const wrap = document.getElementById("auditList");
+      wrap.innerHTML = "";
+      audit.forEach(x => {
+        const row = document.createElement("div");
+        row.className = "row-card";
+        row.innerHTML = `
+          <i class="fa-regular fa-clock"></i>
+          <div>
+            <div class="title">${x.action}</div>
+            <div class="hint">${x.at} · ${x.who}</div>
+          </div>
+        `;
+        wrap.appendChild(row);
+      });
+    }
+
+    const getSev = initMultiSelect("severityDropdown", "Tất cả");
+    const getSt  = initMultiSelect("statusDropdown", "Tất cả");
+
+    function applyFilters(){
+      const q = (document.getElementById("q").value || "").trim().toLowerCase();
+      const source = document.getElementById("source").value;
+      const sevs = getSev();
+      const sts = getSt();
+
+      const filtered = alerts.filter(a => {
+        if (source && a.src !== source) return false;
+        if (sevs.length && !sevs.includes(a.sev)) return false;
+        if (sts.length && !sts.includes(a.st)) return false;
+
+        const hay = `${a.id} ${a.title} ${a.entity} ${a.src} ${a.sev} ${a.st}`.toLowerCase();
+        if (q && !hay.includes(q)) return false;
+        return true;
+      });
+
+      renderAlerts(filtered);
+      document.getElementById("kpiCritical").textContent = filtered.filter(x => x.sev === "critical" && x.st !== "resolved").length;
+      document.getElementById("kpiOpen").textContent = filtered.filter(x => x.st === "open").length;
+    }
+
+    function resetFilters(){
+      document.getElementById("q").value = "";
+      document.getElementById("source").value = "";
+      document.querySelectorAll('#severityDropdown input[type="checkbox"]').forEach(chk => chk.checked = (chk.value === "critical" || chk.value === "high"));
+      document.querySelectorAll('#statusDropdown input[type="checkbox"]').forEach(chk => chk.checked = (chk.value === "open" || chk.value === "ack"));
+      document.querySelector('#severityDropdown .selected-options').textContent = "Critical, High";
+      document.querySelector('#statusDropdown .selected-options').textContent = "Open, Acknowledged";
+      applyFilters();
+    }
+
+    document.addEventListener("click", (e) => {
+      const el = e.target.closest("[data-action]");
+      if (!el) return;
+
+      const action = el.dataset.action;
+      const id = el.dataset.id;
+
+      if (action === "alert_view") return openPage("alert_detail.html", { id });
+      if (action === "alert_ack") return openPage("alert_ack.html", { id });
+      if (action === "alert_to_incident") return openPage("incident_create.html", { from_alert: id });
+
+      if (action === "inc_view") return openPage("incident_detail.html", { id });
+      if (action === "inc_edit") return openPage("incident_edit.html", { id });
+      if (action === "inc_resolve") return openPage("incident_resolve.html", { id });
+
+      if (action === "rule_view") return openPage("alert_rule_detail.html", { id });
+      if (action === "rule_edit") return openPage("alert_rule_edit.html", { id });
+    });
+
+    document.getElementById("btnExport").addEventListener("click", () => openPage("incidents_alerts_export.html"));
+    document.getElementById("btnRules").addEventListener("click", () => openPage("alert_rules_management.html"));
+    document.getElementById("btnCreateIncident").addEventListener("click", () => openPage("incident_create.html"));
+    document.getElementById("btnCreateIncident2").addEventListener("click", () => openPage("incident_create.html"));
+    document.getElementById("btnCreateRule").addEventListener("click", () => openPage("alert_rule_create.html"));
+    document.getElementById("btnRuleLibrary").addEventListener("click", () => openPage("alert_rule_library.html"));
+    document.getElementById("btnAuditExport").addEventListener("click", () => openPage("audit_export.html", { module: "incidents_alerts" }));
+    document.getElementById("btnKanban").addEventListener("click", () => openPage("incidents_kanban.html"));
+
+    document.getElementById("btnApply").addEventListener("click", applyFilters);
+    document.getElementById("btnReset").addEventListener("click", resetFilters);
+    document.getElementById("btnBulkAck").addEventListener("click", () => openPage("alerts_bulk_ack.html"));
+    document.getElementById("q").addEventListener("keydown", (ev)=>{ if(ev.key==="Enter") applyFilters(); });
+
+    renderAlerts(alerts);
+    renderIncidents(incidents);
+    renderRules();
+    renderAudit();
+    applyFilters();
+  </script>
+</body>
+</html>

@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chi tiết Lead - Nguyễn Thu Huyền</title>
+  <!-- External resources -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary-blue:#0f172a;
+      --accent-blue:#3b82f6;
+      --bg-light:#f8fafc;
+      --card-white:#ffffff;
+      --text-main:#334155;
+      --text-muted:#64748b;
+      --border-color:#e2e8f0;
+      --success:#10b981;
+      --warning:#f59e0b;
+      --danger:#ef4444;
+    }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:'Inter', sans-serif; background:var(--bg-light); color:var(--text-main); }
+    /* Ensure the page takes full viewport height when embedded */
+    html, body { height: 100%; }
+    .page { min-height: 100vh; padding:1.5rem 2rem; }
+    /* Header row with back button, title and action buttons */
+    .header-row {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:1rem;
+      margin-bottom:1.2rem;
+      flex-wrap:wrap;
+    }
+    .header-left {
+      display:flex;
+      align-items:center;
+      gap:1rem;
+    }
+    .back-button {
+      background: var(--border-color);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 0.4rem 0.8rem;
+      font-size: 0.8rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .back-button i {
+      font-size: 0.85rem;
+    }
+    .back-button:hover {
+      background: var(--accent-blue);
+      color: #fff;
+      border-color: var(--accent-blue);
+    }
+    .header-left h1 {
+      font-size:1.4rem;
+      font-weight:700;
+      margin:0;
+    }
+    .header-left p.desc {
+      font-size:0.85rem;
+      color:var(--text-muted);
+      margin:0.3rem 0 0;
+    }
+    .button-group {
+      display:flex;
+      gap:0.5rem;
+      flex-wrap:wrap;
+    }
+    .action-button {
+      background:var(--accent-blue);
+      color:#fff;
+      border:none;
+      border-radius:8px;
+      padding:0.5rem 1rem;
+      font-size:0.8rem;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      gap:0.4rem;
+    }
+    .action-button i {
+      font-size:0.9rem;
+    }
+    .action-button:hover {
+      background:rgba(59,130,246,0.8);
+    }
+    /* Tabs */
+    .tabs {
+      display:flex;
+      gap:1rem;
+      margin-bottom:1rem;
+    }
+    .tab {
+      padding:0.6rem 1rem;
+      border:1px solid var(--border-color);
+      background:var(--card-white);
+      border-radius:8px;
+      cursor:pointer;
+      font-weight:600;
+      font-size:0.85rem;
+      color:var(--text-main);
+    }
+    .tab.active {
+      border-color:var(--accent-blue);
+      background:#eff6ff;
+      color:var(--accent-blue);
+    }
+    /* Cards */
+    .card {
+      background:var(--card-white);
+      border:1px solid var(--border-color);
+      border-radius:12px;
+      padding:1rem;
+      margin-bottom:1.5rem;
+      display:flex;
+      flex-direction:column;
+    }
+    .card h3 {
+      font-size:1rem;
+      font-weight:600;
+      margin-bottom:0.8rem;
+    }
+    .info-grid {
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:0.7rem 1rem;
+      font-size:0.85rem;
+    }
+    .info-grid div { display:flex; flex-direction:column; }
+    .info-grid span.label { color:var(--text-muted); font-size:0.75rem; }
+    .info-grid span.value { font-weight:600; }
+    /* Activity and history tables */
+    table { width:100%; border-collapse:collapse; font-size:0.8rem; }
+    th, td { padding:0.55rem; border-bottom:1px solid var(--border-color); text-align:left; }
+    th { color:var(--text-muted); font-weight:600; }
+    /* Timeline style */
+    .timeline { list-style:none; padding-left:0; margin:0; }
+    .timeline li { position:relative; padding-left:1.5rem; margin-bottom:1rem; font-size:0.85rem; }
+    .timeline li::before {
+      content:'';
+      width:8px;
+      height:8px;
+      background:var(--accent-blue);
+      border-radius:50%;
+      position:absolute;
+      left:0;
+      top:0.3rem;
+    }
+    .timeline li .date {
+      font-size:0.75rem;
+      color:var(--text-muted);
+      margin-bottom:0.2rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <!-- Header row with back button, title/desc and action buttons -->
+    <div class="header-row">
+      <div class="header-left">
+        <a href="leads_opportunities.html" class="back-button">
+          <i class="fas fa-arrow-left"></i>
+          <span>Quay lại</span>
+        </a>
+        <div>
+          <h1>Chi tiết Lead - Nguyễn Thu Huyền</h1>
+          <p class="desc">Thông tin liên hệ, nguồn lead và lịch sử hoạt động.</p>
+        </div>
+      </div>
+      <div class="button-group">
+        <a href="opportunity_detail.html" class="action-button"><i class="fas fa-arrow-right"></i> Convert to Opportunity</a>
+        <a href="lead_create.html" class="action-button"><i class="fas fa-edit"></i> Chỉnh sửa</a>
+        <a href="javascript:void(0)" class="action-button" style="background:var(--danger);"><i class="fas fa-times"></i> Mark Lost</a>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <div class="tab active" data-tab="info">Thông tin</div>
+      <div class="tab" data-tab="activities">Hoạt động</div>
+      <div class="tab" data-tab="history">Lịch sử chuyển đổi</div>
+    </div>
+    <!-- Info tab content -->
+    <div id="infoTab" class="tab-content">
+      <div class="card">
+        <h3>Thông tin Lead</h3>
+        <div class="info-grid">
+          <div>
+            <span class="label">Tên Lead</span>
+            <span class="value">Nguyễn Thu Huyền</span>
+          </div>
+          <div>
+            <span class="label">Nguồn</span>
+            <span class="value">Facebook</span>
+          </div>
+          <div>
+            <span class="label">Số điện thoại</span>
+            <span class="value">0901 234 567</span>
+          </div>
+          <div>
+            <span class="label">Email</span>
+            <span class="value">huyen@example.com</span>
+          </div>
+          <div>
+            <span class="label">Sales phụ trách</span>
+            <span class="value">Nguyễn Văn A</span>
+          </div>
+          <div>
+            <span class="label">Trạng thái</span>
+            <span class="value">New</span>
+          </div>
+          <div>
+            <span class="label">Ngày tạo</span>
+            <span class="value">01/09/2025</span>
+          </div>
+          <div>
+            <span class="label">Ghi chú</span>
+            <span class="value">Khách quan tâm dịch vụ vận chuyển nhanh, dự kiến gửi 5 đơn/tháng.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Activities tab content -->
+    <div id="activitiesTab" class="tab-content" style="display:none;">
+      <div class="card">
+        <h3>Hoạt động gần đây</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Ngày</th>
+              <th>Loại</th>
+              <th>Nội dung</th>
+              <th>Người thực hiện</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>02/09/2025</td>
+              <td>Cuộc gọi</td>
+              <td>Liên hệ giới thiệu dịch vụ và xác nhận nhu cầu.</td>
+              <td>Nguyễn Văn A</td>
+            </tr>
+            <tr>
+              <td>05/09/2025</td>
+              <td>Meeting</td>
+              <td>Gặp mặt trực tiếp tại văn phòng để thảo luận hợp đồng.</td>
+              <td>Nguyễn Văn A</td>
+            </tr>
+            <tr>
+              <td>08/09/2025</td>
+              <td>Note</td>
+              <td>Khách hàng đang chờ duyệt ngân sách.</td>
+              <td>Nguyễn Văn A</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <!-- History tab content -->
+    <div id="historyTab" class="tab-content" style="display:none;">
+      <div class="card">
+        <h3>Lịch sử chuyển đổi</h3>
+        <ul class="timeline">
+          <li>
+            <div class="date">01/09/2025</div>
+            <div class="content">Lead được tạo (New)</div>
+          </li>
+          <li>
+            <div class="date">05/09/2025</div>
+            <div class="content">Trạng thái đổi thành Contacted</div>
+          </li>
+          <li>
+            <div class="date">10/09/2025</div>
+            <div class="content">Đánh giá đủ điều kiện (Qualified)</div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Tab switching logic
+    document.addEventListener('DOMContentLoaded', function() {
+      const tabs = document.querySelectorAll('.tab');
+      tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          tabs.forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          const id = tab.getAttribute('data-tab');
+          document.getElementById('infoTab').style.display = (id === 'info') ? '' : 'none';
+          document.getElementById('activitiesTab').style.display = (id === 'activities') ? '' : 'none';
+          document.getElementById('historyTab').style.display = (id === 'history') ? '' : 'none';
+        });
+      });
+    });
+  </script>
+</body>
+</html>

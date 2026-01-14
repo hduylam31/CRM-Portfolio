@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lead &amp; Cơ hội bán hàng</title>
+  <!-- External resources -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary-blue:#0f172a;
+      --accent-blue:#3b82f6;
+      --bg-light:#f8fafc;
+      --card-white:#ffffff;
+      --text-main:#334155;
+      --text-muted:#64748b;
+      --border-color:#e2e8f0;
+    }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:'Inter', sans-serif; background:var(--bg-light); color:var(--text-main); }
+    /* Make page fill the viewport height when embedded */
+    html, body { height: 100%; }
+    .page { padding:1.5rem 2rem; min-height: calc(100vh - 4rem); }
+    /* Header with back button and title */
+    .header-row {
+      display:flex;
+      justify-content:flex-start;
+      align-items:center;
+      gap:1rem;
+      margin-bottom:1rem;
+    }
+    /* Title group aligns back button and headings on one line */
+    .title-group {
+      display:flex;
+      align-items:center;
+      gap:1rem;
+    }
+    .back-button {
+      background: var(--border-color);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 0.4rem 0.8rem;
+      font-size: 0.8rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .back-button i {
+      font-size: 0.85rem;
+    }
+    .back-button:hover {
+      background: var(--accent-blue);
+      color: #fff;
+      border-color: var(--accent-blue);
+    }
+
+    /* Ensure header titles align vertically with back button */
+    .header-row h1 {
+      margin: 0;
+    }
+    .header-row .desc {
+      margin: 0;
+    }
+
+    /* Description style to match other pages */
+    .desc {
+      font-size:0.85rem;
+      color:var(--text-muted);
+      margin:0.3rem 0 1.5rem 0;
+    }
+    /* Tabs for lead/opportunity */
+    .tabs {
+      display:flex;
+      gap:1rem;
+      margin-bottom:1rem;
+    }
+    .tab {
+      padding:0.6rem 1rem;
+      border:1px solid var(--border-color);
+      background:var(--card-white);
+      border-radius:8px;
+      cursor:pointer;
+      font-weight:600;
+      font-size:0.85rem;
+      color:var(--text-main);
+    }
+    .tab.active {
+      border-color:var(--accent-blue);
+      background:#eff6ff;
+      color:var(--accent-blue);
+    }
+    /* Action bar with create button, filter and search */
+    .action-bar {
+      display:flex;
+      flex-wrap:wrap;
+      gap:1rem;
+      justify-content:flex-end;
+      margin-bottom:1rem;
+    }
+    .action-bar .btn {
+      background:var(--accent-blue);
+      color:#fff;
+      border:none;
+      border-radius:8px;
+      padding:0.45rem 0.9rem;
+      font-size:0.8rem;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      gap:0.4rem;
+    }
+    .action-bar .btn:hover {
+      background:rgba(59,130,246,0.8);
+    }
+    .action-bar select, .action-bar input {
+      padding:0.45rem 0.6rem;
+      border:1px solid var(--border-color);
+      border-radius:6px;
+      background:var(--card-white);
+      color:var(--text-main);
+      font-size:0.8rem;
+    }
+    .action-bar input { min-width:200px; }
+    .action-bar select:focus, .action-bar input:focus { outline:none; border-color:var(--accent-blue); }
+    /* Card container */
+    .card {
+      background:var(--card-white);
+      border:1px solid var(--border-color);
+      border-radius:12px;
+      padding:1rem;
+      margin-bottom:1.5rem;
+    }
+    /* Lead table */
+    .lead-table {
+      width:100%;
+      border-collapse:collapse;
+      font-size:0.8rem;
+    }
+    .lead-table th,
+    .lead-table td {
+      padding:0.65rem 0.6rem;
+      border-bottom:1px solid var(--border-color);
+      text-align:left;
+      font-size:0.85rem;
+    }
+    .lead-table th {
+      color:var(--text-muted);
+      font-weight:600;
+      position:sticky;
+      top:0;
+      background:var(--card-white);
+      z-index:1;
+    }
+    .lead-table a {
+      color:var(--accent-blue);
+      text-decoration:none;
+    }
+    .lead-table a:hover {
+      text-decoration:underline;
+    }
+    .actions i {
+      margin-right:0.6rem;
+      cursor:pointer;
+      color:var(--accent-blue);
+    }
+    .actions i:last-child { margin-right:0; }
+    .actions i:hover {
+      color:rgba(59,130,246,0.8);
+    }
+    /* Kanban pipeline */
+    .pipeline {
+      display:flex;
+      gap:1rem;
+      overflow-x:auto;
+      padding-bottom:1rem;
+    }
+    .pipeline-column {
+      background:var(--card-white);
+      border:1px solid var(--border-color);
+      border-radius:12px;
+      flex:0 0 250px;
+      display:flex;
+      flex-direction:column;
+      min-height:350px;
+    }
+    .pipeline-column h4 {
+      margin:0;
+      padding:0.7rem;
+      font-size:0.85rem;
+      font-weight:600;
+      background:var(--bg-light);
+      border-bottom:1px solid var(--border-color);
+      border-top-left-radius:12px;
+      border-top-right-radius:12px;
+    }
+    .column-body {
+      flex:1;
+      padding:0.7rem;
+      display:flex;
+      flex-direction:column;
+      gap:0.8rem;
+      overflow-y:auto;
+    }
+    .pipeline-card {
+      background:var(--card-white);
+      border:1px solid var(--border-color);
+      border-radius:8px;
+      padding:0.6rem;
+      box-shadow:0 1px 3px rgba(0,0,0,0.05);
+      font-size:0.75rem;
+      display:flex;
+      flex-direction:column;
+      gap:0.3rem;
+    }
+    .pipeline-card h5 {
+      margin:0;
+      font-size:0.85rem;
+      font-weight:600;
+      color:var(--accent-blue);
+    }
+    .pipeline-card .card-info span {
+      display:block;
+      font-size:0.75rem;
+      color:var(--text-main);
+      margin-top:0.2rem;
+    }
+    .pipeline-card .card-actions {
+      margin-top:0.4rem;
+      display:flex;
+      gap:0.5rem;
+    }
+    .pipeline-card .card-actions i {
+      cursor:pointer;
+      color:var(--accent-blue);
+      font-size:0.8rem;
+    }
+    .pipeline-card .card-actions i:hover {
+      color:rgba(59,130,246,0.8);
+    }
+
+    /* View toggle buttons for opportunity views */
+    .view-toggle {
+      display: flex;
+      gap: 0.5rem;
+    }
+    .view-toggle .toggle-btn {
+      background: var(--border-color);
+      color: var(--text-main);
+      border: none;
+      border-radius: 6px;
+      padding: 0.4rem 0.6rem;
+      font-size: 0.8rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    .view-toggle .toggle-btn.active {
+      background: var(--accent-blue);
+      color: #fff;
+    }
+    .view-toggle .toggle-btn i {
+      margin: 0;
+    }
+    /* Opportunity list table */
+    .opp-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8rem;
+    }
+    .opp-table th,
+    .opp-table td {
+      padding: 0.65rem 0.6rem;
+      border-bottom: 1px solid var(--border-color);
+      text-align: left;
+      font-size: 0.85rem;
+    }
+    .opp-table th {
+      color: var(--text-muted);
+      font-weight: 600;
+      position: sticky;
+      top: 0;
+      background: var(--card-white);
+      z-index: 1;
+    }
+    .opp-table a {
+      color: var(--accent-blue);
+      text-decoration: none;
+    }
+    .opp-table a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="header-row">
+      <a href="javascript:history.back()" class="back-button">
+        <i class="fas fa-arrow-left"></i>
+        <span>Quay lại</span>
+      </a>
+      <div>
+        <h1>Lead &amp; Cơ hội bán hàng</h1>
+        <p class="desc">Quản lý Lead và cơ hội bán hàng theo pipeline.</p>
+      </div>
+    </div>
+    <!-- Tabs -->
+    <div class="tabs">
+      <div class="tab active" data-tab="leads">Lead</div>
+      <div class="tab" data-tab="opportunities">Cơ hội</div>
+    </div>
+    <!-- Action bars -->
+    <div id="leadActionBar" class="action-bar">
+      <button class="btn" id="createLeadBtn"><i class="fas fa-plus"></i> Tạo Lead</button>
+      <select id="leadStatusFilter">
+        <option value="">Tất cả trạng thái</option>
+        <option value="new">New</option>
+        <option value="contacted">Contacted</option>
+        <option value="qualified">Qualified</option>
+        <option value="lost">Lost</option>
+      </select>
+      <input type="text" id="leadSearch" placeholder="Tìm kiếm Lead...">
+    </div>
+    <div id="oppActionBar" class="action-bar" style="display:none;">
+      <button class="btn" id="createOppBtn"><i class="fas fa-plus"></i> Tạo Cơ hội</button>
+      <div class="view-toggle">
+        <button id="kanbanViewBtn" class="toggle-btn active"><i class="fas fa-th-large"></i> Kanban</button>
+        <button id="listViewBtn" class="toggle-btn"><i class="fas fa-list"></i> Danh sách</button>
+      </div>
+    </div>
+    <!-- Lead tab content -->
+    <div id="leadTab" class="tab-content">
+      <div class="card">
+        <table class="lead-table">
+          <thead>
+            <tr>
+              <th>Lead Name</th>
+              <th>Nguồn</th>
+              <th>SĐT / Email</th>
+              <th>Sales phụ trách</th>
+              <th>Trạng thái</th>
+              <th>Ngày tạo</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><a href="lead_detail.html">Nguyễn Thu Huyền</a></td>
+              <td>Facebook</td>
+              <td>0901 234 567 / huyen@example.com</td>
+              <td>Nguyễn Văn A</td>
+              <td>New</td>
+              <td>01/09/2025</td>
+              <td class="actions">
+                <i class="fas fa-eye" title="Xem"></i>
+                <i class="fas fa-edit" title="Chỉnh sửa"></i>
+                <i class="fas fa-arrow-right" title="Convert to Opportunity"></i>
+                <i class="fas fa-times" title="Mark Lost"></i>
+              </td>
+            </tr>
+            <tr>
+              <td><a href="lead_detail.html">Cty DEF Logistics</a></td>
+              <td>Website</td>
+              <td>028 5678 1234 / contact@deflogistics.com</td>
+              <td>Lê Thị B</td>
+              <td>Contacted</td>
+              <td>05/09/2025</td>
+              <td class="actions">
+                <i class="fas fa-eye" title="Xem"></i>
+                <i class="fas fa-edit" title="Chỉnh sửa"></i>
+                <i class="fas fa-arrow-right" title="Convert to Opportunity"></i>
+                <i class="fas fa-times" title="Mark Lost"></i>
+              </td>
+            </tr>
+            <tr>
+              <td><a href="lead_detail.html">Shop MNO</a></td>
+              <td>Zalo</td>
+              <td>0912 876 543 / shopmno@gmail.com</td>
+              <td>Trần Văn C</td>
+              <td>Qualified</td>
+              <td>10/09/2025</td>
+              <td class="actions">
+                <i class="fas fa-eye" title="Xem"></i>
+                <i class="fas fa-edit" title="Chỉnh sửa"></i>
+                <i class="fas fa-arrow-right" title="Convert to Opportunity"></i>
+                <i class="fas fa-times" title="Mark Lost"></i>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <!-- Opportunity tab content -->
+    <div id="oppTab" class="tab-content" style="display:none;">
+      <div id="oppKanbanView" class="pipeline">
+        <!-- New column -->
+        <div class="pipeline-column">
+          <h4>New</h4>
+          <div class="column-body">
+            <div class="pipeline-card">
+              <h5>Opp #001</h5>
+              <div class="card-info">
+                <span>Khách: Nguyễn Thu Huyền</span>
+                <span>Giá trị: 500M</span>
+                <span>Sales: Nguyễn Văn A</span>
+                <span>Close: 15/09/2025</span>
+              </div>
+              <div class="card-actions">
+                <i class="fas fa-eye" title="Xem chi tiết"></i>
+                <i class="fas fa-edit" title="Chỉnh sửa"></i>
+                <i class="fas fa-file-invoice" title="Tạo báo giá"></i>
+                <i class="fas fa-times" title="Mark Lost"></i>
+              </div>
+            </div>
+            <div class="pipeline-card">
+              <h5>Opp #002</h5>
+              <div class="card-info">
+                <span>Khách: Cty DEF Logistics</span>
+                <span>Giá trị: 1.2B</span>
+                <span>Sales: Lê Thị B</span>
+                <span>Close: 20/10/2025</span>
+              </div>
+              <div class="card-actions">
+                <i class="fas fa-eye" title="Xem chi tiết"></i>
+                <i class="fas fa-edit" title="Chỉnh sửa"></i>
+                <i class="fas fa-file-invoice" title="Tạo báo giá"></i>
+                <i class="fas fa-times" title="Mark Lost"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Qualification column -->
+        <div class="pipeline-column">
+          <h4>Qualification</h4>
+          <div class="column-body">
+            <div class="pipeline-card">
+              <h5>Opp #003</h5>
+              <div class="card-info">
+                <span>Khách: Shop MNO</span>
+                <span>Giá trị: 800M</span>
+                <span>Sales: Trần Văn C</span>
+                <span>Close: 25/09/2025</span>
+              </div>
+              <div class="card-actions">
+                <i class="fas fa-eye" title="Xem chi tiết"></i>
+                <i class="fas fa-edit" title="Chỉnh sửa"></i>
+                <i class="fas fa-file-invoice" title="Tạo báo giá"></i>
+                <i class="fas fa-times" title="Mark Lost"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Proposal column -->
+        <div class="pipeline-column">
+          <h4>Proposal</h4>
+          <div class="column-body">
+            <!-- no data example -->
+          </div>
+        </div>
+        <!-- Negotiation column -->
+        <div class="pipeline-column">
+          <h4>Negotiation</h4>
+          <div class="column-body">
+            <!-- Example card -->
+            <div class="pipeline-card">
+              <h5>Opp #004</h5>
+              <div class="card-info">
+                <span>Khách: Cty DEF Logistics</span>
+                <span>Giá trị: 2B</span>
+                <span>Sales: Lê Thị B</span>
+                <span>Close: 30/11/2025</span>
+              </div>
+              <div class="card-actions">
+                <i class="fas fa-eye" title="Xem chi tiết"></i>
+                <i class="fas fa-edit" title="Chỉnh sửa"></i>
+                <i class="fas fa-file-invoice" title="Tạo báo giá"></i>
+                <i class="fas fa-times" title="Mark Lost"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Won column -->
+        <div class="pipeline-column">
+          <h4>Won</h4>
+          <div class="column-body">
+            <div class="pipeline-card">
+              <h5>Opp #005</h5>
+              <div class="card-info">
+                <span>Khách: Shop MNO</span>
+                <span>Giá trị: 600M</span>
+                <span>Sales: Trần Văn C</span>
+                <span>Close: 05/10/2025</span>
+              </div>
+              <div class="card-actions">
+                <i class="fas fa-eye" title="Xem chi tiết"></i>
+                <i class="fas fa-edit" title="Chỉnh sửa"></i>
+                <i class="fas fa-file-invoice" title="Tạo báo giá"></i>
+                <i class="fas fa-trophy" title="Won"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Lost column -->
+        <div class="pipeline-column">
+          <h4>Lost</h4>
+          <div class="column-body">
+            <div class="pipeline-card">
+              <h5>Opp #006</h5>
+              <div class="card-info">
+                <span>Khách: Cty DEF Logistics</span>
+                <span>Giá trị: 900M</span>
+                <span>Sales: Lê Thị B</span>
+                <span>Close: 02/09/2025</span>
+              </div>
+              <div class="card-actions">
+                <i class="fas fa-eye" title="Xem chi tiết"></i>
+                <i class="fas fa-edit" title="Chỉnh sửa"></i>
+                <i class="fas fa-file-invoice" title="Tạo báo giá"></i>
+                <i class="fas fa-times" title="Đã mất"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- List view for opportunities -->
+      <div id="oppListView" class="card" style="display:none;">
+        <table class="opp-table">
+          <thead>
+            <tr>
+              <th>Mã cơ hội</th>
+              <th>Khách hàng</th>
+              <th>Giá trị</th>
+              <th>Giai đoạn</th>
+              <th>Sales</th>
+              <th>Ngày chốt</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><a href="opportunity_detail.html">Opp #001</a></td>
+              <td>Nguyễn Thu Huyền</td>
+              <td>500M</td>
+              <td>New</td>
+              <td>Nguyễn Văn A</td>
+              <td>15/09/2025</td>
+              <td class="actions">
+                <i class="fas fa-eye" title="Xem chi tiết"></i>
+                <i class="fas fa-edit" title="Chỉnh sửa"></i>
+                <i class="fas fa-file-invoice" title="Tạo báo giá"></i>
+                <i class="fas fa-times" title="Mark Lost"></i>
+              </td>
+            </tr>
+            <tr>
+              <td><a href="opportunity_detail.html">Opp #002</a></td>
+              <td>Cty DEF Logistics</td>
+              <td>1.2B</td>
+              <td>New</td>
+              <td>Lê Thị B</td>
+              <td>20/10/2025</td>
+              <td class="actions">
+                <i class="fas fa-eye" title="Xem chi tiết"></i>
+                <i class="fas fa-edit" title="Chỉnh sửa"></i>
+                <i class="fas fa-file-invoice" title="Tạo báo giá"></i>
+                <i class="fas fa-times" title="Mark Lost"></i>
+              </td>
+            </tr>
+            <tr>
+              <td><a href="opportunity_detail.html">Opp #003</a></td>
+              <td>Shop MNO</td>
+              <td>800M</td>
+              <td>Qualification</td>
+              <td>Trần Văn C</td>
+              <td>25/09/2025</td>
+              <td class="actions">
+                <i class="fas fa-eye" title="Xem chi tiết"></i>
+                <i class="fas fa-edit" title="Chỉnh sửa"></i>
+                <i class="fas fa-file-invoice" title="Tạo báo giá"></i>
+                <i class="fas fa-times" title="Mark Lost"></i>
+              </td>
+            </tr>
+            <tr>
+              <td><a href="opportunity_detail.html">Opp #004</a></td>
+              <td>Cty DEF Logistics</td>
+              <td>2B</td>
+              <td>Negotiation</td>
+              <td>Lê Thị B</td>
+              <td>30/11/2025</td>
+              <td class="actions">
+                <i class="fas fa-eye" title="Xem chi tiết"></i>
+                <i class="fas fa-edit" title="Chỉnh sửa"></i>
+                <i class="fas fa-file-invoice" title="Tạo báo giá"></i>
+                <i class="fas fa-times" title="Mark Lost"></i>
+              </td>
+            </tr>
+            <tr>
+              <td><a href="opportunity_detail.html">Opp #005</a></td>
+              <td>Shop MNO</td>
+              <td>600M</td>
+              <td>Won</td>
+              <td>Trần Văn C</td>
+              <td>05/10/2025</td>
+              <td class="actions">
+                <i class="fas fa-eye" title="Xem chi tiết"></i>
+                <i class="fas fa-edit" title="Chỉnh sửa"></i>
+                <i class="fas fa-file-invoice" title="Tạo báo giá"></i>
+                <i class="fas fa-trophy" title="Won"></i>
+              </td>
+            </tr>
+            <tr>
+              <td><a href="opportunity_detail.html">Opp #006</a></td>
+              <td>Cty DEF Logistics</td>
+              <td>900M</td>
+              <td>Lost</td>
+              <td>Lê Thị B</td>
+              <td>02/09/2025</td>
+              <td class="actions">
+                <i class="fas fa-eye" title="Xem chi tiết"></i>
+                <i class="fas fa-edit" title="Chỉnh sửa"></i>
+                <i class="fas fa-file-invoice" title="Tạo báo giá"></i>
+                <i class="fas fa-times" title="Đã mất"></i>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const tabs = document.querySelectorAll('.tab');
+      const leadActionBar = document.getElementById('leadActionBar');
+      const oppActionBar = document.getElementById('oppActionBar');
+      const listViewBtn = document.getElementById('listViewBtn');
+      const kanbanViewBtn = document.getElementById('kanbanViewBtn');
+      const oppListView = document.getElementById('oppListView');
+      const oppKanbanView = document.getElementById('oppKanbanView');
+
+      // Tab switching: show corresponding tab and action bar
+      tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          tabs.forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          const id = tab.getAttribute('data-tab');
+          // Show/hide tab content
+          document.getElementById('leadTab').style.display = (id === 'leads') ? '' : 'none';
+          document.getElementById('oppTab').style.display = (id === 'opportunities') ? '' : 'none';
+          // Show/hide appropriate action bar
+          if (id === 'leads') {
+            leadActionBar.style.display = '';
+            oppActionBar.style.display = 'none';
+          } else {
+            leadActionBar.style.display = 'none';
+            oppActionBar.style.display = '';
+          }
+        });
+      });
+
+      // View toggle for opportunities: switch between list and kanban
+      if (listViewBtn && kanbanViewBtn && oppListView && oppKanbanView) {
+        listViewBtn.addEventListener('click', function() {
+          listViewBtn.classList.add('active');
+          kanbanViewBtn.classList.remove('active');
+          oppListView.style.display = '';
+          oppKanbanView.style.display = 'none';
+        });
+        kanbanViewBtn.addEventListener('click', function() {
+          kanbanViewBtn.classList.add('active');
+          listViewBtn.classList.remove('active');
+          oppListView.style.display = 'none';
+          oppKanbanView.style.display = '';
+        });
+      }
+
+      // Filter leads by status and search term
+      const statusFilter = document.getElementById('leadStatusFilter');
+      const searchInput = document.getElementById('leadSearch');
+      function filterLeads() {
+        const rows = document.querySelectorAll('.lead-table tbody tr');
+        const statusVal = statusFilter.value.toLowerCase();
+        const searchVal = searchInput.value.toLowerCase();
+        rows.forEach(row => {
+          const name = row.children[0].textContent.toLowerCase();
+          const status = row.children[4].textContent.toLowerCase();
+          let show = true;
+          if (statusVal && status !== statusVal) show = false;
+          if (searchVal && !name.includes(searchVal)) show = false;
+          row.style.display = show ? '' : 'none';
+        });
+      }
+      statusFilter.addEventListener('change', filterLeads);
+      searchInput.addEventListener('input', filterLeads);
+    });
+  </script>
+</body>
+</html>

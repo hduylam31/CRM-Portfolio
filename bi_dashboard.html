@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BI Dashboard</title>
+  <!-- External fonts and icons -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --primary-blue:#0f172a;
+      --accent-blue:#3b82f6;
+      --bg-light:#f8fafc;
+      --card-white:#ffffff;
+      --text-main:#334155;
+      --text-muted:#64748b;
+      --border-color:#e2e8f0;
+      --success:#10b981;
+      --warning:#f59e0b;
+      --danger:#ef4444;
+    }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:'Inter', sans-serif; background:var(--bg-light); color:var(--text-main); }
+    .dashboard { padding:1.5rem 2rem; }
+    /* Topbar */
+    .topbar { display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; margin-bottom:1rem; }
+    .topbar-title { margin-bottom:0.5rem; }
+    .topbar h1 { font-size:1.5rem; font-weight:700; margin:0; }
+    .topbar p { font-size:0.85rem; color:var(--text-muted); margin:0.2rem 0 0 0; }
+    .topbar-right { display:flex; flex-wrap:wrap; align-items:center; gap:1rem; }
+    /* Filters */
+    .filters { display:flex; flex-wrap:wrap; gap:0.8rem; }
+    .filter { display:flex; flex-direction:column; }
+    .filter label { font-size:0.7rem; color:var(--text-muted); margin-bottom:0.2rem; }
+    .filter select, .filter input { padding:0.4rem 0.6rem; border:1px solid var(--border-color); border-radius:6px; background:var(--card-white); color:var(--text-main); font-size:0.8rem; min-width:140px; }
+    .filter select:focus, .filter input:focus { outline:none; border-color:var(--accent-blue); }
+    .buttons { display:flex; gap:0.5rem; }
+    .buttons button { padding:0.45rem 0.9rem; border:none; border-radius:8px; font-size:0.8rem; cursor:pointer; }
+    .buttons .apply { background:var(--accent-blue); color:white; }
+    .buttons .reset { background:var(--border-color); color:var(--text-main); }
+    .buttons .export { background:var(--success); color:white; }
+    .avatar { width:32px; height:32px; border-radius:8px; }
+    /* Tabs */
+    .tabs { display:flex; border-bottom:1px solid var(--border-color); margin-bottom:1rem; }
+    .tab { padding:0.6rem 1rem; cursor:pointer; font-weight:600; font-size:0.85rem; border:1px solid var(--border-color); border-bottom:none; background:var(--card-white); color:var(--text-main); margin-right:0.3rem; border-radius:8px 8px 0 0; }
+    .tab.active { border-color:var(--accent-blue); background:#eff6ff; color:var(--accent-blue); }
+    /* Tab content */
+    .tab-content { display:none; }
+    .tab-content.active { display:block; }
+    /* KPI row */
+    .kpi-row { display:grid; grid-template-columns:repeat(4,1fr); gap:1rem; margin-bottom:1rem; }
+    .kpi-card { background:var(--card-white); border:1px solid var(--border-color); border-radius:12px; padding:1rem; display:flex; flex-direction:column; justify-content:space-between; }
+    .kpi-card .title { font-size:0.7rem; color:var(--text-muted); }
+    .kpi-card .value { font-size:1.4rem; font-weight:800; margin:0.3rem 0; }
+    .kpi-card .trend { font-size:0.75rem; }
+    .kpi-card .trend.up { color:var(--success); }
+    .kpi-card .trend.down { color:var(--danger); }
+    /* Grids */
+    .grid-2 { display:grid; grid-template-columns:2fr 1fr; gap:1rem; margin-bottom:1rem; }
+    .grid-1 { display:grid; grid-template-columns:1fr; gap:1rem; margin-bottom:1rem; }
+    .grid-3 { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin-bottom:1rem; }
+    /* Widgets */
+    .widget { background:var(--card-white); border:1px solid var(--border-color); border-radius:12px; padding:1rem; display:flex; flex-direction:column; height:360px; overflow:hidden; }
+    .widget h3 { font-size:0.9rem; font-weight:600; margin:0 0 0.7rem 0; }
+    .chart-container { flex:1; position:relative; }
+    .chart-container canvas { width:100% !important; height:100% !important; }
+
+    /* Donut widgets: prevent clipping / oversized arcs */
+    .widget.widget-donut { height:420px; }
+    .widget.widget-donut .chart-container {
+      flex:0 0 260px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .widget.widget-donut .chart-container canvas { max-width:520px !important; max-height:260px !important; }
+    .widget.widget-donut .table-wrapper { flex:1; overflow-y:auto; }
+    .table-wrapper { flex:1; overflow-y:auto; }
+    table { width:100%; border-collapse:collapse; font-size:0.75rem; }
+    th, td { padding:0.5rem; border-bottom:1px solid var(--border-color); text-align:left; }
+    th { font-weight:600; color:var(--text-muted); position:sticky; top:0; background:var(--card-white); z-index:1; }
+    /* Small cards for incident summary */
+    .small-cards { display:grid; grid-template-columns:repeat(4,1fr); gap:1rem; margin-bottom:1rem; }
+    .small-card { background:var(--card-white); border:1px solid var(--border-color); border-radius:10px; padding:0.8rem; display:flex; flex-direction:column; }
+    .small-card .label { font-size:0.7rem; color:var(--text-muted); margin-bottom:0.3rem; }
+    .small-card .count { font-size:1.1rem; font-weight:700; color:var(--primary-blue); }
+  </style>
+</head>
+<body>
+  <div class="dashboard">
+    <!-- Top bar -->
+    <div class="topbar">
+      <div class="topbar-title">
+        <h1>BI Dashboard</h1>
+        <p>Báo cáo tổng quan &amp; phân tích</p>
+      </div>
+      <div class="topbar-right">
+        <div class="filters">
+          <div class="filter">
+            <label>Khoảng thời gian</label>
+            <select>
+              <option>Hôm nay</option>
+              <option>7 ngày</option>
+              <option selected>30 ngày</option>
+              <option>Tháng này</option>
+              <option>Quý này</option>
+              <option>Tùy chọn</option>
+            </select>
+          </div>
+          <div class="filter">
+            <label>Khu vực</label>
+            <select>
+              <option>Tất cả</option>
+              <option>Bắc</option>
+              <option>Trung</option>
+              <option>Nam</option>
+            </select>
+          </div>
+          <div class="filter">
+            <label>Dịch vụ</label>
+            <select>
+              <option>Tất cả</option>
+              <option>Nhanh</option>
+              <option>Tiết kiệm</option>
+              <option>Hỏa tốc</option>
+              <option>COD</option>
+            </select>
+          </div>
+          <div class="filter">
+            <label>Kênh</label>
+            <select>
+              <option>Tất cả</option>
+              <option>Direct Sales</option>
+              <option>Online</option>
+              <option>Partner/3PL</option>
+            </select>
+          </div>
+          <div class="filter">
+            <label>Segment KH</label>
+            <select>
+              <option>Tất cả</option>
+              <option>SMB</option>
+              <option>Key Account</option>
+              <option>B2C</option>
+            </select>
+          </div>
+        </div>
+        <div class="buttons">
+          <button class="apply">Apply</button>
+          <button class="reset">Reset</button>
+          <button class="export">Export</button>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:flex-end; font-size:0.75rem; color:var(--text-muted);">
+          <span>Last refreshed: 08/01/2026</span>
+        </div>
+        <img class="avatar" src="https://ui-avatars.com/api/?name=Admin&background=0D8ABC&color=fff" alt="User">
+      </div>
+    </div>
+    <!-- Tabs -->
+    <div class="tabs">
+      <div class="tab active" data-tab="tabA">Doanh thu &amp; Khách hàng</div>
+      <div class="tab" data-tab="tabB">Vận hành</div>
+      <div class="tab" data-tab="tabC">Dịch vụ &amp; CSKH</div>
+    </div>
+    <!-- Tab A: Doanh thu & Khách hàng -->
+    <div id="tabA" class="tab-content active">
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <div class="title">Doanh thu kỳ này</div>
+          <div class="value">12.8B</div>
+          <div class="trend up">▲ 8.4%</div>
+        </div>
+        <div class="kpi-card">
+          <div class="title">Sản lượng đơn</div>
+          <div class="value">58,420</div>
+          <div class="trend up">▲ 5.1%</div>
+        </div>
+        <div class="kpi-card">
+          <div class="title">Khách hàng mới</div>
+          <div class="value">420</div>
+          <div class="trend up">▲ 12.0%</div>
+        </div>
+        <div class="kpi-card">
+          <div class="title">Churn rate</div>
+          <div class="value">3.2%</div>
+          <div class="trend down">▼ 0.4đ</div>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="widget">
+          <h3>Doanh thu theo thời gian</h3>
+          <div class="chart-container"><canvas id="revTrend"></canvas></div>
+        </div>
+        <div class="widget">
+          <h3>Doanh thu theo phân khúc/kênh</h3>
+          <div class="chart-container"><canvas id="revSegment"></canvas></div>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="widget">
+          <h3>Top khách hàng</h3>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr><th>Khách hàng</th><th>Doanh thu</th><th>#Đơn</th><th>Tỷ trọng</th><th>Xu hướng</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Cty ABC Trading</td><td>2.1B</td><td>1,200</td><td>16%</td><td>▲</td></tr>
+                <tr><td>Shop XYZ</td><td>1.6B</td><td>980</td><td>12%</td><td>▲</td></tr>
+                <tr><td>Cty Minh Long</td><td>1.2B</td><td>760</td><td>9%</td><td>▲</td></tr>
+                <tr><td>Cửa hàng 123</td><td>900M</td><td>650</td><td>7%</td><td>▼</td></tr>
+                <tr><td>Doanh nghiệp QRS</td><td>850M</td><td>620</td><td>6%</td><td>▲</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="widget">
+          <h3>Top tuyến vận chuyển</h3>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr><th>Tuyến</th><th>Doanh thu</th><th>#Đơn</th><th>%On-time</th><th>Incident</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>HN–HCM</td><td>4.5B</td><td>8,200</td><td>95%</td><td>0.8%</td></tr>
+                <tr><td>HCM–DN</td><td>2.3B</td><td>4,600</td><td>96%</td><td>0.5%</td></tr>
+                <tr><td>HN–HP</td><td>1.8B</td><td>3,500</td><td>94%</td><td>1.0%</td></tr>
+                <tr><td>DN–CT</td><td>1.1B</td><td>2,400</td><td>93%</td><td>1.2%</td></tr>
+                <tr><td>HCM–NT</td><td>0.9B</td><td>1,900</td><td>92%</td><td>1.5%</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Tab B: Vận hành -->
+    <div id="tabB" class="tab-content">
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <div class="title">Tỷ lệ giao đúng hạn</div>
+          <div class="value">96.2%</div>
+          <div class="trend up">▲ 0.3%</div>
+        </div>
+        <div class="kpi-card">
+          <div class="title">Thời gian giao TB</div>
+          <div class="value">1.8 ngày</div>
+          <div class="trend down">▼ 0.1d</div>
+        </div>
+        <div class="kpi-card">
+          <div class="title">Sản lượng xử lý/ngày</div>
+          <div class="value">1,950</div>
+          <div class="trend up">▲ 4.2%</div>
+        </div>
+        <div class="kpi-card">
+          <div class="title">Tỷ lệ hoàn/failed</div>
+          <div class="value">2.1%</div>
+          <div class="trend down">▼ 0.2%</div>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="widget">
+          <h3>On-time vs Late theo vùng</h3>
+          <div class="chart-container"><canvas id="opsOTD"></canvas></div>
+        </div>
+        <div class="widget">
+          <h3>Sản lượng xử lý</h3>
+          <div class="chart-container"><canvas id="opsVolume"></canvas></div>
+        </div>
+      </div>
+      <div class="grid-1">
+        <div class="widget">
+          <h3>Sự cố vận hành</h3>
+          <div class="small-cards">
+            <div class="small-card"><div class="label">Nằm kho &gt;24h</div><div class="count">120</div></div>
+            <div class="small-card"><div class="label">Sai lệch lộ trình</div><div class="count">85</div></div>
+            <div class="small-card"><div class="label">Hư hỏng</div><div class="count">63</div></div>
+            <div class="small-card"><div class="label">Giao trễ</div><div class="count">44</div></div>
+          </div>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr><th>Mã vận đơn</th><th>Loại sự cố</th><th>Hub hiện tại</th><th>Thời gian phát sinh</th><th>SLA</th><th>Trạng thái</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>VN001</td><td>Nằm kho &gt;24h</td><td>Hà Nội</td><td>02/01/26 10:20</td><td>-</td><td>Đang xử lý</td></tr>
+                <tr><td>VN002</td><td>Sai lộ trình</td><td>Đà Nẵng</td><td>03/01/26 09:50</td><td>12h</td><td>Chưa xử lý</td></tr>
+                <tr><td>VN003</td><td>Hư hỏng</td><td>Hồ Chí Minh</td><td>04/01/26 14:15</td><td>24h</td><td>Đã xử lý</td></tr>
+                <tr><td>VN004</td><td>Giao trễ</td><td>Hà Nội</td><td>04/01/26 08:00</td><td>24h</td><td>Đang xử lý</td></tr>
+                <tr><td>VN005</td><td>Nằm kho &gt;24h</td><td>Đồng Nai</td><td>05/01/26 16:30</td><td>-</td><td>Chưa xử lý</td></tr>
+                <tr><td>VN006</td><td>Hư hỏng</td><td>Bình Dương</td><td>05/01/26 12:10</td><td>24h</td><td>Đang xử lý</td></tr>
+                <tr><td>VN007</td><td>Sai lộ trình</td><td>Hải Phòng</td><td>05/01/26 09:00</td><td>12h</td><td>Đã xử lý</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="grid-1">
+        <div class="widget">
+          <h3>Top 10 tỉnh trễ nhiều nhất</h3>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr><th>Tỉnh</th><th>#Đơn trễ</th><th>Tỷ lệ trễ</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Hà Nội</td><td>120</td><td>3.5%</td></tr>
+                <tr><td>Hồ Chí Minh</td><td>95</td><td>2.9%</td></tr>
+                <tr><td>Bình Dương</td><td>80</td><td>3.2%</td></tr>
+                <tr><td>Đồng Nai</td><td>70</td><td>2.7%</td></tr>
+                <tr><td>Đà Nẵng</td><td>65</td><td>2.5%</td></tr>
+                <tr><td>Cần Thơ</td><td>55</td><td>3.0%</td></tr>
+                <tr><td>Hải Phòng</td><td>50</td><td>2.2%</td></tr>
+                <tr><td>Nghệ An</td><td>45</td><td>2.8%</td></tr>
+                <tr><td>Thanh Hóa</td><td>40</td><td>2.4%</td></tr>
+                <tr><td>Khánh Hòa</td><td>35</td><td>2.1%</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Tab C: Dịch vụ & CSKH -->
+    <div id="tabC" class="tab-content">
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <div class="title">NPS</div>
+          <div class="value">+42</div>
+          <div class="trend up">▲ 3</div>
+        </div>
+        <div class="kpi-card">
+          <div class="title">AHT</div>
+          <div class="value">6.8 phút</div>
+          <div class="trend down">▼ 0.7</div>
+        </div>
+        <div class="kpi-card">
+          <div class="title">Ticket mở mới</div>
+          <div class="value">1,248</div>
+          <div class="trend up">▲ 5.8%</div>
+        </div>
+        <div class="kpi-card">
+          <div class="title">% Ticket đúng SLA</div>
+          <div class="value">92.5%</div>
+          <div class="trend up">▲ 1.2%</div>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="widget">
+          <h3>NPS theo thời gian</h3>
+          <div class="chart-container"><canvas id="npsTrend"></canvas></div>
+        </div>
+        <div class="widget">
+          <h3>Ticket volume &amp; SLA</h3>
+          <div class="chart-container"><canvas id="ticketVolume"></canvas></div>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="widget widget-donut">
+          <h3>Phân tích khiếu nại</h3>
+          <div class="chart-container"><canvas id="complaintDonut"></canvas></div>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr><th>Nhóm</th><th>#Ticket</th><th>%</th><th>Avg resolve</th><th>CSAT/NPS</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Trễ giao</td><td>380</td><td>30%</td><td>3d</td><td>-10</td></tr>
+                <tr><td>Thất lạc</td><td>250</td><td>20%</td><td>5d</td><td>-15</td></tr>
+                <tr><td>Hư hỏng</td><td>190</td><td>15%</td><td>4d</td><td>-8</td></tr>
+                <tr><td>COD</td><td>130</td><td>10%</td><td>2d</td><td>-5</td></tr>
+                <tr><td>Thái độ</td><td>80</td><td>6%</td><td>1d</td><td>-12</td></tr>
+                <tr><td>Khác</td><td>218</td><td>19%</td><td>3d</td><td>-7</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="widget">
+          <h3>Kết quả xử lý ticket</h3>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr><th>Ticket ID</th><th>Khách hàng</th><th>Kênh</th><th>Priority</th><th>Trạng thái</th><th>Assignee</th><th>Age</th><th>Next action</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>#T001</td><td>ABC Trading</td><td>Hotline</td><td>Cao</td><td>Open</td><td>Nguyễn A</td><td>2h</td><td>Theo dõi</td></tr>
+                <tr><td>#T002</td><td>Shop XYZ</td><td>Zalo</td><td>Trung</td><td>In progress</td><td>Trần B</td><td>5h</td><td>Chờ phản hồi</td></tr>
+                <tr><td>#T003</td><td>Minh Long</td><td>Email</td><td>Thấp</td><td>Resolved</td><td>Phạm C</td><td>1d</td><td>Đóng</td></tr>
+                <tr><td>#T004</td><td>Cty 123</td><td>Hotline</td><td>Cao</td><td>Escalated</td><td>Lê D</td><td>3h</td><td>Chuyển cấp</td></tr>
+                <tr><td>#T005</td><td>QRS</td><td>Chat</td><td>Thấp</td><td>Open</td><td>Nguyễn A</td><td>30m</td><td>Liên hệ</td></tr>
+                <tr><td>#T006</td><td>DEF</td><td>Hotline</td><td>Trung</td><td>In progress</td><td>Trần B</td><td>1d</td><td>Giải quyết</td></tr>
+                <tr><td>#T007</td><td>GHI</td><td>Email</td><td>Cao</td><td>Open</td><td>Phạm C</td><td>45m</td><td>Kiểm tra</td></tr>
+                <tr><td>#T008</td><td>JKL</td><td>Zalo</td><td>Thấp</td><td>Resolved</td><td>Lê D</td><td>2d</td><td>Đóng</td></tr>
+                <tr><td>#T009</td><td>MNO</td><td>Chat</td><td>Trung</td><td>Open</td><td>Nguyễn A</td><td>4h</td><td>Theo dõi</td></tr>
+                <tr><td>#T010</td><td>PQR</td><td>Hotline</td><td>Cao</td><td>Escalated</td><td>Trần B</td><td>6h</td><td>Chuyển cấp</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Make charts static (no animation) and stable sizing
+      if (window.Chart) {
+        Chart.defaults.animation = false;
+        Chart.defaults.transitions = {
+          active: { animation: { duration: 0 } },
+          resize: { animation: { duration: 0 } },
+          show: { animation: { duration: 0 } },
+          hide: { animation: { duration: 0 } }
+        };
+      }
+
+      // Tab switching
+      const tabButtons = document.querySelectorAll('.tab');
+      const tabContents = document.querySelectorAll('.tab-content');
+      tabButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+          tabButtons.forEach(b => b.classList.remove('active'));
+          tabContents.forEach(c => c.classList.remove('active'));
+          this.classList.add('active');
+          const id = this.getAttribute('data-tab');
+          document.getElementById(id).classList.add('active');
+        });
+      });
+      // Chart: Revenue trend
+      const revTrend = new Chart(document.getElementById('revTrend').getContext('2d'), {
+        type: 'line',
+        data: {
+          labels: ['01','02','03','04','05','06','07'],
+          datasets: [{
+            label: 'Doanh thu (B)',
+            data: [1.2,1.5,1.8,1.6,1.9,2.2,2.6],
+            borderColor: getComputedStyle(document.documentElement).getPropertyValue('--accent-blue'),
+            backgroundColor: 'rgba(59,130,246,0.15)',
+            tension:0.35,
+            fill:true
+          }]
+        },
+        options: {
+          plugins:{legend:{display:false}},
+          scales:{y:{beginAtZero:true}}
+        }
+      });
+      // Chart: Revenue segment
+      const revSegment = new Chart(document.getElementById('revSegment').getContext('2d'), {
+        type: 'doughnut',
+        data: {
+          labels: ['Key Account','SMB','B2C'],
+          datasets: [{
+            data: [50,30,20],
+            backgroundColor: ['#3b82f6','#10b981','#f59e0b'],
+            hoverOffset:0
+          }]
+        },
+        options:{
+          responsive: true,
+          maintainAspectRatio: true,
+          aspectRatio: 2.2,
+          cutout: '62%',
+          plugins:{legend:{position:'bottom'}}
+        }
+      });
+      // Chart: On-time vs Late
+      const opsOTD = new Chart(document.getElementById('opsOTD').getContext('2d'), {
+        type:'bar',
+        data:{
+          labels:['Bắc','Trung','Nam'],
+          datasets:[
+            {
+              label:'On-time',
+              data:[96.2,95.0,94.5],
+              backgroundColor:getComputedStyle(document.documentElement).getPropertyValue('--success')
+            },
+            {
+              label:'Late',
+              data:[3.8,5.0,5.5],
+              backgroundColor:getComputedStyle(document.documentElement).getPropertyValue('--danger')
+            }
+          ]
+        },
+        options:{ responsive:true, plugins:{legend:{position:'bottom'}}, scales:{y:{beginAtZero:true, max:100}} }
+      });
+      // Chart: Processing volume
+      const opsVolume = new Chart(document.getElementById('opsVolume').getContext('2d'), {
+        type:'line',
+        data:{
+          labels:['01','02','03','04','05','06','07'],
+          datasets:[
+            {
+              label:'Inbound',
+              data:[1800,1900,2000,1950,2050,2100,2200],
+              borderColor:getComputedStyle(document.documentElement).getPropertyValue('--accent-blue'),
+              backgroundColor:'rgba(59,130,246,0.15)',
+              tension:0.35,
+              fill:true
+            },
+            {
+              label:'Outbound',
+              data:[1600,1700,1750,1800,1850,1900,2000],
+              borderColor:getComputedStyle(document.documentElement).getPropertyValue('--warning'),
+              backgroundColor:'rgba(245,158,11,0.15)',
+              tension:0.35,
+              fill:true
+            }
+          ]
+        },
+        options:{ responsive:true, plugins:{legend:{position:'bottom'}}, scales:{y:{beginAtZero:true}} }
+      });
+      // Chart: NPS trend
+      const npsTrend = new Chart(document.getElementById('npsTrend').getContext('2d'), {
+        type:'line',
+        data:{
+          labels:['01','02','03','04','05','06','07'],
+          datasets:[{
+            label:'NPS',
+            data:[40,42,41,43,44,42,45],
+            borderColor:getComputedStyle(document.documentElement).getPropertyValue('--accent-blue'),
+            backgroundColor:'rgba(59,130,246,0.15)',
+            tension:0.35,
+            fill:true
+          }]
+        },
+        options:{ plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true}} }
+      });
+      // Chart: Ticket volume & SLA
+      const ticketVolume = new Chart(document.getElementById('ticketVolume').getContext('2d'), {
+        type:'bar',
+        data:{
+          labels:['01','02','03','04','05','06','07'],
+          datasets:[
+            {
+              label:'Opened',
+              data:[200,220,180,240,210,230,250],
+              backgroundColor:getComputedStyle(document.documentElement).getPropertyValue('--accent-blue'),
+              stack:'Stack 0'
+            },
+            {
+              label:'Resolved',
+              data:[150,180,160,200,170,190,210],
+              backgroundColor:getComputedStyle(document.documentElement).getPropertyValue('--success'),
+              stack:'Stack 0'
+            },
+            {
+              label:'Escalated',
+              data:[30,25,40,35,28,32,27],
+              backgroundColor:getComputedStyle(document.documentElement).getPropertyValue('--danger'),
+              stack:'Stack 0'
+            }
+          ]
+        },
+        options:{ responsive:true, plugins:{legend:{position:'bottom'}}, scales:{y:{beginAtZero:true}} }
+      });
+      // Chart: Complaint analysis
+      const complaintDonut = new Chart(document.getElementById('complaintDonut').getContext('2d'), {
+        type:'doughnut',
+        data:{
+          labels:['Trễ giao','Thất lạc','Hư hỏng','COD','Thái độ','Khác'],
+          datasets:[{
+            data:[30,20,15,10,6,19],
+            backgroundColor:['#3b82f6','#10b981','#f59e0b','#f97316','#8b5cf6','#ef4444'],
+            hoverOffset:0
+          }]
+        },
+        options:{
+          responsive:true,
+          maintainAspectRatio:true,
+          aspectRatio:2.2,
+          cutout:'62%',
+          plugins:{legend:{position:'bottom'}}
+        }
+      });
+    });
+  </script>
+</body>
+</html>

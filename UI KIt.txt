@@ -1,0 +1,80 @@
+2) Đề xuất 1 “UI Kit” dùng xuyên suốt (Design System mini – chuẩn 80/20)
+A. Layout chuẩn (xài cho mọi page)
+
+Sidebar: fixed, width 280px, dark theme
+
+Main content: light theme (nền sáng), cards nổi (shadow nhẹ)
+
+Grid: 12 columns (desktop), 1 column (mobile)
+
+Spacing: 8px base (8/16/24/32)
+
+B. Tokens (bộ màu + chữ) dùng cố định
+
+Primary: Blue #3B82F6
+
+Success: #22C55E
+
+Warning: #F59E0B
+
+Danger: #EF4444
+
+Sidebar background: #0B1220 → #0F172A (gradient nhẹ)
+
+Content background: #F8FAFC
+
+Card background: #FFFFFF
+
+Text: #0F172A
+
+Sub text: #64748B
+
+Border: rgba(15, 23, 42, 0.08)
+
+Font:
+
+Inter (hoặc system font), size base 14–15px
+
+C. Components chuẩn (dùng xuyên suốt)
+
+Topbar
+
+Title trái, quick info/filters phải
+
+Breadcrumb optional
+
+Tabs
+
+3–6 tabs, active = primary border + background tint
+
+Không dùng tab quá nhạt (tránh “mờ như disabled”)
+
+KPI Cards
+
+4 KPI / row desktop, 2 KPI tablet, 1 KPI mobile
+
+Icon box nhỏ bên phải
+
+Trend line: xanh/đỏ + % so với kỳ trước
+
+Widgets
+
+Widget header + hint line
+
+Chart area cố định chiều cao (tránh layout jump)
+
+Tables
+
+Header sticky (nếu dài)
+
+Pill status: ok/warn/bad
+
+D. Quy tắc “không được phá”
+
+Sidebar width không đổi giữa các page
+
+.content luôn offset theo --sidebar-w
+
+Card radius thống nhất: 16px
+
+Border/Shadow thống nhất (đừng mỗi màn 1 kiểu)

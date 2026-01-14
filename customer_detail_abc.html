@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chi tiết khách hàng - Cty ABC Trading</title>
+  <!-- External resources -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --primary-blue:#0f172a;
+      --accent-blue:#3b82f6;
+      --bg-light:#f8fafc;
+      --card-white:#ffffff;
+      --text-main:#334155;
+      --text-muted:#64748b;
+      --border-color:#e2e8f0;
+      --success:#10b981;
+      --warning:#f59e0b;
+      --danger:#ef4444;
+    }
+  /*
+   * No modal windows: actions are handled via dedicated pages. Any leftover modal
+   * declarations from earlier versions have been removed along with their
+   * associated JavaScript.
+   */
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:'Inter', sans-serif; background:var(--bg-light); color:var(--text-main); }
+    /* Ensure the page takes full viewport height to avoid gray gaps when embedded */
+    html, body { height: 100%; }
+    .page { min-height: 100vh; }
+    .page { padding:1.5rem 2rem; }
+    .page h1 { font-size:1.4rem; font-weight:700; margin:0; }
+    .page p.desc { font-size:0.85rem; color:var(--text-muted); margin:0.3rem 0 1.5rem 0; }
+    .grid-2 { display:grid; grid-template-columns:2fr 1fr; gap:1rem; margin-bottom:1.5rem; }
+    .grid-2-equal { display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1.5rem; }
+    /* New 3-column grid for multiple charts on one row */
+    .grid-3 { display:grid; grid-template-columns:repeat(3, 1fr); gap:1rem; margin-bottom:1.5rem; }
+    .card { background:var(--card-white); border:1px solid var(--border-color); border-radius:12px; padding:1rem; display:flex; flex-direction:column; }
+    .card h3 { font-size:1rem; font-weight:600; margin-bottom:0.8rem; }
+    .info-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:0.6rem 1rem; font-size:0.85rem; }
+    .info-grid div { display:flex; flex-direction:column; }
+    .info-grid span.label { color:var(--text-muted); font-size:0.75rem; }
+    .info-grid span.value { font-weight:600; }
+    .contact-table { width:100%; border-collapse:collapse; font-size:0.8rem; }
+    .contact-table th, .contact-table td { padding:0.4rem; text-align:left; border-bottom:1px solid var(--border-color); }
+    .contact-table th { color:var(--text-muted); font-weight:600; }
+    /* KPI cards */
+    .kpi-row { display:grid; grid-template-columns:repeat(4,1fr); gap:1rem; margin-bottom:1.5rem; }
+    .kpi-card { background:var(--card-white); border:1px solid var(--border-color); border-radius:12px; padding:1rem; display:flex; flex-direction:column; justify-content:space-between; }
+    .kpi-card .title { font-size:0.75rem; color:var(--text-muted); }
+    .kpi-card .value { font-size:1.4rem; font-weight:800; margin:0.3rem 0; }
+    .kpi-card .trend { font-size:0.75rem; }
+    .kpi-card .trend.up { color:var(--success); }
+    .kpi-card .trend.down { color:var(--danger); }
+    /* Charts and tables */
+    .chart-container { flex:1; position:relative; height:260px; }
+    .chart-container canvas { width:100% !important; height:100% !important; }
+    /* Specific height for service distribution donuts to prevent oversizing */
+    .donut-chart-container { height:200px !important; }
+    .table-wrapper { flex:1; overflow-y:auto; }
+    table { width:100%; border-collapse:collapse; font-size:0.8rem; }
+    th, td { padding:0.5rem; border-bottom:1px solid var(--border-color); text-align:left; }
+    th { font-weight:600; color:var(--text-muted); position:sticky; top:0; background:var(--card-white); z-index:1; }
+
+    /* Header row with title and edit button */
+    .header-row {
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:1rem;
+      margin-bottom:1.5rem;
+    }
+    .edit-button {
+      background:var(--accent-blue);
+      color:#fff;
+      border:none;
+      border-radius:8px;
+      padding:0.5rem 1rem;
+      font-size:0.8rem;
+      cursor:pointer;
+      align-self: flex-start;
+    }
+    .edit-button:hover {
+      background:rgba(59,130,246,0.8);
+    }
+
+    /* Back button style for navigation */
+    .back-button {
+      background: var(--border-color);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 0.4rem 0.8rem;
+      font-size: 0.8rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .back-button i {
+      font-size: 0.85rem;
+    }
+    .back-button:hover {
+      background: var(--accent-blue);
+      color: #fff;
+      border-color: var(--accent-blue);
+    }
+
+    /* Button group and action buttons */
+    .button-group {
+      display:flex;
+      gap:0.5rem;
+    }
+    .action-button {
+      background:var(--accent-blue);
+      color:#fff;
+      border:none;
+      border-radius:8px;
+      padding:0.5rem 1rem;
+      font-size:0.8rem;
+      cursor:pointer;
+    }
+    .action-button:hover {
+      background:rgba(59,130,246,0.8);
+    }
+    /* Modal styles */
+    .modal-overlay {
+      position:fixed;
+      top:0;
+      left:0;
+      width:100%;
+      height:100%;
+      background:rgba(0,0,0,0.4);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:100;
+    }
+    .modal {
+      background:var(--card-white);
+      border-radius:10px;
+      padding:1.5rem;
+      max-width:600px;
+      width:90%;
+      box-shadow:0 10px 25px rgba(0,0,0,0.1);
+    }
+    .modal-header {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:1rem;
+    }
+    .modal-header h2 { margin:0; font-size:1.2rem; }
+    .close-modal {
+      font-size:1.4rem;
+      cursor:pointer;
+      color:var(--text-muted);
+    }
+    .modal-content {
+      display:flex;
+      flex-direction:column;
+      gap:0.8rem;
+      max-height:60vh;
+      overflow-y:auto;
+    }
+    .form-group {
+      display:flex;
+      flex-direction:column;
+      gap:0.3rem;
+      font-size:0.8rem;
+    }
+    .form-group label {
+      color:var(--text-muted);
+      font-size:0.75rem;
+    }
+    .form-group input,
+    .form-group select {
+      padding:0.5rem 0.6rem;
+      border:1px solid var(--border-color);
+      border-radius:6px;
+      font-size:0.85rem;
+      color:var(--text-main);
+      background:var(--card-white);
+    }
+    .form-group input:focus,
+    .form-group select:focus {
+      outline:none;
+      border-color:var(--accent-blue);
+    }
+    .modal-actions {
+      display:flex;
+      justify-content:flex-end;
+      gap:0.8rem;
+      margin-top:1rem;
+    }
+    .modal-actions button {
+      padding:0.5rem 1rem;
+      border:none;
+      border-radius:6px;
+      font-size:0.85rem;
+      cursor:pointer;
+    }
+    .cancel-btn {
+      background:var(--border-color);
+      color:var(--text-main);
+    }
+    .save-btn {
+      background:var(--accent-blue);
+      color:#fff;
+    }
+    .cancel-btn:hover { background:#e2e8f0; }
+    .save-btn:hover { background:rgba(59,130,246,0.8); }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="header-row">
+      <a href="customer_360.html" class="back-button">
+        <i class="fas fa-arrow-left"></i>
+        <span>Quay lại</span>
+      </a>
+      <div>
+        <h1>Cty ABC Trading</h1>
+        <p class="desc">Chi tiết thông tin khách hàng và thống kê vận chuyển</p>
+      </div>
+      <div class="button-group">
+        <a href="master_data_form.html" class="action-button">Chỉnh sửa</a>
+        <a href="shipment_module.html" class="action-button">Tạo vận đơn</a>
+        <a href="price_list_rules.html" class="action-button">Tạo bảng giá riêng</a>
+        <a href="accounting.html" class="action-button">Tạo hóa đơn</a>
+        <a href="ticketing.html" class="action-button">Tạo ticket</a>
+      </div>
+    </div>
+    <!-- General info and contacts -->
+    <div class="grid-2">
+      <div class="card">
+        <h3>Thông tin chung</h3>
+        <div class="info-grid">
+          <div><span class="label">Tên khách hàng</span><span class="value">Cty ABC Trading</span></div>
+          <div><span class="label">Mã số thuế</span><span class="value">0101234567</span></div>
+          <div><span class="label">Loại khách</span><span class="value">B2B</span></div>
+          <div><span class="label">Phân khúc</span><span class="value">Key Account</span></div>
+          <div><span class="label">Hạn mức tín dụng</span><span class="value">2 tỉ VND</span></div>
+          <div><span class="label">Điều kiện thanh toán</span><span class="value">30 ngày</span></div>
+          <div><span class="label">Địa chỉ trụ sở</span><span class="value">Số 10 Xã Đàn, Đống Đa, Hà Nội</span></div>
+          <div><span class="label">Địa chỉ kho</span><span class="value">Kho Hà Nội, Kho Hồ Chí Minh</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Người liên hệ</h3>
+        <table class="contact-table">
+          <thead><tr><th>Họ tên</th><th>Chức vụ</th><th>Email</th><th>Điện thoại</th></tr></thead>
+          <tbody>
+            <tr><td>Nguyễn Văn A</td><td>Giám đốc</td><td>a.nguyen@abc.com</td><td>0901 234 567</td></tr>
+            <tr><td>Lê Thị B</td><td>Kế toán</td><td>b.le@abc.com</td><td>0902 345 678</td></tr>
+            <tr><td>Trần Văn C</td><td>CSKH</td><td>c.tran@abc.com</td><td>0903 456 789</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <!-- KPI summary -->
+    <!-- Master Data sections for deeper customer management -->
+    <div class="grid-3">
+      <div class="card">
+        <h3>Tài chính &amp; Thuế</h3>
+        <div class="info-grid">
+          <div><span class="label">Mã định danh nội bộ</span><span class="value">CUS-2026-001</span></div>
+          <div><span class="label">Tiền tệ</span><span class="value">VND</span></div>
+          <div><span class="label">Tài khoản ngân hàng</span><span class="value">BIDV 123456789 (CN Hà Nội)</span></div>
+          <div><span class="label">Nhóm thuế</span><span class="value">Miễn thuế VAT</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Vận hành &amp; Logistics</h3>
+        <div class="info-grid">
+          <div><span class="label">Incoterms</span><span class="value">FOB</span></div>
+          <div><span class="label">Kho mặc định</span><span class="value">Kho Hà Nội</span></div>
+          <div><span class="label">Lead Time</span><span class="value">3 ngày</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>CRM &amp; Marketing</h3>
+        <div class="info-grid">
+          <div><span class="label">Nguồn khách hàng</span><span class="value">Referral</span></div>
+          <div><span class="label">Công ty mẹ</span><span class="value">Tập đoàn XYZ</span></div>
+          <div><span class="label">Tags</span><span class="value">Khách hàng VIP, Thích giao hỏa tốc</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="kpi-row">
+      <div class="kpi-card">
+        <div class="title">Tổng số đơn</div>
+        <div class="value">2,560</div>
+        <div class="trend up">▲ 5.5%</div>
+      </div>
+      <div class="kpi-card">
+        <div class="title">Tổng doanh thu</div>
+        <div class="value">4.5B</div>
+        <div class="trend up">▲ 7.2%</div>
+      </div>
+      <div class="kpi-card">
+        <div class="title">Tần suất gửi TB</div>
+        <div class="value">4.8/ngày</div>
+        <div class="trend up">▲ 3.1%</div>
+      </div>
+      <div class="kpi-card">
+        <div class="title">Tuyến chính</div>
+        <div class="value">HN – HCM</div>
+        <div class="trend up">▲ 2.4%</div>
+      </div>
+    </div>
+    <!-- Charts: lịch sử gửi hàng, tuyến sử dụng và phân bổ dịch vụ -->
+    <div class="grid-3">
+      <div class="card">
+        <h3>Lịch sử gửi hàng</h3>
+        <div class="chart-container">
+          <canvas id="shipmentHistory"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Các tuyến thường sử dụng</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead><tr><th>Tuyến</th><th>#Đơn</th><th>Doanh thu</th><th>%On-time</th></tr></thead>
+            <tbody>
+              <tr><td>HN – HCM</td><td>1,200</td><td>2.1B</td><td>95%</td></tr>
+              <tr><td>HCM – DN</td><td>650</td><td>1.0B</td><td>94%</td></tr>
+              <tr><td>HN – HP</td><td>300</td><td>0.6B</td><td>93%</td></tr>
+              <tr><td>DN – HN</td><td>250</td><td>0.5B</td><td>92%</td></tr>
+              <tr><td>HCM – CT</td><td>160</td><td>0.3B</td><td>90%</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Phân bổ dịch vụ</h3>
+        <div class="chart-container donut-chart-container">
+          <canvas id="serviceDistribution"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ghi chú & Cảnh báo -->
+    <div class="card" style="margin-bottom:1.5rem;">
+      <h3>Ghi chú &amp; Cảnh báo</h3>
+      <p style="font-size:0.8rem; color:var(--text-muted);">
+        Không có cảnh báo đặc biệt. Hệ thống sẽ tự động gửi email trước 30 ngày khi hợp đồng gần hết hạn hoặc khi vượt quá hạn mức tín dụng. Nếu có tranh chấp vận đơn, nhân viên CSKH sẽ được nhắc nhở trong mục Ticket.
+      </p>
+    </div>
+
+    <!-- Contract and tariff information -->
+    <div class="grid-2-equal">
+      <div class="card">
+        <h3>Hợp đồng</h3>
+        <div class="table-wrapper" style="max-height:220px;">
+          <table>
+            <thead><tr><th>Mã hợp đồng</th><th>Ngày hiệu lực</th><th>Ngày hết hạn</th><th>Trạng thái</th></tr></thead>
+            <tbody>
+              <tr><td>HD-2025-001</td><td>01/01/2025</td><td>31/12/2025</td><td>Đang hiệu lực</td></tr>
+              <tr><td>HD-2024-002</td><td>01/01/2024</td><td>31/12/2024</td><td>Đã hết hạn</td></tr>
+              <tr><td>HD-2023-003</td><td>01/01/2023</td><td>31/12/2023</td><td>Đã hết hạn</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Bảng giá</h3>
+        <div class="table-wrapper" style="max-height:220px;">
+          <table>
+            <thead><tr><th>Tên bảng giá</th><th>Dịch vụ</th><th>Vùng áp dụng</th><th>Giá</th></tr></thead>
+            <tbody>
+              <tr><td>Giá Cố định HN-HCM</td><td>Nhanh</td><td>HN–HCM</td><td>25,000 VND/kg</td></tr>
+              <tr><td>Giá Tiết kiệm</td><td>Tiết kiệm</td><td>Toàn quốc</td><td>18,000 VND/kg</td></tr>
+              <tr><td>Giá COD ngoại tỉnh</td><td>COD</td><td>Khu vực miền Nam</td><td>30,000 VND/kg</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Credit and invoices information -->
+    <div class="grid-2-equal">
+      <div class="card">
+        <h3>Tín dụng &amp; Công nợ</h3>
+        <div class="info-grid">
+          <div><span class="label">Hạn mức tín dụng</span><span class="value">2 tỉ VND</span></div>
+          <div><span class="label">Dư nợ hiện tại</span><span class="value">500M VND</span></div>
+          <div><span class="label">Số ngày được nợ</span><span class="value">30 ngày</span></div>
+          <div><span class="label">Trạng thái công nợ</span><span class="value">Ổn định</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Hóa đơn &amp; COD</h3>
+        <div class="table-wrapper" style="max-height:220px;">
+          <table>
+            <thead><tr><th>#Hóa đơn</th><th>Ngày</th><th>Số tiền</th><th>Đến hạn</th><th>Trạng thái</th></tr></thead>
+            <tbody>
+              <tr><td>INV-001</td><td>15/12/2025</td><td>150M VND</td><td>14/01/2026</td><td>Chưa thanh toán</td></tr>
+              <tr><td>INV-002</td><td>30/11/2025</td><td>200M VND</td><td>30/12/2025</td><td>Chưa thanh toán</td></tr>
+              <tr><td>INV-003</td><td>01/10/2025</td><td>100M VND</td><td>31/10/2025</td><td>Đã thanh toán</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    <!-- Phân quyền chỉnh sửa -->
+    <div class="card" style="margin-top:1.5rem;">
+      <h3>Phân quyền chỉnh sửa</h3>
+      <p style="font-size:0.8rem; margin-bottom:0.4rem;"><strong>Nhóm 1 – Thông tin liên hệ:</strong> Nhân viên Sales có quyền sửa Họ tên, chức vụ, số điện thoại, Email, Zalo/Facebook và thêm địa chỉ kho mới.</p>
+      <p style="font-size:0.8rem; margin-bottom:0.4rem;"><strong>Nhóm 2 – Thông tin giao dịch:</strong> Cần quyền Manager để chỉnh sửa Hạn mức tín dụng, Điều kiện thanh toán và Bảng giá áp dụng.</p>
+      <p style="font-size:0.8rem;"><strong>Nhóm 3 – Thông tin pháp lý:</strong> Cần quyền Kế toán để cập nhật Tên công ty trên hóa đơn VAT, Mã số thuế và Thông tin tài khoản ngân hàng thụ hưởng.</p>
+    </div>
+    </div>
+
+  </div>
+  <script>
+    // Disable animations globally for Chart.js
+    if (window.Chart) {
+      Chart.defaults.animation = false;
+    }
+    // Initialize shipment history chart
+    document.addEventListener('DOMContentLoaded', function() {
+      const ctx = document.getElementById('shipmentHistory').getContext('2d');
+      new Chart(ctx, {
+        type:'line',
+        data:{
+          labels:['Th1','Th2','Th3','Th4','Th5','Th6','Th7','Th8','Th9','Th10','Th11','Th12'],
+          datasets:[{
+            label:'Số đơn',
+            data:[200,240,280,260,300,320,340,360,380,400,420,450],
+            borderColor:getComputedStyle(document.documentElement).getPropertyValue('--accent-blue'),
+            backgroundColor:'rgba(59,130,246,0.15)',
+            tension:0.35,
+            fill:true
+          }]
+        },
+        options:{
+          responsive:true,
+          maintainAspectRatio:false,
+          plugins:{legend:{display:false}},
+          scales:{y:{beginAtZero:true}}
+        }
+      });
+
+      // Service distribution donut chart
+      const ctxService = document.getElementById('serviceDistribution').getContext('2d');
+      new Chart(ctxService, {
+        type:'doughnut',
+        data:{
+          labels:['Nhanh','Tiết kiệm','Hỏa tốc','COD'],
+          datasets:[{
+            data:[45,25,20,10],
+            backgroundColor:[
+              getComputedStyle(document.documentElement).getPropertyValue('--accent-blue'),
+              '#10b981',
+              '#f59e0b',
+              '#ef4444'
+            ],
+            borderWidth:1
+          }]
+        },
+        options:{
+          responsive:true,
+          maintainAspectRatio:false,
+          plugins:{legend:{position:'right'}},
+          cutout:'55%'
+        }
+      });
+
+    });
+  </script>
+</body>
+</html>

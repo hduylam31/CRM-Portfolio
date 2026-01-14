@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ticket & Khiếu nại</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+  <style>
+    :root{
+      --primary-blue:#0f172a;
+      --accent-blue:#3b82f6;
+      --bg-light:#f8fafc;
+      --card-white:#ffffff;
+      --text-main:#334155;
+      --text-muted:#64748b;
+      --border-color:#e2e8f0;
+      --success:#10b981;
+      --danger:#ef4444;
+      --warning:#f59e0b;
+      --purple:#6d28d9;
+      --shadow: 0 12px 24px rgba(0,0,0,0.06);
+    }
+
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family:'Inter', sans-serif;
+      background: var(--bg-light);
+      color: var(--text-main);
+    }
+
+    /* Page wrapper (works inside iframe) */
+    .page{
+      padding: 1.25rem;
+      max-width: 1680px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    .page-head{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+    }
+    .page-title{
+      display:flex;
+      flex-direction:column;
+      gap: 6px;
+    }
+    .page-title h1{
+      margin:0;
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--primary-blue);
+      letter-spacing: 0.2px;
+      display:flex;
+      align-items:center;
+      gap: 10px;
+    }
+    .page-title p{
+      margin:0;
+      font-size: .85rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+    .crumbs{
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 2px;
+    }
+    .crumb{
+      font-size:.72rem;
+      color: var(--text-muted);
+      background: #fff;
+      border:1px solid var(--border-color);
+      padding: 6px 10px;
+      border-radius: 999px;
+      display:flex;
+      align-items:center;
+      gap: 8px;
+    }
+    .pill{
+      font-size: .7rem;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-weight: 700;
+      border: 1px solid transparent;
+      display:inline-flex;
+      align-items:center;
+      gap: 6px;
+    }
+    .pill.blue{ background:#e0f2fe; color:#0369a1; border-color:#bae6fd; }
+    .pill.green{ background:#dcfce7; color:#15803d; border-color:#bbf7d0; }
+    .pill.yellow{ background:#fef9c3; color:#a16207; border-color:#fde68a; }
+    .pill.red{ background:#fee2e2; color:#b91c1c; border-color:#fecaca; }
+    .pill.purple{ background:#ede9fe; color:#5b21b6; border-color:#ddd6fe; }
+    .pill.gray{ background:#f1f5f9; color:#475569; border-color:#e2e8f0; }
+
+    .actions{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content:flex-end;
+    }
+    .btn{
+      border: 1px solid var(--border-color);
+      background: #fff;
+      color: var(--text-main);
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: .85rem;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      transition: .2s;
+      white-space: nowrap;
+    }
+    .btn:hover{ transform: translateY(-1px); box-shadow: 0 10px 18px rgba(0,0,0,0.06); border-color:#cbd5e1; }
+    .btn.primary{
+      background: var(--accent-blue);
+      border-color: var(--accent-blue);
+      color: #fff;
+    }
+    .btn.primary:hover{ box-shadow: 0 14px 26px rgba(59,130,246,0.22); }
+    .btn.ghost{
+      background: transparent;
+      border-color: transparent;
+      color: var(--text-muted);
+    }
+    .btn.ghost:hover{ transform:none; box-shadow:none; background:#fff; border-color: var(--border-color); color: var(--text-main); }
+
+    /* Stats */
+    .stats{
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .stat{
+      background:#fff;
+      border:1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 1rem;
+      display:flex;
+      align-items:center;
+      gap: 12px;
+      min-height: 86px;
+    }
+    .stat-ic{
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size: 1.05rem;
+      flex: 0 0 auto;
+    }
+    .stat h6{ margin:0 0 4px 0; font-size: .75rem; color: var(--text-muted); font-weight: 800; letter-spacing: .2px; text-transform: uppercase; }
+    .stat .val{ font-size: 1.25rem; font-weight: 900; color: var(--primary-blue); line-height: 1; }
+    .stat .sub{ margin-top: 6px; font-size: .78rem; color: var(--text-muted); display:flex; align-items:center; gap: 6px; }
+
+    /* Filter bar */
+    .card{
+      background:#fff;
+      border:1px solid var(--border-color);
+      border-radius: 16px;
+    }
+    .filters{
+      padding: 1rem;
+      display:grid;
+      grid-template-columns: 1.8fr 1fr 1fr 1fr 1fr;
+      gap: 10px;
+      align-items:center;
+      margin-bottom: 1rem;
+    }
+    .field{
+      position:relative;
+    }
+    .field label{
+      display:block;
+      font-size: .72rem;
+      color: var(--text-muted);
+      font-weight: 800;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: .25px;
+    }
+    .input, select{
+      width:100%;
+      padding: 11px 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      outline:none;
+      background: #fff;
+      font-size: .88rem;
+      color: var(--text-main);
+    }
+    .input:focus, select:focus{
+      border-color: rgba(59,130,246,0.6);
+      box-shadow: 0 0 0 4px rgba(59,130,246,0.15);
+    }
+    .input.with-ic{ padding-left: 36px; }
+    .field .ic{
+      position:absolute;
+      left: 12px;
+      top: 36px;
+      color: var(--text-muted);
+      font-size: .95rem;
+    }
+
+    /* Multi-select (same UX spirit as your status dropdown mẫu) */
+    .multi-select{
+      width:100%;
+      position:relative;
+      user-select:none;
+    }
+    .multi-select .selected-options{
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 11px 44px 11px 12px;
+      background:#fff;
+      font-size: .88rem;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      min-height: 42px;
+    }
+    .multi-select .dropdown-icon{
+      position:absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events:none;
+    }
+    .multi-select .options-list{
+      position:absolute;
+      top: calc(100% + 8px);
+      left:0;
+      right:0;
+      background:#fff;
+      border:1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 10px;
+      box-shadow: var(--shadow);
+      display:none;
+      z-index: 20;
+      max-height: 240px;
+      overflow:auto;
+    }
+    .multi-select.open .options-list{ display:block; }
+    .options-list label{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      cursor:pointer;
+      font-size: .88rem;
+      color: var(--text-main);
+      text-transform:none;
+      letter-spacing: 0;
+      font-weight: 600;
+      margin:0;
+    }
+    .options-list label:hover{ background:#f8fafc; }
+    .options-list input{ transform: translateY(1px); }
+
+    /* Layout: list + preview */
+    .grid{
+      display:grid;
+      grid-template-columns: 2.05fr 0.95fr;
+      gap: 1rem;
+    }
+    .panel{
+      padding: 1rem;
+    }
+
+    /* Table */
+    .table-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 1rem;
+      padding: 1rem 1rem 0.75rem 1rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .table-head h3{
+      margin:0;
+      font-size: .95rem;
+      font-weight: 900;
+      color: var(--primary-blue);
+      display:flex;
+      align-items:center;
+      gap: 10px;
+    }
+    .table-head .meta{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content:flex-end;
+      color: var(--text-muted);
+      font-size: .82rem;
+      font-weight: 600;
+    }
+    .table-wrap{ overflow:auto; }
+    table{
+      width:100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: .88rem;
+    }
+    thead th{
+      text-align:left;
+      padding: 10px 12px;
+      color: var(--text-muted);
+      font-size: .72rem;
+      text-transform: uppercase;
+      letter-spacing: .25px;
+      font-weight: 900;
+      border-bottom: 1px solid var(--border-color);
+      background: #fff;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+    tbody td{
+      padding: 12px 12px;
+      border-bottom: 1px solid var(--border-color);
+      vertical-align: top;
+    }
+    tbody tr{
+      cursor:pointer;
+      transition: .15s;
+    }
+    tbody tr:hover{
+      background: #f8fafc;
+    }
+    tbody tr.active{
+      background: rgba(59,130,246,0.08);
+      outline: 1px solid rgba(59,130,246,0.25);
+    }
+    .id{
+      font-weight: 900;
+      color: var(--primary-blue);
+    }
+    .subline{
+      margin-top: 4px;
+      color: var(--text-muted);
+      font-size: .8rem;
+      display:flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    /* Wider layout tune */
+    .th-subject{ min-width: 420px; }
+    td.subject-cell .subject-title{
+      display:block;
+      font-weight:900;
+      color: var(--primary-blue);
+      line-height: 1.25;
+      /* allow 2 lines then clamp to keep row height reasonable */
+      display:-webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow:hidden;
+    }
+    td.subject-cell .subline{ max-width: 520px; }
+
+    /* Preview */
+    .preview-top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap: 1rem;
+      padding: 1rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .preview-top h3{
+      margin:0;
+      font-size: .95rem;
+      font-weight: 900;
+      color: var(--primary-blue);
+      display:flex;
+      align-items:center;
+      gap: 10px;
+    }
+    .mini-actions{
+      display:flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content:flex-end;
+    }
+    .icon-btn{
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      background:#fff;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color: var(--text-muted);
+      transition: .2s;
+    }
+    .icon-btn:hover{
+      border-color:#cbd5e1;
+      color: var(--text-main);
+      box-shadow: 0 10px 18px rgba(0,0,0,0.06);
+      transform: translateY(-1px);
+    }
+
+    .kv{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      padding: 1rem;
+    }
+    .kv .item{
+      border:1px dashed var(--border-color);
+      border-radius: 14px;
+      padding: 10px 12px;
+      background:#fff;
+    }
+    .kv .k{ font-size:.72rem; color: var(--text-muted); font-weight: 900; text-transform: uppercase; letter-spacing: .25px; }
+    .kv .v{ margin-top: 6px; font-size: .88rem; font-weight: 800; color: var(--primary-blue); display:flex; align-items:center; gap: 8px; flex-wrap: wrap; }
+
+    .section{
+      padding: 0 1rem 1rem 1rem;
+    }
+    .section h4{
+      margin: 0.25rem 0 0.75rem 0;
+      font-size: .78rem;
+      color: var(--text-muted);
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .25px;
+      display:flex;
+      align-items:center;
+      gap: 10px;
+    }
+    .note{
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 12px;
+      background: #fff;
+      color: var(--text-main);
+      font-size: .88rem;
+      line-height: 1.5;
+    }
+    .timeline{
+      display:flex;
+      flex-direction:column;
+      gap: 10px;
+    }
+    .t-item{
+      display:flex;
+      gap: 10px;
+      align-items:flex-start;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid var(--border-color);
+      background:#fff;
+    }
+    .t-dot{
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: var(--accent-blue);
+      margin-top: 5px;
+      flex: 0 0 auto;
+    }
+    .t-content{ flex: 1 1 auto; }
+    .t-content .t-top{
+      display:flex;
+      justify-content:space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 4px;
+    }
+    .t-content .who{
+      font-weight: 900;
+      font-size: .85rem;
+      color: var(--primary-blue);
+    }
+    .t-content .when{
+      font-size: .78rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+    .t-content .msg{
+      font-size: .86rem;
+      color: var(--text-main);
+      line-height: 1.45;
+    }
+
+    /* Responsive */
+    @media (max-width: 1100px){
+      .filters{ grid-template-columns: 1fr 1fr; }
+      .stats{ grid-template-columns: 1fr 1fr; }
+      .grid{ grid-template-columns: 1fr; }
+    }
+    @media (max-width: 560px){
+      .page{ padding: 0.9rem; }
+      .filters{ grid-template-columns: 1fr; }
+      .stats{ grid-template-columns: 1fr; }
+      .actions{ justify-content:flex-start; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page">
+    <!-- Header -->
+    <div class="page-head">
+      <div class="page-title">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:2px;">
+          <a class="btn" href="index.html" style="text-decoration:none;padding:8px 10px;border-radius:12px;">
+            <i class="fa-solid fa-arrow-left"></i> Quay lại
+          </a>
+          <span class="pill gray"><i class="fa-regular fa-life-ring"></i> CSKH</span>
+          <span class="pill blue"><i class="fa-solid fa-ticket"></i> Ticketing</span>
+        </div>
+        <h1><i class="fa-solid fa-headset" style="color:var(--accent-blue)"></i> Ticket & Khiếu nại</h1>
+        <p>Hợp nhất yêu cầu từ Hotline / Email / Zalo / Web — theo dõi SLA, ưu tiên và trạng thái xử lý.</p>
+        <div class="crumbs">
+          <div class="crumb"><i class="fa-solid fa-ticket"></i> Ticket Queue</div>
+          <div class="crumb" id="crumbLive"><i class="fa-solid fa-circle-info"></i> Chọn 1 ticket để xem nhanh</div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn ghost" id="btnRefresh"><i class="fa-solid fa-rotate"></i> Làm mới</button>
+        <button class="btn" data-action="ticket_export" id="btnExport"><i class="fa-solid fa-file-arrow-down"></i> Export</button>
+        <button class="btn" data-action="sla_rules" id="btnSLA"><i class="fa-solid fa-stopwatch"></i> SLA Rules</button>
+        <button class="btn primary" data-action="ticket_new" id="btnNew"><i class="fa-solid fa-plus"></i> Tạo Ticket</button>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-ic" style="background:#e0f2fe;color:#0369a1"><i class="fa-solid fa-inbox"></i></div>
+        <div>
+          <h6>Open tickets</h6>
+          <div class="val" id="statOpen">—</div>
+          <div class="sub"><i class="fa-solid fa-triangle-exclamation"></i> <span id="statOpenSub">Ưu tiên cao: —</span></div>
+        </div>
+      </div>
+      <div class="stat">
+        <div class="stat-ic" style="background:#dcfce7;color:#15803d"><i class="fa-solid fa-bolt"></i></div>
+        <div>
+          <h6>Due today</h6>
+          <div class="val" id="statDue">—</div>
+          <div class="sub"><i class="fa-solid fa-clock"></i> <span id="statDueSub">Sắp quá hạn: —</span></div>
+        </div>
+      </div>
+      <div class="stat">
+        <div class="stat-ic" style="background:#fee2e2;color:#b91c1c"><i class="fa-solid fa-shield-heart"></i></div>
+        <div>
+          <h6>SLA breached</h6>
+          <div class="val" id="statBreach">—</div>
+          <div class="sub"><i class="fa-solid fa-arrow-trend-down"></i> <span id="statBreachSub">Tuần này: —</span></div>
+        </div>
+      </div>
+      <div class="stat">
+        <div class="stat-ic" style="background:#ede9fe;color:#5b21b6"><i class="fa-solid fa-message"></i></div>
+        <div>
+          <h6>Avg 1st response</h6>
+          <div class="val" id="statFRT">—</div>
+          <div class="sub"><i class="fa-solid fa-chart-simple"></i> <span id="statFRTSub">Mục tiêu: ≤ 30m</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card filters">
+      <div class="field">
+        <label>Tìm kiếm</label>
+        <i class="fa-solid fa-magnifying-glass ic"></i>
+        <input id="q" class="input with-ic" placeholder="ID, subject, khách hàng, vận đơn..." />
+      </div>
+
+      <div class="field">
+        <label>Trạng thái</label>
+        <div class="multi-select" id="statusDropdown">
+          <div class="selected-options" id="statusSelected">Tất cả</div>
+          <div class="dropdown-icon"><i class="fas fa-chevron-down"></i></div>
+          <div class="options-list" id="statusOptions">
+            <label><input type="checkbox" value="New" checked> New</label>
+            <label><input type="checkbox" value="In Progress" checked> In Progress</label>
+            <label><input type="checkbox" value="Waiting Customer" checked> Waiting Customer</label>
+            <label><input type="checkbox" value="Resolved" checked> Resolved</label>
+            <label><input type="checkbox" value="Closed" checked> Closed</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Kênh</label>
+        <select id="channel">
+          <option value="">Tất cả</option>
+          <option>Hotline</option>
+          <option>Email</option>
+          <option>Zalo</option>
+          <option>Web</option>
+          <option>Facebook</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Ưu tiên</label>
+        <select id="priority">
+          <option value="">Tất cả</option>
+          <option>Critical</option>
+          <option>High</option>
+          <option selected>Medium</option>
+          <option>Low</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Ngày</label>
+        <select id="dateRange">
+          <option value="7d" selected>7 ngày gần nhất</option>
+          <option value="30d">30 ngày</option>
+          <option value="90d">90 ngày</option>
+          <option value="all">Tất cả</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Main grid -->
+    <div class="grid">
+      <!-- List -->
+      <div class="card">
+        <div class="table-head">
+          <h3><i class="fa-solid fa-list-check" style="color:var(--accent-blue)"></i> Danh sách Ticket</h3>
+          <div class="meta">
+            <span id="resultCount">—</span>
+            <span>•</span>
+            <span id="lastSync"><i class="fa-regular fa-clock"></i> —</span>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:110px">Ticket</th>
+                <th class="th-subject">Subject</th>
+                <th style="width:150px">Khách hàng</th>
+                <th style="width:110px">Priority</th>
+                <th style="width:140px">Status</th>
+                <th style="width:120px">SLA</th>
+                <th style="width:120px">Cập nhật</th>
+                <th style="width:110px">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="ticketTbody">
+              <!-- injected -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Preview -->
+      <div class="card">
+        <div class="preview-top">
+          <h3><i class="fa-solid fa-bolt" style="color:var(--warning)"></i> Quick Preview</h3>
+          <div class="mini-actions">
+            <button class="icon-btn" title="Gọi khách hàng" data-action="call_customer" id="btnCall"><i class="fa-solid fa-phone"></i></button>
+            <button class="icon-btn" title="Gửi tin nhắn" data-action="message_customer" id="btnMsg"><i class="fa-solid fa-paper-plane"></i></button>
+            <button class="icon-btn" title="Escalate" data-action="ticket_escalate" id="btnEsc"><i class="fa-solid fa-arrow-up-right-dots"></i></button>
+          </div>
+        </div>
+
+        <div class="kv">
+          <div class="item">
+            <div class="k">Ticket</div>
+            <div class="v" id="pvId">—</div>
+          </div>
+          <div class="item">
+            <div class="k">Kênh</div>
+            <div class="v" id="pvChannel">—</div>
+          </div>
+          <div class="item">
+            <div class="k">Ưu tiên</div>
+            <div class="v" id="pvPriority">—</div>
+          </div>
+          <div class="item">
+            <div class="k">Trạng thái</div>
+            <div class="v" id="pvStatus">—</div>
+          </div>
+          <div class="item">
+            <div class="k">SLA</div>
+            <div class="v" id="pvSla">—</div>
+          </div>
+          <div class="item">
+            <div class="k">Liên quan</div>
+            <div class="v" id="pvLinks">—</div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h4><i class="fa-regular fa-note-sticky"></i> Mô tả</h4>
+          <div class="note" id="pvDesc">Chọn 1 ticket ở bảng bên trái để xem nội dung.</div>
+        </div>
+
+        <div class="section">
+          <h4><i class="fa-solid fa-clock-rotate-left"></i> Hoạt động gần đây</h4>
+          <div class="timeline" id="pvTimeline">
+            <div class="t-item">
+              <div class="t-dot"></div>
+              <div class="t-content">
+                <div class="t-top">
+                  <div class="who">Hệ thống</div>
+                  <div class="when">—</div>
+                </div>
+                <div class="msg">Chưa có dữ liệu — hãy chọn 1 ticket.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h4><i class="fa-solid fa-wand-magic-sparkles"></i> Gợi ý xử lý nhanh</h4>
+          <div class="note" id="pvHint" style="background:#f0f7ff;border-color:#bae6fd;color:#0b3b7b">
+            • Chuẩn hoá: xác minh mã vận đơn / người gửi / người nhận<br/>
+            • Ưu tiên: xử lý “High/Critical” trước để tránh SLA breach<br/>
+            • Nếu cần phối hợp vận hành: liên kết Incident/Alert để theo dõi thống nhất
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function openPage(page, params = {}) {
+      const qs = new URLSearchParams(params).toString();
+      window.location.href = qs ? `${page}?${qs}` : page;
+    }
+
+    // Central router for future features (link to separate .html files)
+    document.addEventListener('click', (e) => {
+      const el = e.target.closest('[data-action]');
+      if(!el) return;
+      const action = el.dataset.action;
+      const id = el.dataset.id;
+      if(action === 'ticket_new') return openPage('ticket_create.html');
+      if(action === 'ticket_export') return openPage('tickets_export.html');
+      if(action === 'sla_rules') return openPage('sla_rules.html');
+      if(action === 'ticket_view') return openPage('ticket_detail.html', { id });
+      if(action === 'ticket_edit') return openPage('ticket_edit.html', { id });
+      if(action === 'ticket_close') return openPage('ticket_close.html', { id });
+      if(action === 'call_customer') return openPage('ticket_call.html', { id: window.activeId || id || '' });
+      if(action === 'message_customer') return openPage('ticket_message.html', { id: window.activeId || id || '' });
+      if(action === 'ticket_escalate') return openPage('ticket_escalate.html', { id: window.activeId || id || '' });
+    });
+
+    // ===== Sample data (mock) =====
+    const tickets = [
+      {
+        id: "TIC-240918",
+        subject: "Khiếu nại giao trễ - đơn HCM → HN",
+        customer: "ABC Trading",
+        channel: "Hotline",
+        priority: "High",
+        status: "In Progress",
+        sla: { state: "At Risk", dueHours: 3 },
+        updated: "10:42",
+        desc: "Khách phản ánh đơn giao trễ 1 ngày. Đề nghị kiểm tra tuyến và cập nhật ETA cụ thể.",
+        links: [{type:"Order", code:"ORD-102884"}, {type:"Incident", code:"INC-009"}],
+        timeline: [
+          {who:"CSKH - Minh", when:"10:42", msg:"Đã tiếp nhận và xác nhận thông tin đơn hàng."},
+          {who:"Vận hành - Hưng", when:"10:15", msg:"Đang kiểm tra hub trung chuyển, chờ ETA từ tuyến."},
+        ]
+      },
+      {
+        id: "TIC-240921",
+        subject: "Mất kiện hàng - yêu cầu tra soát",
+        customer: "XYZ Logistics",
+        channel: "Email",
+        priority: "Critical",
+        status: "New",
+        sla: { state: "Overdue", dueHours: -2 },
+        updated: "09:05",
+        desc: "Khách báo không nhận được kiện hàng. Cần tra soát POD và đối chiếu scan tại hub.",
+        links: [{type:"Order", code:"ORD-103120"}, {type:"Alert", code:"ALT-014"}],
+        timeline: [
+          {who:"Hệ thống", when:"09:05", msg:"Ticket được tạo tự động từ email support@..."},
+        ]
+      },
+      {
+        id: "TIC-240927",
+        subject: "Cập nhật sai COD trên vận đơn",
+        customer: "Nova Retail",
+        channel: "Zalo",
+        priority: "Medium",
+        status: "Waiting Customer",
+        sla: { state: "On Track", dueHours: 18 },
+        updated: "Hôm qua",
+        desc: "COD hiển thị 1,500,000 nhưng khách xác nhận 1,050,000. Yêu cầu khách gửi ảnh bill.",
+        links: [{type:"Order", code:"ORD-103402"}],
+        timeline: [
+          {who:"CSKH - Lan", when:"Hôm qua", msg:"Đã yêu cầu khách gửi bill/ảnh xác nhận COD."},
+        ]
+      },
+      {
+        id: "TIC-240933",
+        subject: "Yêu cầu đổi địa chỉ giao hàng",
+        customer: "Sendo Shop",
+        channel: "Web",
+        priority: "Low",
+        status: "Resolved",
+        sla: { state: "Met", dueHours: 0 },
+        updated: "2 ngày",
+        desc: "Khách muốn đổi địa chỉ giao từ Q1 sang Q7 trước khi phát. Đã cập nhật trên hệ thống.",
+        links: [{type:"Order", code:"ORD-103612"}],
+        timeline: [
+          {who:"CSKH - Minh", when:"2 ngày", msg:"Đã cập nhật địa chỉ và xác nhận với khách."},
+          {who:"Hệ thống", when:"2 ngày", msg:"Trạng thái ticket chuyển sang Resolved."},
+        ]
+      },
+      {
+        id: "TIC-240940",
+        subject: "Phản hồi thái độ tài xế",
+        customer: "Cửa hàng Minh Phát",
+        channel: "Facebook",
+        priority: "Medium",
+        status: "Closed",
+        sla: { state: "Met", dueHours: 0 },
+        updated: "4 ngày",
+        desc: "Khách phản ánh tài xế giao hàng thiếu lịch sự. Đã xin lỗi khách và nhắc nhở tài xế.",
+        links: [{type:"Driver", code:"DRV-022"}],
+        timeline: [
+          {who:"CSKH - Lan", when:"4 ngày", msg:"Đã gọi xin lỗi và ghi nhận phản hồi."},
+          {who:"Điều phối", when:"4 ngày", msg:"Nhắc nhở tài xế, ghi nhận vào đánh giá nội bộ."},
+        ]
+      }
+    ];
+
+    // ===== Helpers =====
+    const $ = (id) => document.getElementById(id);
+
+    function pillClassForPriority(p){
+      if(p === "Critical") return "red";
+      if(p === "High") return "yellow";
+      if(p === "Medium") return "blue";
+      return "gray";
+    }
+    function pillClassForStatus(s){
+      if(s === "New") return "purple";
+      if(s === "In Progress") return "blue";
+      if(s === "Waiting Customer") return "yellow";
+      if(s === "Resolved") return "green";
+      if(s === "Closed") return "gray";
+      return "gray";
+    }
+    function pillClassForSlaState(st){
+      if(st === "Overdue") return "red";
+      if(st === "At Risk") return "yellow";
+      if(st === "On Track") return "blue";
+      if(st === "Met") return "green";
+      return "gray";
+    }
+    function formatLinks(links){
+      if(!links || !links.length) return "—";
+      return links.map(x => `<span class="pill gray"><i class="fa-solid fa-link"></i> ${x.type}: <b>${x.code}</b></span>`).join(" ");
+    }
+    function nowHHMM(){
+      const d = new Date();
+      const hh = String(d.getHours()).padStart(2,'0');
+      const mm = String(d.getMinutes()).padStart(2,'0');
+      return `${hh}:${mm}`;
+    }
+
+    // ===== Status multi-select behavior =====
+    (function initMultiSelect(){
+      const dd = $("statusDropdown");
+      const selected = $("statusSelected");
+      const opts = dd.querySelectorAll('input[type="checkbox"]');
+
+      function updateSelectedLabel(){
+        const checked = Array.from(opts).filter(o => o.checked).map(o => o.value);
+        if(checked.length === opts.length) selected.textContent = "Tất cả";
+        else if(checked.length === 0) selected.textContent = "Không chọn";
+        else selected.textContent = checked.join(", ");
+      }
+
+      dd.addEventListener("click", (e) => {
+        // toggle open when clicking selected area
+        const isClickOnOption = e.target && (e.target.tagName === "INPUT" || e.target.tagName === "LABEL");
+        if(!isClickOnOption){
+          dd.classList.toggle("open");
+        }
+      });
+
+      // close when clicking outside
+      document.addEventListener("click", (e) => {
+        if(!dd.contains(e.target)) dd.classList.remove("open");
+      });
+
+      opts.forEach(o => {
+        o.addEventListener("change", () => {
+          updateSelectedLabel();
+          applyFilters();
+        });
+      });
+
+      updateSelectedLabel();
+    })();
+
+    // ===== Rendering =====
+    let activeId = null;
+
+    function applyFilters(){
+      const q = ($("q").value || "").trim().toLowerCase();
+      const channel = $("channel").value;
+      const priority = $("priority").value;
+      const checkedStatuses = Array.from(document.querySelectorAll('#statusOptions input[type="checkbox"]'))
+        .filter(x => x.checked).map(x => x.value);
+
+      const filtered = tickets.filter(t => {
+        const matchQ = !q || (
+          t.id.toLowerCase().includes(q) ||
+          t.subject.toLowerCase().includes(q) ||
+          t.customer.toLowerCase().includes(q) ||
+          (t.links || []).some(l => (l.code || "").toLowerCase().includes(q))
+        );
+        const matchChannel = !channel || t.channel === channel;
+        const matchPriority = !priority || t.priority === priority;
+        const matchStatus = checkedStatuses.includes(t.status);
+        return matchQ && matchChannel && matchPriority && matchStatus;
+      });
+
+      renderTable(filtered);
+      updateStats(filtered);
+      $("resultCount").innerHTML = `<i class="fa-solid fa-filter"></i> ${filtered.length} ticket`;
+      $("lastSync").innerHTML = `<i class="fa-regular fa-clock"></i> Cập nhật ${nowHHMM()}`;
+
+      // Keep active selection if still exists
+      if(activeId && filtered.some(x => x.id === activeId)){
+        const row = document.querySelector(`tr[data-id="${activeId}"]`);
+        if(row) row.classList.add("active");
+      } else {
+        // pick first item by default for better UX
+        if(filtered.length){
+          setActive(filtered[0].id, filtered);
+        } else {
+          setEmptyPreview();
+        }
+      }
+    }
+
+    function renderTable(list){
+      const tb = $("ticketTbody");
+      tb.innerHTML = list.map(t => {
+        const pr = `<span class="pill ${pillClassForPriority(t.priority)}"><i class="fa-solid fa-flag"></i> ${t.priority}</span>`;
+        const st = `<span class="pill ${pillClassForStatus(t.status)}"><i class="fa-solid fa-circle"></i> ${t.status}</span>`;
+        const sla = `<span class="pill ${pillClassForSlaState(t.sla.state)}"><i class="fa-solid fa-stopwatch"></i> ${t.sla.state}</span>`;
+        const sub = `
+          <div class="subline">
+            <span><i class="fa-solid fa-phone-volume"></i> ${t.channel}</span>
+            ${t.links?.[0] ? `<span><i class="fa-solid fa-link"></i> ${t.links[0].type}: ${t.links[0].code}</span>` : ``}
+          </div>
+        `;
+        return `
+          <tr data-id="${t.id}">
+            <td><div class="id">${t.id}</div></td>
+            <td class="subject-cell">
+              <span class="subject-title">${t.subject}</span>
+              ${sub}
+            </td>
+            <td>${t.customer}</td>
+            <td>${pr}</td>
+            <td>${st}</td>
+            <td>${sla}</td>
+            <td style="color:var(--text-muted);font-weight:700">${t.updated}</td>
+            <td style="white-space:nowrap;">
+              <span style="display:inline-flex;gap:10px;align-items:center;">
+                <i class="fa-solid fa-eye" title="View" data-action="ticket_view" data-id="${t.id}" style="color:var(--accent-blue);cursor:pointer"></i>
+                <i class="fa-solid fa-pen-to-square" title="Edit" data-action="ticket_edit" data-id="${t.id}" style="color:var(--text-muted);cursor:pointer"></i>
+                <i class="fa-solid fa-circle-xmark" title="Close" data-action="ticket_close" data-id="${t.id}" style="color:var(--danger);cursor:pointer"></i>
+              </span>
+            </td>
+          </tr>
+        `;
+      }).join("");
+
+      // row click
+      tb.querySelectorAll("tr").forEach(tr => {
+        tr.addEventListener("click", () => {
+          const id = tr.getAttribute("data-id");
+          setActive(id, list);
+        });
+        tr.addEventListener("dblclick", () => {
+          const id = tr.getAttribute("data-id");
+          openPage("ticket_detail.html", { id });
+        });
+      });
+    }
+
+    function setActive(id, currentList){
+      activeId = id;
+      document.querySelectorAll("#ticketTbody tr").forEach(r => r.classList.remove("active"));
+      const row = document.querySelector(`#ticketTbody tr[data-id="${id}"]`);
+      if(row) row.classList.add("active");
+
+      const t = (currentList || tickets).find(x => x.id === id) || tickets.find(x => x.id === id);
+      if(!t) return;
+
+      $("crumbLive").innerHTML = `<i class="fa-solid fa-circle-info"></i> Đang xem <b>${t.id}</b> • <span class="pill ${pillClassForStatus(t.status)}" style="transform:translateY(-1px)"><i class="fa-solid fa-circle"></i> ${t.status}</span>`;
+
+      $("pvId").innerHTML = `<span class="pill gray"><i class="fa-solid fa-ticket"></i> ${t.id}</span>`;
+      $("pvChannel").innerHTML = `<span class="pill gray"><i class="fa-solid fa-share-nodes"></i> ${t.channel}</span>`;
+      $("pvPriority").innerHTML = `<span class="pill ${pillClassForPriority(t.priority)}"><i class="fa-solid fa-flag"></i> ${t.priority}</span>`;
+      $("pvStatus").innerHTML = `<span class="pill ${pillClassForStatus(t.status)}"><i class="fa-solid fa-circle"></i> ${t.status}</span>`;
+      $("pvSla").innerHTML = `<span class="pill ${pillClassForSlaState(t.sla.state)}"><i class="fa-solid fa-stopwatch"></i> ${t.sla.state}</span>
+                              <span class="pill gray"><i class="fa-regular fa-hourglass-half"></i> ${t.sla.dueHours >= 0 ? t.sla.dueHours + "h còn lại" : (Math.abs(t.sla.dueHours) + "h quá hạn")}</span>`;
+      $("pvLinks").innerHTML = formatLinks(t.links);
+      $("pvDesc").textContent = t.desc;
+
+      $("pvTimeline").innerHTML = (t.timeline || []).map(x => `
+        <div class="t-item">
+          <div class="t-dot" style="background:${x.who.includes('Hệ thống') ? 'var(--purple)' : 'var(--accent-blue)'}"></div>
+          <div class="t-content">
+            <div class="t-top">
+              <div class="who">${x.who}</div>
+              <div class="when">${x.when}</div>
+            </div>
+            <div class="msg">${x.msg}</div>
+          </div>
+        </div>
+      `).join("");
+
+      // contextual hint
+      const hint = [];
+      if(t.priority === "Critical" || t.priority === "High"){
+        hint.push("• Escalate ngay cho Team vận hành + trưởng ca để tránh SLA breach");
+      } else {
+        hint.push("• Ưu tiên cập nhật ETA rõ ràng và hẹn thời gian phản hồi tiếp theo");
+      }
+      if(t.links?.some(l => l.type === "Incident" || l.type === "Alert")){
+        hint.push("• Ticket này liên quan Incident/Alert — theo dõi thống nhất để tránh cập nhật lệch");
+      }
+      if(t.status === "Waiting Customer"){
+        hint.push("• Đang chờ khách — set reminder 2h/lần, tránh “treo ticket” quá SLA");
+      }
+      $("pvHint").innerHTML = hint.join("<br/>");
+    }
+
+    function setEmptyPreview(){
+      activeId = null;
+      $("crumbLive").innerHTML = `<i class="fa-solid fa-circle-info"></i> Chọn 1 ticket để xem nhanh`;
+      ["pvId","pvChannel","pvPriority","pvStatus","pvSla","pvLinks"].forEach(id => $(id).textContent = "—");
+      $("pvDesc").textContent = "Không có ticket phù hợp bộ lọc hiện tại.";
+      $("pvTimeline").innerHTML = `
+        <div class="t-item">
+          <div class="t-dot"></div>
+          <div class="t-content">
+            <div class="t-top">
+              <div class="who">Hệ thống</div>
+              <div class="when">—</div>
+            </div>
+            <div class="msg">Không có dữ liệu.</div>
+          </div>
+        </div>`;
+      $("pvHint").innerHTML = "• Hãy điều chỉnh bộ lọc để tìm ticket cần xử lý.";
+    }
+
+    function updateStats(list){
+      const open = list.filter(t => ["New","In Progress","Waiting Customer"].includes(t.status));
+      const high = open.filter(t => ["High","Critical"].includes(t.priority)).length;
+
+      const dueToday = list.filter(t => t.sla && (t.sla.state === "At Risk" || t.sla.state === "Overdue")).length;
+      const almost = list.filter(t => t.sla && t.sla.state === "At Risk").length;
+
+      const breach = list.filter(t => t.sla && t.sla.state === "Overdue").length;
+
+      $("statOpen").textContent = open.length;
+      $("statOpenSub").textContent = `Ưu tiên cao: ${high}`;
+
+      $("statDue").textContent = dueToday;
+      $("statDueSub").textContent = `Sắp quá hạn: ${almost}`;
+
+      $("statBreach").textContent = breach;
+      $("statBreachSub").textContent = `Tuần này: ${Math.max(breach, 1)}`;
+
+      // mock average first response
+      const frt = breach ? "42m" : "18m";
+      $("statFRT").textContent = frt;
+    }
+
+    // ===== Bind filters =====
+    ["q","channel","priority","dateRange"].forEach(id => {
+      $(id).addEventListener("input", applyFilters);
+      $(id).addEventListener("change", applyFilters);
+    });
+
+    // Buttons (stub)
+    $("btnNew").addEventListener("click", () => alert("TODO: mở màn hình tạo ticket (ticket_create.html)."));
+    $("btnExport").addEventListener("click", () => alert("TODO: xuất CSV/Excel (mock)."));
+    $("btnSLA").addEventListener("click", () => alert("TODO: cấu hình SLA Rules (mock)."));
+    $("btnRefresh").addEventListener("click", () => applyFilters());
+
+    $("btnCall").addEventListener("click", () => alert("TODO: gọi khách hàng / click-to-call (mock)."));
+    $("btnMsg").addEventListener("click", () => alert("TODO: gửi tin nhắn / email template (mock)."));
+    $("btnEsc").addEventListener("click", () => alert("TODO: Escalate ticket (mock)."));
+
+    // Init
+    applyFilters();
+  </script>
+</body>
+</html>

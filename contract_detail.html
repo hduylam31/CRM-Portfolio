@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chi tiết Hợp đồng</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --accent-blue:#3b82f6;
+      --bg-light:#f8fafc;
+      --card-white:#ffffff;
+      --text-main:#334155;
+      --text-muted:#64748b;
+      --border-color:#e2e8f0;
+      --shadow: 0 1px 3px rgba(0,0,0,.06);
+
+      --status-draft-bg:#f1f5f9; --status-draft-color:#334155;
+      --status-active-bg:#d1fae5; --status-active-color:#059669;
+      --status-expired-bg:#ffedd5; --status-expired-color:#c2410c;
+      --status-terminated-bg:#fee2e2; --status-terminated-color:#b91c1c;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:'Inter',sans-serif;background:var(--bg-light);color:var(--text-main)}
+    .page{min-height:100vh;padding:1.5rem 2rem}
+    .header-row{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:.75rem}
+    .header-left h1{font-size:1.4rem;font-weight:700;margin:0}
+    .header-left .desc{font-size:.85rem;color:var(--text-muted);margin:.35rem 0 0}
+    .back-button{
+      background: var(--border-color);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      border-radius:10px;
+      padding:0.45rem 0.85rem;
+      font-size:0.85rem;
+      display:inline-flex;
+      align-items:center;
+      gap:0.5rem;
+      text-decoration:none;
+    }
+    .back-button:hover{background:var(--accent-blue);color:#fff;border-color:var(--accent-blue)}
+    .pill{
+      display:inline-flex;align-items:center;gap:.4rem;
+      padding:.25rem .55rem;border-radius:999px;font-size:.75rem;font-weight:600;
+      border:1px solid var(--border-color);background:#fff;color:var(--text-main);
+    }
+    .status-pill{display:inline-block;padding:.22rem .55rem;border-radius:999px;font-size:.75rem;font-weight:800}
+    .status-draft{background:var(--status-draft-bg);color:var(--status-draft-color)}
+    .status-active{background:var(--status-active-bg);color:var(--status-active-color)}
+    .status-expired{background:var(--status-expired-bg);color:var(--status-expired-color)}
+    .status-terminated{background:var(--status-terminated-bg);color:var(--status-terminated-color)}
+    .btn{
+      padding:.45rem .9rem;border-radius:10px;font-size:.85rem;cursor:pointer;display:inline-flex;align-items:center;gap:.45rem;
+      border:1px solid transparent;user-select:none;white-space:nowrap
+    }
+    .btn-secondary{background:var(--card-white);color:var(--text-main);border-color:var(--border-color)}
+    .btn-secondary:hover{background:#f1f5f9}
+    .btn-danger{background:#fee2e2;color:#b91c1c;border-color:#fecaca}
+    .btn-danger:hover{background:#fecaca}
+    .btn-disabled{opacity:.55;cursor:not-allowed}
+    .toolbar{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin:.75rem 0 1rem}
+    .toolbar-left,.toolbar-right{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+
+    .summary-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;margin-bottom:1rem}
+    .summary-item{padding:1rem;border:1px solid var(--border-color);border-radius:12px;background:var(--card-white);box-shadow:var(--shadow)}
+    .summary-item .k{font-size:.75rem;color:var(--text-muted);margin-bottom:.25rem}
+    .summary-item .v{font-size:1.05rem;font-weight:800;color:var(--text-main)}
+
+    .card{background:var(--card-white);border:1px solid var(--border-color);border-radius:12px;padding:1rem;box-shadow:var(--shadow)}
+    .tabs{display:flex;gap:.6rem;flex-wrap:wrap;margin:.25rem 0 1rem}
+    .tab{padding:.55rem .9rem;border:1px solid var(--border-color);background:var(--card-white);border-radius:10px;cursor:pointer;font-weight:800;font-size:.85rem;color:var(--text-main)}
+    .tab.active{border-color:var(--accent-blue);background:#eff6ff;color:var(--accent-blue)}
+    .tab-panel{display:none}
+    .tab-panel.active{display:block}
+
+    table{width:100%;border-collapse:collapse;font-size:.85rem}
+    thead th{padding:.65rem .6rem;color:var(--text-muted);font-weight:700;border-bottom:1px solid var(--border-color);text-align:left}
+    tbody td{padding:.65rem .6rem;border-bottom:1px solid var(--border-color);vertical-align:middle}
+    tbody tr:hover{background:#f8fafc}
+
+    .actions i{margin-right:.55rem;cursor:pointer;color:var(--accent-blue)}
+    .actions i:hover{color:rgba(59,130,246,.85)}
+    .actions i:last-child{margin-right:0}
+
+    .list{display:flex;flex-direction:column;gap:.6rem}
+    .log-row{display:flex;gap:.75rem;align-items:flex-start;padding:.6rem .75rem;border:1px solid var(--border-color);border-radius:12px;background:var(--card-white)}
+    .log-row i{margin-top:.15rem;color:var(--text-muted)}
+    .file-row{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.65rem .75rem;border:1px solid var(--border-color);border-radius:12px;background:var(--card-white)}
+    a{color:var(--accent-blue);text-decoration:none}
+    a:hover{text-decoration:underline}
+    .section-title{display:flex;align-items:center;justify-content:space-between;margin:0 0 .75rem}
+    .section-title h3{margin:0;font-size:1rem;font-weight:900}
+    .hint{font-size:.78rem;color:var(--text-muted)}
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="header-row">
+      <div style="display:flex;gap:1rem;align-items:flex-start;flex-wrap:wrap;">
+        <a class="back-button" href="contract_management.html"><i class="fas fa-arrow-left"></i> Quay lại</a>
+        <div class="header-left">
+          <h1 id="titleCode">Contract</h1>
+          <p class="desc">Chi tiết hợp đồng &amp; tác vụ vòng đời</p>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;">
+        <span id="statusPill" class="status-pill status-draft">Draft</span>
+        <span class="pill"><i class="fa-regular fa-file-lines"></i> Nguồn: Opportunity Won → Quotation Approved</span>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <span class="pill"><i class="fa-regular fa-building"></i> <span id="customerName">ABC Trading</span></span>
+        <span class="pill"><i class="fa-regular fa-user"></i> Sales: <span id="salesOwner">Nguyễn Văn A</span></span>
+        <span class="pill"><i class="fa-regular fa-calendar"></i> Hiệu lực: <span id="dateRange">01/10/2025 → 30/09/2026</span></span>
+      </div>
+      <div class="toolbar-right">
+        <button class="btn btn-secondary" id="downloadBtn"><i class="fa-solid fa-file-pdf"></i> Download PDF</button>
+        <button class="btn btn-secondary" id="renewBtn"><i class="fa-solid fa-arrows-rotate"></i> Renew</button>
+        <button class="btn btn-danger" id="terminateBtn"><i class="fa-solid fa-ban"></i> Terminate</button>
+      </div>
+    </div>
+
+    <div class="summary-cards">
+      <div class="summary-item">
+        <div class="k">Mã hợp đồng</div>
+        <div class="v" id="sumCode">CT-001</div>
+      </div>
+      <div class="summary-item">
+        <div class="k">Giá trị hợp đồng</div>
+        <div class="v" id="sumValue">3.800.000.000 ₫</div>
+      </div>
+      <div class="summary-item">
+        <div class="k">Auto Renew</div>
+        <div class="v" id="sumAutoRenew">Yes</div>
+      </div>
+      <div class="summary-item">
+        <div class="k">Opportunity / Quotation</div>
+        <div class="v" style="font-size:.95rem;">
+          <a href="opportunity_detail.html" id="sumOpp">Opp #005</a> ·
+          <a href="quotation_detail.html?code=Q-003" id="sumQuotation">Q-003</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="tabs">
+        <div class="tab active" data-tab="info">Contract Info</div>
+        <div class="tab" data-tab="billing">Billing</div>
+        <div class="tab" data-tab="amendments">Amendments</div>
+        <div class="tab" data-tab="files">Files</div>
+        <div class="tab" data-tab="audit">Audit Log</div>
+      </div>
+
+      <div class="tab-panel active" id="tab-info">
+        <div class="section-title"><h3>Contract Info</h3></div>
+        <div class="list">
+          <div class="log-row"><i class="fa-regular fa-circle-dot"></i>
+            <div><b>Phạm vi dịch vụ</b><div class="hint">Vận chuyển nội địa tuyến HN ↔ HCM; pickup & delivery.</div></div>
+          </div>
+          <div class="log-row"><i class="fa-regular fa-circle-dot"></i>
+            <div><b>Bảng giá áp dụng</b><div class="hint">Price List 2025-Q4 (theo Quotation).</div></div>
+          </div>
+          <div class="log-row"><i class="fa-regular fa-circle-dot"></i>
+            <div><b>SLA</b><div class="hint">Express 24–48h · Economy 3–5 ngày.</div></div>
+          </div>
+          <div class="log-row"><i class="fa-regular fa-circle-dot"></i>
+            <div><b>Cam kết bồi thường</b><div class="hint">Bồi thường tối đa 100% cước nếu trễ SLA trên 48h.</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-panel" id="tab-billing">
+        <div class="section-title"><h3>Billing</h3></div>
+        <p class="hint" style="margin-top:0;">Billing Cycle: Monthly · Invoice Day: 05</p>
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Invoice Period</th>
+              <th>Invoice Date</th>
+              <th>Amount</th>
+              <th>Payment Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="billingBody"></tbody>
+        </table>
+      </div>
+
+      <div class="tab-panel" id="tab-amendments">
+        <div class="section-title">
+          <h3>Amendments</h3>
+          <button class="btn btn-secondary" id="addAmendBtn"><i class="fa-solid fa-plus"></i> Add</button>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Type</th>
+              <th>Effective</th>
+              <th>Old End</th>
+              <th>New End</th>
+              <th>By</th>
+              <th>Note</th>
+            </tr>
+          </thead>
+          <tbody id="amendBody"></tbody>
+        </table>
+      </div>
+
+      <div class="tab-panel" id="tab-files">
+        <div class="section-title"><h3>Files</h3></div>
+        <div class="list">
+          <div class="file-row">
+            <div style="display:flex;align-items:center;gap:.6rem;">
+              <i class="fa-solid fa-file-pdf" style="color:#ef4444;"></i>
+              <div>
+                <div style="font-weight:900;">Contract PDF</div>
+                <div class="hint">contract_CT-001.pdf</div>
+              </div>
+            </div>
+            <button class="btn btn-secondary" onclick="alert('Download PDF (demo)')"><i class="fa-solid fa-download"></i> Download</button>
+          </div>
+          <div class="file-row">
+            <div style="display:flex;align-items:center;gap:.6rem;">
+              <i class="fa-regular fa-file-lines"></i>
+              <div>
+                <div style="font-weight:900;">Phụ lục #1</div>
+                <div class="hint">amendment_001.pdf</div>
+              </div>
+            </div>
+            <button class="btn btn-secondary" onclick="alert('Download Amendment (demo)')"><i class="fa-solid fa-download"></i> Download</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-panel" id="tab-audit">
+        <div class="section-title"><h3>Audit Log</h3></div>
+        <div class="list" id="auditList"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const demoContracts = {
+      "CT-001": { code:"CT-001", customer:"ABC Trading", sales:"Nguyễn Văn A",
+        opportunity:"Opp #005", quotation:"Q-003", value:3800000000,
+        start:"2025-10-01", end:"2026-09-30", status:"active", auto_renew:true
+      },
+      "CT-002": { code:"CT-002", customer:"DEF Logistics", sales:"Lê Thị B",
+        opportunity:"Opp #004", quotation:"Q-002", value:1200000000,
+        start:"2025-09-15", end:"2025-12-31", status:"draft", auto_renew:false
+      }
+    };
+
+    const billingRows = [
+      {period:"10/2025", date:"2025-10-05", amount:316666667, paid:"Unpaid"},
+      {period:"11/2025", date:"2025-11-05", amount:316666667, paid:"Unpaid"},
+      {period:"12/2025", date:"2025-12-05", amount:316666667, paid:"Paid"},
+    ];
+
+    let amendments = [
+      {type:"Renew", effective:"2026-10-01", oldEnd:"2026-09-30", newEnd:"2027-09-30", by:"Nguyễn Văn A", note:"Gia hạn 12 tháng"}
+    ];
+
+    const audit = [
+      {at:"2025-09-25 10:15", who:"Nguyễn Văn A", action:"Created contract from Opportunity Won + Quotation Approved"},
+      {at:"2025-10-01 09:00", who:"Lê Văn Admin", action:"Activated contract"},
+      {at:"2025-12-06 17:30", who:"Finance", action:"Marked invoice 12/2025 as Paid"},
+    ];
+
+    function formatCurrency(val){
+      return new Intl.NumberFormat('vi-VN',{style:'currency',currency:'VND'}).format(val||0);
+    }
+    function fmtDate(d){
+      if(!d) return '';
+      const [y,m,day]=d.split('-');
+      return `${day}/${m}/${y}`;
+    }
+    function setStatus(status){
+      const pill = document.getElementById('statusPill');
+      pill.className = 'status-pill status-' + status;
+      pill.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+
+      const renewBtn = document.getElementById('renewBtn');
+      const terminateBtn = document.getElementById('terminateBtn');
+
+      if(status !== 'active'){
+        renewBtn.classList.add('btn-disabled');
+        terminateBtn.classList.add('btn-disabled');
+      }else{
+        renewBtn.classList.remove('btn-disabled');
+        terminateBtn.classList.remove('btn-disabled');
+      }
+    }
+
+    function renderBilling(){
+      const body = document.getElementById('billingBody');
+      body.innerHTML='';
+      billingRows.forEach((r, i)=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${i+1}</td>
+          <td>${r.period}</td>
+          <td>${fmtDate(r.date)}</td>
+          <td>${formatCurrency(r.amount)}</td>
+          <td>${r.paid}</td>
+          <td class="actions">
+            <i class="fas fa-eye" title="View invoice" onclick="alert('View invoice (demo)')"></i>
+            <i class="fas fa-file-pdf" title="Download invoice PDF" onclick="alert('Download invoice PDF (demo)')"></i>
+          </td>
+        `;
+        body.appendChild(tr);
+      });
+    }
+
+    function renderAmendments(){
+      const body = document.getElementById('amendBody');
+      body.innerHTML='';
+      amendments.forEach((a, i)=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${i+1}</td>
+          <td>${a.type}</td>
+          <td>${fmtDate(a.effective)}</td>
+          <td>${fmtDate(a.oldEnd)}</td>
+          <td><b>${fmtDate(a.newEnd)}</b></td>
+          <td>${a.by}</td>
+          <td>${a.note}</td>
+        `;
+        body.appendChild(tr);
+      });
+    }
+
+    function renderAudit(){
+      const wrap = document.getElementById('auditList');
+      wrap.innerHTML='';
+      audit.forEach(x=>{
+        const row = document.createElement('div');
+        row.className='log-row';
+        row.innerHTML = `
+          <i class="fa-regular fa-clock"></i>
+          <div>
+            <div style="font-weight:900;">${x.action}</div>
+            <div class="hint">${x.at} · ${x.who}</div>
+          </div>
+        `;
+        wrap.appendChild(row);
+      });
+    }
+
+    function setData(c){
+      document.getElementById('titleCode').textContent = 'Contract ' + c.code;
+      document.getElementById('sumCode').textContent = c.code;
+      document.getElementById('customerName').textContent = c.customer;
+      document.getElementById('salesOwner').textContent = c.sales;
+      document.getElementById('sumValue').textContent = formatCurrency(c.value);
+      document.getElementById('sumAutoRenew').textContent = c.auto_renew ? 'Yes' : 'No';
+      document.getElementById('sumOpp').textContent = c.opportunity;
+      document.getElementById('sumQuotation').textContent = c.quotation;
+      document.getElementById('sumQuotation').href = 'quotation_detail.html?code=' + encodeURIComponent(c.quotation);
+      document.getElementById('dateRange').textContent = `${fmtDate(c.start)} → ${fmtDate(c.end)}`;
+      setStatus(c.status);
+    }
+
+    function initTabs(){
+      const tabs = document.querySelectorAll('.tab');
+      function activate(name){
+        tabs.forEach(t=>t.classList.toggle('active', t.dataset.tab===name));
+        document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+        document.getElementById('tab-'+name).classList.add('active');
+      }
+      tabs.forEach(t=>t.addEventListener('click', ()=>activate(t.dataset.tab)));
+      activate('info');
+    }
+
+    document.addEventListener('DOMContentLoaded', ()=>{
+      const p = new URLSearchParams(window.location.search);
+      const code = p.get('code') || 'CT-001';
+      const statusOverride = p.get('status'); // demo override
+      const c = (demoContracts[code] || demoContracts['CT-001']);
+      if(statusOverride) c.status = statusOverride;
+
+      setData(c);
+      initTabs();
+      renderBilling();
+      renderAmendments();
+      renderAudit();
+
+      document.getElementById('downloadBtn').addEventListener('click', ()=>alert('Download contract PDF (demo)'));
+
+      document.getElementById('renewBtn').addEventListener('click', ()=>{
+        if(c.status !== 'active') return alert('Chỉ Renew khi Contract Active.');
+        alert('Renew (demo): tạo Amendment mới.');
+      });
+
+      document.getElementById('terminateBtn').addEventListener('click', ()=>{
+        if(c.status !== 'active') return alert('Chỉ Terminate khi Contract Active.');
+        const reason = prompt('Nhập lý do chấm dứt (required):');
+        if(!reason) return alert('Bắt buộc lý do.');
+        c.status = 'terminated';
+        setStatus(c.status);
+        audit.unshift({at:new Date().toISOString().slice(0,16).replace('T',' '), who:'Lê Văn Admin', action:'Terminated contract: '+reason});
+        renderAudit();
+        alert('Đã Terminate (demo).');
+      });
+
+      document.getElementById('addAmendBtn').addEventListener('click', ()=>alert('Add Amendment (demo)'));
+    });
+  </script>
+</body>
+</html>
