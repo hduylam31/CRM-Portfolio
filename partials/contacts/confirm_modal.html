@@ -1,0 +1,25 @@
+<div id="confirmModal" style="
+  position:fixed; inset:0; display:none;
+  align-items:center; justify-content:center;
+  background: rgba(15,23,42,.45);
+  z-index: 9998;
+">
+  <div class="card" style="width:min(520px, 92vw); box-shadow: var(--shadow);">
+    <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:1rem;">
+      <div>
+        <div style="font-weight:800; font-size:1.05rem;">Xác nhận thao tác</div>
+        <div id="confirmMessage" class="muted" style="margin-top:.25rem; font-size:.9rem;">
+          Bạn chắc chắn muốn thực hiện thao tác này?
+        </div>
+      </div>
+      <button class="btn" type="button" onclick="closeConfirm()" title="Đóng">
+        <i class="fas fa-xmark"></i>
+      </button>
+    </div>
+
+    <div style="display:flex; justify-content:flex-end; gap:.6rem; margin-top:1.2rem;">
+      <button id="confirmCancel" class="btn" type="button">Hủy</button>
+      <button id="confirmOk" class="btn btn-danger" type="button"><i class="fas fa-ban"></i> Ngưng sử dụng</button>
+    </div>
+  </div>
+</div>

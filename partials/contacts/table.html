@@ -1,0 +1,89 @@
+<div class="card" id="contactsTableCard" style="padding:0;">
+  <div style="padding:1rem; border-bottom:1px solid var(--border-color); display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap;">
+    <div>
+      <div style="font-weight:700;">Danh sách Contact</div>
+      <div class="muted" style="font-size:.82rem;">Click vào tên để xem chi tiết. Hover để thấy action.</div>
+    </div>
+
+    <div style="display:flex; gap:.5rem; align-items:center; flex-wrap:wrap;">
+      <a class="btn" href="contact_import.html"><i class="fas fa-file-import"></i> Import</a>
+      <a class="btn" href="contact_export.html"><i class="fas fa-file-export"></i> Export</a>
+    </div>
+  </div>
+
+  <div style="overflow:auto;">
+    <table style="width:100%; border-collapse:collapse; font-size:.85rem; min-width:1100px;">
+      <thead>
+        <tr>
+          <th data-sort="name" style="text-align:left; padding:.75rem 1rem; color:var(--text-muted); font-weight:700; border-bottom:1px solid var(--border-color); cursor:pointer;">Tên Contact</th>
+          <th data-sort="customer" style="text-align:left; padding:.75rem 1rem; color:var(--text-muted); font-weight:700; border-bottom:1px solid var(--border-color); cursor:pointer;">Công ty</th>
+          <th data-sort="role" style="text-align:left; padding:.75rem 1rem; color:var(--text-muted); font-weight:700; border-bottom:1px solid var(--border-color); cursor:pointer;">Vai trò</th>
+          <th style="text-align:left; padding:.75rem 1rem; color:var(--text-muted); font-weight:700; border-bottom:1px solid var(--border-color);">Email</th>
+          <th style="text-align:left; padding:.75rem 1rem; color:var(--text-muted); font-weight:700; border-bottom:1px solid var(--border-color);">Số điện thoại</th>
+          <th data-sort="status" style="text-align:left; padding:.75rem 1rem; color:var(--text-muted); font-weight:700; border-bottom:1px solid var(--border-color); cursor:pointer;">Trạng thái</th>
+          <th style="text-align:left; padding:.75rem 1rem; color:var(--text-muted); font-weight:700; border-bottom:1px solid var(--border-color);">Primary</th>
+          <th data-sort="created_at" style="text-align:left; padding:.75rem 1rem; color:var(--text-muted); font-weight:700; border-bottom:1px solid var(--border-color); cursor:pointer;">Ngày tạo</th>
+          <th style="text-align:right; padding:.75rem 1rem; color:var(--text-muted); font-weight:700; border-bottom:1px solid var(--border-color); width:140px;">Actions</th>
+        </tr>
+      </thead>
+
+      <tbody id="contactsTbody"></tbody>
+    </table>
+  </div>
+
+  <style>
+    tbody tr:hover { background: rgba(59,130,246,.05); }
+    .row-inactive { color: rgba(51,65,85,.55); }
+    .row-inactive a { color: rgba(51,65,85,.55) !important; }
+    .link { color: var(--accent-blue); text-decoration:none; font-weight:600; }
+    .link:hover { text-decoration:underline; }
+    .sub { font-size:.75rem; color: var(--text-muted); margin-top:.2rem; }
+
+    .badge {
+      display:inline-flex; align-items:center; justify-content:center;
+      padding:.2rem .55rem;
+      border-radius:999px;
+      font-size:.75rem;
+      border:1px solid var(--border-color);
+      background:#fff;
+      white-space:nowrap;
+    }
+    .badge-active { border-color: rgba(16,185,129,.35); color: var(--success); }
+    .badge-inactive { border-color: rgba(100,116,139,.35); color: var(--text-muted); }
+
+    .star { margin-left:.4rem; color: var(--warning); }
+    .actions { text-align:right; }
+    .actions-wrap {
+      display:inline-flex; gap:.35rem; align-items:center; justify-content:flex-end;
+      opacity:0; transform: translateY(1px);
+      transition: all .12s ease;
+    }
+    tbody tr:hover .actions-wrap { opacity:1; transform: translateY(0); }
+    .icon-btn{
+      width:34px; height:34px; border-radius:10px;
+      border:1px solid var(--border-color);
+      background:#fff;
+      cursor:pointer;
+      display:inline-flex; align-items:center; justify-content:center;
+      color: var(--text-main);
+      transition: all .12s ease;
+    }
+    .icon-btn:hover { border-color: rgba(59,130,246,.35); box-shadow: 0 8px 18px rgba(59,130,246,.08); }
+    .icon-btn.danger { color: var(--danger); border-color: rgba(239,68,68,.25); }
+    .icon-btn.danger:hover { background: rgba(239,68,68,.06); box-shadow: 0 8px 18px rgba(239,68,68,.10); }
+  </style>
+</div>
+
+<!-- Toast -->
+<div id="toast" style="
+  position: fixed; right: 20px; bottom: 20px;
+  background: #111827; color: #fff;
+  padding: .75rem 1rem; border-radius: 12px;
+  font-size: .85rem; box-shadow: var(--shadow);
+  opacity: 0; transform: translateY(8px);
+  transition: all .18s ease;
+  z-index: 9999;
+"></div>
+<style>
+  #toast.show { opacity: 1 !important; transform: translateY(0) !important; }
+</style>

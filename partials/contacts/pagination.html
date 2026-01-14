@@ -1,0 +1,18 @@
+<div class="card" style="display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap;">
+  <div class="muted" style="font-size:.85rem;">
+    Gợi ý: Click header để sort (Tên / Công ty / Ngày tạo).
+  </div>
+
+  <div style="display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;">
+    <label class="muted" style="font-size:.85rem;">Hiển thị</label>
+    <select id="pageSize" style="padding:.55rem .65rem; border-radius:10px; border:1px solid var(--border-color);">
+      <option value="20" selected>20</option>
+      <option value="50">50</option>
+      <option value="100">100</option>
+    </select>
+
+    <button id="pagePrev" class="btn" type="button"><i class="fas fa-chevron-left"></i></button>
+    <span class="pill" id="pageInfo">Trang 1/1</span>
+    <button id="pageNext" class="btn" type="button"><i class="fas fa-chevron-right"></i></button>
+  </div>
+</div>

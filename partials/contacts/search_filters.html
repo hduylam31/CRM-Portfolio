@@ -1,0 +1,70 @@
+<div class="card">
+  <!-- Search row -->
+  <div style="display:flex; gap:.75rem; align-items:center; flex-wrap:wrap;">
+    <div style="flex:1; min-width:260px; position:relative;">
+      <i class="fas fa-search" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text-muted);"></i>
+      <input id="searchInput"
+             type="text"
+             placeholder="Tìm theo tên, email, SĐT…"
+             style="width:100%; padding:.65rem .75rem .65rem 2.3rem; border-radius:10px; border:1px solid var(--border-color); font-size:.9rem; outline:none;">
+    </div>
+
+    <button id="toggleFilters" class="btn" type="button">
+      <i class="fas fa-chevron-down"></i> Bộ lọc
+    </button>
+
+    <button id="clearFilters" class="btn" type="button">
+      <i class="fas fa-eraser"></i> Clear filter
+    </button>
+
+    <span class="pill" id="resultsHint">0 kết quả</span>
+  </div>
+
+  <!-- Filters panel -->
+  <div id="filtersPanel" class="" style="margin-top:1rem;">
+    <div style="display:grid; grid-template-columns:repeat(1, 1fr); gap:.8rem;">
+      <div style="display:grid; grid-template-columns:repeat(1, 1fr); gap:.8rem;">
+        <label class="muted" style="font-size:.78rem;">Công ty (Customer)</label>
+        <select id="filterCustomer" style="padding:.6rem .65rem; border-radius:10px; border:1px solid var(--border-color);">
+          <option value="all">Tất cả</option>
+          <option value="Shop XYZ">Shop XYZ</option>
+          <option value="ABC Trading">ABC Trading</option>
+        </select>
+      </div>
+
+      <div style="display:grid; grid-template-columns:repeat(1, 1fr); gap:.8rem;">
+        <label class="muted" style="font-size:.78rem;">Vai trò liên hệ</label>
+        <select id="filterRole" style="padding:.6rem .65rem; border-radius:10px; border:1px solid var(--border-color);">
+          <option value="all">Tất cả</option>
+          <option value="Chủ cửa hàng">Chủ cửa hàng</option>
+          <option value="Quản lý kho">Quản lý kho</option>
+          <option value="Kế toán">Kế toán</option>
+          <option value="Decision Maker">Decision Maker</option>
+        </select>
+      </div>
+
+      <div style="display:grid; grid-template-columns:repeat(1, 1fr); gap:.8rem;">
+        <label class="muted" style="font-size:.78rem;">Trạng thái</label>
+        <select id="filterStatus" style="padding:.6rem .65rem; border-radius:10px; border:1px solid var(--border-color);">
+          <option value="all">Tất cả</option>
+          <option value="active">Đang hoạt động</option>
+          <option value="inactive">Ngưng</option>
+        </select>
+      </div>
+
+      <div style="display:grid; grid-template-columns:repeat(1, 1fr); gap:.8rem;">
+        <label class="muted" style="font-size:.78rem;">Liên hệ chính</label>
+        <select id="filterPrimary" style="padding:.6rem .65rem; border-radius:10px; border:1px solid var(--border-color);">
+          <option value="all">Tất cả</option>
+          <option value="primary">Primary</option>
+          <option value="non_primary">Không</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    /* Collapsible filters (simple) */
+    #filtersPanel.collapsed { display:none; }
+  </style>
+</div>
