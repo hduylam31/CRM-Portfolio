@@ -379,14 +379,7 @@
                 </div>
                 <p>Giám sát trạng thái vận đơn thời gian thực và cập nhật lộ trình từ TMS.</p>
             </div>
-            <div class="module-card" data-page="dispatch_drivers.html">
-                <div class="card-top">
-                    <div class="icon-box"><i class="fas fa-map-marked-alt"></i></div>
-                    <h4>Điều phối & Tài xế </h4>
-                </div>
-                <p>Gợi ý xe/tài xế phù hợp dựa trên vị trí GPS và in tem nhãn đối tác 3PL.</p>
-            </div>
-            <div class="module-card">
+            <div class="module-card" data-page="incidents_alerts.html">
                 <span class="badge badge-alert">3 Sự cố</span>
                 <div class="card-top">
                     <div class="icon-box" style="color: var(--danger); background: #fef2f2;"><i class="fas fa-bullhorn"></i></div>
@@ -443,7 +436,7 @@
             <div class="line"></div>
         </div>
         <div class="module-grid">
-            <div class="module-card">
+            <div class="module-card" data-page="bi_dashboard.html">
                 <div class="card-top">
                     <div class="icon-box" style="background: #fff7ed; color: #f97316;"><i class="fas fa-chart-line"></i></div>
                     <h4>Dashboard Ban lãnh đạo</h4>
@@ -602,12 +595,12 @@
       loadPage(page);
     });
   });
-  // Attach click listeners to module cards with data-page
-  document.querySelectorAll('.module-card[data-page]').forEach(card => {
-    card.addEventListener('click', function(){
-      const page = this.getAttribute('data-page');
-      loadPage(page);
-    });
+  // Attach click listeners to module cards with data-page (event delegation so it works after returning Home)
+  document.addEventListener('click', (e) => {
+    const card = e.target.closest('.module-card[data-page]');
+    if(!card) return;
+    const page = card.getAttribute('data-page');
+    if(page !== null) loadPage(page);
   });
 })();
 </script>
