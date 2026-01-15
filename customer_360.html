@@ -1,14 +1,16 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Danh sách khách hàng</title>
-  <!-- Import fonts and icons matching the main portal -->
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Khách hàng (360º)</title>
+
+  <!-- Match portal style -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
   <style>
-    :root {
+    :root{
       --primary-blue:#0f172a;
       --accent-blue:#3b82f6;
       --bg-light:#f8fafc;
@@ -16,230 +18,727 @@
       --text-main:#334155;
       --text-muted:#64748b;
       --border-color:#e2e8f0;
+      --success:#10b981;
+      --danger:#ef4444;
+      --warning:#f59e0b;
+      --purple:#6d28d9;
+      --shadow: 0 12px 24px rgba(0,0,0,0.06);
     }
-    * { box-sizing:border-box; }
-    body { margin:0; font-family:'Inter', sans-serif; background:var(--bg-light); color:var(--text-main); }
-
-    /* Ensure the page fills the viewport height when embedded in the main portal */
-    html, body { height: 100%; }
-    .page { min-height: 100vh; }
-    .page { padding:1.5rem 2rem; }
-    .page h1 { font-size:1.4rem; font-weight:700; margin:0 0 0.3rem 0; }
-    .page p.desc { font-size:0.85rem; color:var(--text-muted); margin:0 0 1rem 0; }
-    .widget { background:var(--card-white); border:1px solid var(--border-color); border-radius:12px; padding:1rem; margin-bottom:1.5rem; }
-    .widget h3 { font-size:1rem; font-weight:600; margin-bottom:0.8rem; }
-    .filters { display:flex; flex-wrap:wrap; gap:1rem; margin-bottom:0.8rem; }
-    .filter { display:flex; flex-direction:column; font-size:0.8rem; }
-    .filter label { margin-bottom:0.3rem; color:var(--text-muted); font-size:0.75rem; }
-    .filter select, .filter input { padding:0.4rem 0.6rem; border:1px solid var(--border-color); border-radius:6px; background:var(--card-white); color:var(--text-main); font-size:0.8rem; min-width:150px; }
-    .filter input:focus, .filter select:focus { outline:none; border-color:var(--accent-blue); }
-    .table-wrapper { overflow-x:auto; }
-    table.customer-table { width:100%; border-collapse:collapse; font-size:0.8rem; }
-    table.customer-table th,
-    table.customer-table td {
-      padding:0.7rem 0.6rem;
-      border-bottom:1px solid var(--border-color);
-      text-align:left;
-      font-size:0.85rem;
-    }
-    table.customer-table th {
-      color:var(--text-muted);
-      font-weight:600;
-      position:sticky;
-      top:0;
-      background:var(--card-white);
-      z-index:1;
-    }
-
-    /* Row edit link in table */
-    .row-edit-link {
-      background:var(--accent-blue);
-      color:#fff;
-      text-decoration:none;
-      border:none;
-      border-radius:6px;
-      padding:0.3rem 0.8rem;
-      font-size:0.75rem;
-      cursor:pointer;
-      display:inline-block;
-    }
-    .row-edit-link:hover {
-      background:rgba(59,130,246,0.8);
-    }
-    table.customer-table tr.module-card {
-      cursor:pointer;
-      transition: background-color .15s, transform .05s;
-    }
-    table.customer-table tr.module-card:hover {
-      background:#f1f5f9;
-      transform: translateX(3px);
-    }
-
-    /* Header row and back button for navigation */
-    .header-row {
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-start;
-      gap:1rem;
-      margin-bottom:1rem;
-    }
-    .back-button {
-      background: var(--border-color);
+    *{ box-sizing:border-box; }
+    html, body{ height:100%; }
+    body{
+      margin:0;
+      font-family:'Inter', sans-serif;
+      background: var(--bg-light);
       color: var(--text-main);
+    }
+    a{ color:inherit; text-decoration:none; }
+
+    /* ===== Buttons (ticketing-like) ===== */
+    .btn{
       border: 1px solid var(--border-color);
-      border-radius: 8px;
-      padding: 0.4rem 0.8rem;
-      font-size: 0.8rem;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      text-decoration: none;
-      cursor: pointer;
+      background: #fff;
+      color: var(--text-main);
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: .85rem;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      transition: .2s;
+      white-space: nowrap;
     }
-    .back-button i {
-      font-size: 0.85rem;
+    .btn:hover{
+      transform: translateY(-1px);
+      box-shadow: 0 10px 18px rgba(0,0,0,0.06);
+      border-color:#cbd5e1;
     }
-    .back-button:hover {
-      background: var(--accent-blue);
-      color: #fff;
-      border-color: var(--accent-blue);
+    .btn.primary{ background: var(--accent-blue); border-color: var(--accent-blue); color:#fff; }
+    .btn.primary:hover{ box-shadow: 0 14px 26px rgba(59,130,246,0.22); }
+    .btn.ghost{ background: transparent; border-color: transparent; color: var(--text-muted); }
+    .btn.ghost:hover{ transform:none; box-shadow:none; background:#fff; border-color: var(--border-color); color: var(--text-main); }
+    .mini-btn{
+      width: 34px; height: 34px;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      background:#fff;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color: var(--text-muted);
+      transition:.2s;
+    }
+    .mini-btn:hover{
+      border-color:#cbd5e1;
+      color: var(--text-main);
+      box-shadow: 0 10px 18px rgba(0,0,0,0.06);
+      transform: translateY(-1px);
+    }
+
+    .pill{
+      font-size: .7rem;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-weight: 700;
+      border: 1px solid transparent;
+      display:inline-flex;
+      align-items:center;
+      gap: 6px;
+      line-height: 1;
+      white-space: nowrap;
+    }
+    .pill.blue{ background:#e0f2fe; color:#0369a1; border-color:#bae6fd; }
+    .pill.green{ background:#dcfce7; color:#15803d; border-color:#bbf7d0; }
+    .pill.yellow{ background:#fef9c3; color:#a16207; border-color:#fde68a; }
+    .pill.red{ background:#fee2e2; color:#b91c1c; border-color:#fecaca; }
+    .pill.purple{ background:#ede9fe; color:#5b21b6; border-color:#ddd6fe; }
+    .pill.gray{ background:#f1f5f9; color:#475569; border-color:#e2e8f0; }
+
+    /* ===== Sticky header ===== */
+    .topbar{
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(248,250,252,0.85);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid rgba(226,232,240,0.9);
+      padding: 0.9rem 1.25rem;
+    }
+    .topbar-inner{
+      max-width: 1680px;
+      margin: 0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .title{
+      display:flex;
+      flex-direction:column;
+      gap: 6px;
+      min-width: 280px;
+    }
+    .title h1{
+      margin:0;
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--primary-blue);
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      letter-spacing: .2px;
+    }
+    .title .sub{
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items:center;
+      color: var(--text-muted);
+      font-size: .82rem;
+      font-weight: 600;
+    }
+    .actions{
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      flex-wrap: wrap;
+      justify-content:flex-end;
+    }
+
+    .page{ padding: 1.25rem; max-width: 1680px; margin: 0 auto; }
+
+    /* ===== Cards ===== */
+    .card{
+      background:#fff;
+      border:1px solid var(--border-color);
+      border-radius: 16px;
+      box-shadow: 0 6px 14px rgba(0,0,0,0.03);
+    }
+    .card-head{
+      padding: 1rem;
+      border-bottom: 1px solid var(--border-color);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .card-head h3{
+      margin:0;
+      font-size: .92rem;
+      font-weight: 800;
+      color: var(--primary-blue);
+      display:flex;
+      align-items:center;
+      gap: 10px;
+    }
+    .card-body{ padding: 1rem; }
+
+    /* ===== Stat cards ===== */
+    .stat-grid{
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .stat{
+      border:1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 12px 14px;
+      display:flex;
+      align-items:center;
+      gap: 12px;
+      background: #fff;
+    }
+    .stat .ic{
+      width: 38px; height: 38px;
+      border-radius: 12px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:#eef2ff;
+      color:#3730a3;
+      flex: 0 0 auto;
+    }
+    .stat .meta{ display:flex; flex-direction:column; gap: 2px; }
+    .stat .k{ font-size:.72rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: .25px; }
+    .stat .v{ font-size: 1.05rem; font-weight: 800; color: var(--primary-blue); line-height: 1.1; }
+    .stat .s{ font-size:.8rem; color: var(--text-muted); font-weight: 600; }
+
+    /* ===== Filters ===== */
+    .filters{
+      display:grid;
+      grid-template-columns: 1.8fr 1fr 1fr 1fr 1fr;
+      gap: 10px;
+      align-items:center;
+    }
+    .field label{
+      display:block;
+      font-size:.72rem;
+      color: var(--text-muted);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .25px;
+      margin: 2px 0 6px;
+    }
+    .input, select{
+      width:100%;
+      padding: 11px 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      outline:none;
+      background: #fff;
+      font-size: .9rem;
+      color: var(--text-main);
+      font-family:'Inter', sans-serif;
+    }
+    .input:focus, select:focus{
+      border-color: rgba(59,130,246,0.6);
+      box-shadow: 0 0 0 4px rgba(59,130,246,0.15);
+    }
+
+    /* Multi-select */
+    .multi-select{ width:100%; position:relative; user-select:none; }
+    .multi-select .selected-options{
+      padding: 11px 44px 11px 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      background:#fff;
+      cursor:pointer;
+      font-size: .9rem;
+      font-weight: 600;
+      color: var(--text-main);
+      display:flex;
+      align-items:center;
+      min-height: 44px;
+    }
+    .multi-select .dropdown-icon{
+      position:absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events:none;
+    }
+    .multi-select .options-list{
+      display:none;
+      position:absolute;
+      z-index: 30;
+      top: calc(100% + 8px);
+      left: 0; right: 0;
+      background:#fff;
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      box-shadow: 0 12px 24px rgba(0,0,0,0.08);
+      padding: 10px 10px;
+      max-height: 240px;
+      overflow:auto;
+    }
+    .multi-select.open .options-list{ display:block; }
+    .multi-select .options-list label{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: 12px;
+      cursor:pointer;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+    .multi-select .options-list label:hover{ background:#f8fafc; }
+    .multi-select input[type="checkbox"]{ width: 16px; height: 16px; }
+
+    /* ===== Table ===== */
+    .table-wrap{
+      border:1px solid var(--border-color);
+      border-radius: 14px;
+      overflow:auto;
+      max-height: 560px;
+    }
+    table{
+      width:100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: .88rem;
+    }
+    thead th{
+      text-align:left;
+      padding: 10px 12px;
+      color: var(--text-muted);
+      font-size: .72rem;
+      text-transform: uppercase;
+      letter-spacing: .25px;
+      font-weight: 600;
+      border-bottom: 1px solid var(--border-color);
+      background: #fff;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      white-space: nowrap;
+    }
+    tbody td{
+      padding: 12px 12px;
+      border-bottom: 1px solid var(--border-color);
+      vertical-align: top;
+    }
+    tbody tr:hover{ background:#f8fafc; cursor:pointer; }
+
+    .name{
+      font-weight: 700;
+      color: var(--primary-blue);
+      display:flex;
+      align-items:center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .muted{ color: var(--text-muted); font-weight: 600; }
+    .subline{ margin-top: 6px; display:flex; gap: 10px; flex-wrap: wrap; align-items:center; }
+    .subline .tag{ font-size:.78rem; color: var(--text-muted); font-weight: 600; display:inline-flex; gap:6px; align-items:center; }
+
+    /* ===== Layout blocks ===== */
+    .split{
+      display:grid;
+      grid-template-columns: 2.05fr 0.95fr;
+      gap: 1rem;
+      align-items:start;
+    }
+
+    @media (max-width: 1100px){
+      .split{ grid-template-columns: 1fr; }
+      .filters{ grid-template-columns: 1fr 1fr; }
+      .stat-grid{ grid-template-columns: 1fr 1fr; }
+      .actions{ justify-content:flex-start; }
+    }
+    @media (max-width: 560px){
+      .filters{ grid-template-columns: 1fr; }
+      .stat-grid{ grid-template-columns: 1fr; }
+      .topbar{ padding: .75rem .9rem; }
+      .page{ padding: .9rem; }
     }
   </style>
 </head>
+
 <body>
-  <div class="page">
-    <!-- Header with back button and title -->
-    <div class="header-row">
-      <a href="javascript:history.back()" class="back-button">
-        <i class="fas fa-arrow-left"></i>
-        <span>Quay lại</span>
-      </a>
-      <div>
-        <h1>Khách hàng (360º)</h1>
-        <p class="desc">Quản lý danh sách khách hàng, tra cứu và lọc theo nhiều tiêu chí.</p>
-      </div>
-    </div>
-    <div class="widget">
-      <h3>Danh sách khách hàng</h3>
-      <div class="filters">
-        <div class="filter">
-          <label for="filterType">Loại khách</label>
-          <select id="filterType">
-            <option value="">Tất cả</option>
-            <option value="b2b">B2B</option>
-            <option value="b2c">B2C</option>
-          </select>
-        </div>
-        <div class="filter">
-          <label for="filterSegment">Phân khúc</label>
-          <select id="filterSegment">
-            <option value="">Tất cả</option>
-            <option value="key account">Key Account</option>
-            <option value="smb">SMB</option>
-          </select>
-        </div>
-        <div class="filter">
-          <label for="filterName">Tìm kiếm</label>
-          <input type="text" id="filterName" placeholder="Tên khách hàng...">
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="title">
+        <h1><i class="fa-solid fa-users" style="color:var(--accent-blue)"></i> Khách hàng (360º)</h1>
+        <div class="sub">
+          <span class="pill gray"><i class="fa-solid fa-briefcase"></i> Sales & Khách hàng</span>
+          <span class="pill blue"><i class="fa-solid fa-address-book"></i> Customer 360</span>
+          <span class="pill gray" id="navScope"><i class="fa-solid fa-layer-group"></i> Scope: <b>All</b></span>
         </div>
       </div>
-      <div class="table-wrapper">
-        <table class="customer-table" id="customerTable">
-          <thead>
-            <tr>
-              <th>Tên khách hàng</th>
-              <th>Loại khách</th>
-              <th>Phân khúc</th>
-              <th>#Đơn</th>
-              <th>Doanh thu</th>
-              <th>Chỉnh sửa</th>
-            </tr>
-          </thead>
-            <tbody>
-            <tr class="module-card" data-page="customer_detail_abc.html">
-              <td>Cty ABC Trading</td>
-              <td>B2B</td>
-              <td>Key Account</td>
-              <td>2,560</td>
-              <td>4.5B</td>
-              <td><a href="master_data_form.html" class="row-edit-link" onclick="event.stopPropagation();">Chỉnh sửa</a></td>
-            </tr>
-            <tr class="module-card" data-page="customer_detail_xyz.html">
-              <td>Shop XYZ</td>
-              <td>B2C</td>
-              <td>SMB</td>
-              <td>1,800</td>
-              <td>2.8B</td>
-              <td><a href="master_data_form.html" class="row-edit-link" onclick="event.stopPropagation();">Chỉnh sửa</a></td>
-            </tr>
-          </tbody>
-        </table>
+
+      <div class="actions">
+        <a class="btn" href="javascript:history.back()"><i class="fa-solid fa-arrow-left"></i> Quay lại</a>
+        <button class="btn ghost" type="button" id="btnRefresh"><i class="fa-solid fa-rotate"></i> Làm mới</button>
+        <button class="btn" type="button" id="btnExport"><i class="fa-solid fa-file-export"></i> Export</button>
+        <a class="btn primary" href="master_data_form.html"><i class="fa-solid fa-plus"></i> Tạo khách hàng</a>
       </div>
     </div>
   </div>
-  <script>
-    // Filter functionality: hide/show rows based on type, segment, name
-    document.addEventListener('DOMContentLoaded', function() {
-      function applyFilters() {
-        const typeVal = document.getElementById('filterType').value.toLowerCase();
-        const segVal = document.getElementById('filterSegment').value.toLowerCase();
-        const nameVal = document.getElementById('filterName').value.toLowerCase();
-        const rows = document.querySelectorAll('#customerTable tbody tr');
-        rows.forEach(row => {
-          const cells = row.children;
-          const name = cells[0].textContent.trim().toLowerCase();
-          const type = cells[1].textContent.trim().toLowerCase();
-          const seg = cells[2].textContent.trim().toLowerCase();
-          let show = true;
-          if (typeVal && type !== typeVal) show = false;
-          if (segVal && seg !== segVal) show = false;
-          if (nameVal && !name.includes(nameVal)) show = false;
-          row.style.display = show ? '' : 'none';
-        });
-      }
-      document.getElementById('filterType').addEventListener('change', applyFilters);
-      document.getElementById('filterSegment').addEventListener('change', applyFilters);
-      document.getElementById('filterName').addEventListener('input', applyFilters);
 
-      // Navigate to customer detail page when clicking a row
-      // Each row has data-page attribute specifying the detail HTML file.
-      // When a row is clicked, navigate within the current iframe; this allows
-      // the parent page (with sidebar) to remain unchanged while the detail
-      // page loads as a new view.
-      const customerRows = document.querySelectorAll('#customerTable tbody tr[data-page]');
-      customerRows.forEach(row => {
-        row.addEventListener('click', () => {
-          const page = row.getAttribute('data-page');
-          if (page) {
-            window.location.href = page;
-          }
-        });
+  <div class="page">
+    <div class="split">
+      <!-- LEFT -->
+      <div class="card">
+        <div class="card-head">
+          <h3><i class="fa-solid fa-list" style="color:var(--accent-blue)"></i> Danh sách khách hàng</h3>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+            <span class="pill gray" id="countPill"><i class="fa-solid fa-database"></i> 0 khách</span>
+            <span class="pill gray" id="updatedPill"><i class="fa-regular fa-clock"></i> Cập nhật 11:20</span>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <div class="stat-grid">
+            <div class="stat">
+              <div class="ic" style="background:#e0f2fe;color:#0369a1;"><i class="fa-solid fa-users"></i></div>
+              <div class="meta"><div class="k">Total Customers</div><div class="v" id="kpiTotal">—</div><div class="s">Tổng khách hàng</div></div>
+            </div>
+            <div class="stat">
+              <div class="ic" style="background:#dcfce7;color:#15803d;"><i class="fa-solid fa-building"></i></div>
+              <div class="meta"><div class="k">B2B</div><div class="v" id="kpiB2B">—</div><div class="s">Doanh nghiệp</div></div>
+            </div>
+            <div class="stat">
+              <div class="ic" style="background:#ede9fe;color:#5b21b6;"><i class="fa-solid fa-user"></i></div>
+              <div class="meta"><div class="k">B2C</div><div class="v" id="kpiB2C">—</div><div class="s">Cá nhân / shop</div></div>
+            </div>
+            <div class="stat">
+              <div class="ic" style="background:#fef9c3;color:#a16207;"><i class="fa-solid fa-crown"></i></div>
+              <div class="meta"><div class="k">Key Accounts</div><div class="v" id="kpiKA">—</div><div class="s">Phân khúc KA</div></div>
+            </div>
+          </div>
+
+          <div class="filters">
+            <div class="field">
+              <label>Tìm kiếm</label>
+              <input class="input" id="q" placeholder="Tên khách, MST, email, phone..." />
+            </div>
+
+            <div class="field">
+              <label>Loại khách</label>
+              <select id="type">
+                <option value="">Tất cả</option>
+                <option value="B2B">B2B</option>
+                <option value="B2C">B2C</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Phân khúc</label>
+              <select id="segment">
+                <option value="">Tất cả</option>
+                <option value="Key Account">Key Account</option>
+                <option value="SMB">SMB</option>
+                <option value="Enterprise">Enterprise</option>
+                <option value="Dormant">Dormant</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Trạng thái</label>
+              <div class="multi-select" id="statusDropdown">
+                <div class="selected-options">Tất cả</div>
+                <div class="dropdown-icon"><i class="fas fa-chevron-down"></i></div>
+                <div class="options-list">
+                  <label><input type="checkbox" value="Active" checked> Active</label>
+                  <label><input type="checkbox" value="Prospect" checked> Prospect</label>
+                  <label><input type="checkbox" value="Inactive" checked> Inactive</label>
+                </div>
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Ngày</label>
+              <select id="range">
+                <option value="7" selected>7 ngày gần nhất</option>
+                <option value="30">30 ngày gần nhất</option>
+                <option value="90">90 ngày gần nhất</option>
+                <option value="365">12 tháng</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="table-wrap" style="margin-top:12px;">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:160px">Customer ID</th>
+                  <th style="min-width:420px">Tên khách hàng</th>
+                  <th style="width:110px">Loại</th>
+                  <th style="width:150px">Phân khúc</th>
+                  <th style="width:140px">Trạng thái</th>
+                  <th style="width:120px">#Đơn</th>
+                  <th style="width:140px">Doanh thu</th>
+                  <th style="width:130px">Cập nhật</th>
+                  <th style="width:120px"></th>
+                </tr>
+              </thead>
+              <tbody id="tbody"></tbody>
+            </table>
+          </div>
+
+          <div class="help" style="margin-top:10px; font-size:.82rem; color: var(--text-muted); font-weight: 600; line-height: 1.35;">
+            • Click 1 dòng để mở hồ sơ khách hàng (customer_detail_*.html).<br/>
+            • Nút <b>Chỉnh sửa</b> (mock) mở form master_data_form.html.
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT -->
+      <div class="card">
+        <div class="card-head">
+          <h3><i class="fa-solid fa-bolt" style="color:var(--warning)"></i> Quick Preview</h3>
+          <span class="pill gray"><i class="fa-solid fa-wand-magic-sparkles"></i> 360º</span>
+        </div>
+        <div class="card-body">
+          <div class="field">
+            <label>Khách hàng</label>
+            <div class="pill blue" id="pvName"><i class="fa-solid fa-building"></i> —</div>
+          </div>
+
+          <div style="margin-top:10px;" class="card">
+            <div class="card-body" style="padding:12px;">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                <div>
+                  <div class="muted" style="font-size:.72rem;text-transform:uppercase;letter-spacing:.25px;">Type</div>
+                  <div style="margin-top:6px;" id="pvType"><span class="pill gray">—</span></div>
+                </div>
+                <div>
+                  <div class="muted" style="font-size:.72rem;text-transform:uppercase;letter-spacing:.25px;">Status</div>
+                  <div style="margin-top:6px;" id="pvStatus"><span class="pill gray">—</span></div>
+                </div>
+                <div>
+                  <div class="muted" style="font-size:.72rem;text-transform:uppercase;letter-spacing:.25px;">Segment</div>
+                  <div style="margin-top:6px;" id="pvSegment"><span class="pill gray">—</span></div>
+                </div>
+                <div>
+                  <div class="muted" style="font-size:.72rem;text-transform:uppercase;letter-spacing:.25px;">Revenue</div>
+                  <div style="margin-top:6px;" id="pvRevenue"><span class="pill gray">—</span></div>
+                </div>
+              </div>
+
+              <div style="margin-top:10px;">
+                <div class="muted" style="font-size:.72rem;text-transform:uppercase;letter-spacing:.25px;">Liên hệ</div>
+                <div class="subline" id="pvContact">
+                  <span class="tag"><i class="fa-solid fa-user"></i> —</span>
+                  <span class="tag"><i class="fa-solid fa-phone"></i> —</span>
+                  <span class="tag"><i class="fa-solid fa-envelope"></i> —</span>
+                </div>
+              </div>
+
+              <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+                <button class="btn" type="button" id="btnOpenDetail"><i class="fa-solid fa-arrow-up-right-from-square"></i> Mở hồ sơ</button>
+                <button class="btn" type="button" id="btnOpenEdit"><i class="fa-solid fa-pen"></i> Chỉnh sửa</button>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top:12px;" class="card">
+            <div class="card-body" style="padding:12px;">
+              <div class="muted" style="font-size:.72rem;text-transform:uppercase;letter-spacing:.25px;">Gợi ý hành động</div>
+              <div style="margin-top:8px; font-size:.82rem; color: var(--text-muted); font-weight: 600; line-height: 1.35;">
+                • Nếu khách <b>Dormant</b> → đưa vào Segmentation win-back.<br/>
+                • Nếu <b>Key Account</b> → theo dõi SLA & ticket ưu tiên.
+              </div>
+              <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
+                <a class="btn ghost" href="segmentation_wide_v3.html"><i class="fa-solid fa-layer-group"></i> Segmentation</a>
+                <a class="btn ghost" href="ticketing_wide_fixed.html"><i class="fa-solid fa-headset"></i> Ticketing</a>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top:12px; font-size:.82rem; color: var(--text-muted); font-weight: 600; line-height: 1.35;">
+            • Màn liên quan: <span class="pill gray">customer_detail_abc.html</span> <span class="pill gray">customer_detail_xyz.html</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ===== Multi-select Status =====
+    const statusDropdown = document.getElementById("statusDropdown");
+    const selectedOptions = statusDropdown.querySelector(".selected-options");
+    const checkboxes = statusDropdown.querySelectorAll("input[type=checkbox]");
+    function updateSelectedText(){
+      const values = Array.from(checkboxes).filter(x => x.checked).map(x => x.value);
+      if(values.length === 0) selectedOptions.textContent = "None";
+      else if(values.length === checkboxes.length) selectedOptions.textContent = "Tất cả";
+      else selectedOptions.textContent = values.join(", ");
+    }
+    updateSelectedText();
+    selectedOptions.addEventListener("click", () => statusDropdown.classList.toggle("open"));
+    document.addEventListener("click", (e) => { if(!statusDropdown.contains(e.target)) statusDropdown.classList.remove("open"); });
+    checkboxes.forEach(cb => cb.addEventListener("change", () => { updateSelectedText(); render(); }));
+
+    // ===== Sample data (expanded) =====
+    const customers = [
+      { id:"CUS-000245", name:"Cty ABC Trading", type:"B2B", segment:"Key Account", status:"Active", orders:2560, revenue:"4.5B", updated:"Hôm qua",
+        contact:{name:"Nguyễn Văn A", phone:"0901 234 567", email:"a.nguyen@abc.com"}, page:"customer_detail_abc.html" },
+      { id:"CUS-000812", name:"Shop XYZ", type:"B2C", segment:"SMB", status:"Active", orders:1800, revenue:"2.8B", updated:"4 ngày",
+        contact:{name:"Phạm Văn D", phone:"0910 123 456", email:"d.pham@xyzshop.com"}, page:"customer_detail_xyz.html" },
+      { id:"CUS-001104", name:"Nova Retail", type:"B2B", segment:"Enterprise", status:"Prospect", orders:340, revenue:"0.62B", updated:"2 ngày",
+        contact:{name:"Lê Thu Huyền", phone:"0933 222 111", email:"cs@novaretail.vn"}, page:"customer_detail_abc.html" },
+      { id:"CUS-001233", name:"Cửa hàng Minh Phát", type:"B2C", segment:"SMB", status:"Active", orders:920, revenue:"1.15B", updated:"Hôm nay",
+        contact:{name:"Trần Minh", phone:"0977 000 888", email:"minhphat@gmail.com"}, page:"customer_detail_xyz.html" },
+      { id:"CUS-001777", name:"Dormant Customer - HN", type:"B2C", segment:"Dormant", status:"Inactive", orders:120, revenue:"0.08B", updated:">90 ngày",
+        contact:{name:"—", phone:"0988 123 456", email:"dormant.hn@mail.com"}, page:"customer_detail_xyz.html" },
+      { id:"CUS-002010", name:"XYZ Logistics", type:"B2B", segment:"Enterprise", status:"Active", orders:520, revenue:"0.95B", updated:"7 ngày",
+        contact:{name:"Đỗ Quang", phone:"0901 888 999", email:"sale@xyzlog.vn"}, page:"customer_detail_abc.html" }
+    ];
+
+    const tbody = document.getElementById("tbody");
+    let current = null;
+
+    function pillStatus(st){
+      if(st === "Active") return '<span class="pill green"><i class="fa-solid fa-circle"></i> Active</span>';
+      if(st === "Prospect") return '<span class="pill yellow"><i class="fa-solid fa-circle-half-stroke"></i> Prospect</span>';
+      return '<span class="pill gray"><i class="fa-solid fa-circle-xmark"></i> Inactive</span>';
+    }
+    function pillType(t){
+      if(t==="B2B") return '<span class="pill purple"><i class="fa-solid fa-building"></i> B2B</span>';
+      return '<span class="pill blue"><i class="fa-solid fa-user"></i> B2C</span>';
+    }
+    function pillSeg(s){
+      if(s==="Key Account") return '<span class="pill yellow"><i class="fa-solid fa-crown"></i> Key Account</span>';
+      if(s==="Dormant") return '<span class="pill red"><i class="fa-solid fa-bed"></i> Dormant</span>';
+      if(s==="Enterprise") return '<span class="pill purple"><i class="fa-solid fa-city"></i> Enterprise</span>';
+      return '<span class="pill gray"><i class="fa-solid fa-layer-group"></i> ' + s + '</span>';
+    }
+
+    function applyKPIs(rows){
+      const total = rows.length;
+      const b2b = rows.filter(r => r.type==="B2B").length;
+      const b2c = rows.filter(r => r.type==="B2C").length;
+      const ka = rows.filter(r => r.segment==="Key Account").length;
+
+      document.getElementById("kpiTotal").textContent = total.toLocaleString("vi-VN");
+      document.getElementById("kpiB2B").textContent = b2b.toLocaleString("vi-VN");
+      document.getElementById("kpiB2C").textContent = b2c.toLocaleString("vi-VN");
+      document.getElementById("kpiKA").textContent = ka.toLocaleString("vi-VN");
+    }
+
+    function render(){
+      const q = (document.getElementById("q").value || "").toLowerCase().trim();
+      const type = document.getElementById("type").value;
+      const segment = document.getElementById("segment").value;
+      const stAllowed = Array.from(checkboxes).filter(x => x.checked).map(x => x.value);
+
+      const rows = customers.filter(c => {
+        const matchQ = !q || (c.name.toLowerCase().includes(q) || c.id.toLowerCase().includes(q) || (c.contact.email||"").toLowerCase().includes(q) || (c.contact.phone||"").includes(q));
+        const matchType = !type || c.type === type;
+        const matchSeg = !segment || c.segment === segment;
+        const matchSt = stAllowed.includes(c.status);
+        return matchQ && matchType && matchSeg && matchSt;
       });
 
-      // Data for customers (used to prefill edit form)
-      const customersData = {
-        'Cty ABC Trading': {
-          name: 'Cty ABC Trading',
-          type: 'b2b',
-          segment: 'key account',
-          orders: 2560,
-          revenue: '4.5B',
-          contactName: 'Nguyễn Văn A',
-          contactEmail: 'a.nguyen@abc.com',
-          contactPhone: '0901 234 567'
-        },
-        'Shop XYZ': {
-          name: 'Shop XYZ',
-          type: 'b2c',
-          segment: 'smb',
-          orders: 1800,
-          revenue: '2.8B',
-          contactName: 'Phạm Văn D',
-          contactEmail: 'd.pham@xyzshop.com',
-          contactPhone: '0910 123 456'
+      document.getElementById("countPill").innerHTML = '<i class="fa-solid fa-database"></i> ' + rows.length + ' khách';
+      applyKPIs(rows);
+
+      tbody.innerHTML = rows.map(c => `
+        <tr data-id="${c.id}" data-page="${c.page}">
+          <td class="muted">${c.id}</td>
+          <td>
+            <div class="name">${c.name} ${c.segment==="Key Account" ? '<span class="pill yellow"><i class="fa-solid fa-crown"></i> KA</span>' : ''}</div>
+            <div class="subline">
+              <span class="tag"><i class="fa-solid fa-id-card"></i> MST: ${c.type==="B2B" ? "0" + c.id.slice(-6) + "VN" : "—"}</span>
+              <span class="tag"><i class="fa-solid fa-phone"></i> ${c.contact.phone}</span>
+              <span class="tag"><i class="fa-solid fa-envelope"></i> ${c.contact.email}</span>
+            </div>
+          </td>
+          <td>${pillType(c.type)}</td>
+          <td>${pillSeg(c.segment)}</td>
+          <td>${pillStatus(c.status)}</td>
+          <td><span class="pill gray"><i class="fa-solid fa-box"></i> ${c.orders.toLocaleString("vi-VN")}</span></td>
+          <td><span class="pill gray"><i class="fa-solid fa-coins"></i> ${c.revenue}</span></td>
+          <td class="muted">${c.updated}</td>
+          <td>
+            <div style="display:flex;gap:8px;justify-content:flex-end;">
+              <button class="mini-btn" title="Open" data-action="open"><i class="fa-solid fa-arrow-up-right-from-square"></i></button>
+              <a class="mini-btn" title="Edit" href="master_data_form.html" onclick="event.stopPropagation();"><i class="fa-solid fa-pen"></i></a>
+            </div>
+          </td>
+        </tr>
+      `).join("");
+
+      if(rows.length) setPreview(rows[0]);
+      else clearPreview();
+    }
+
+    function clearPreview(){
+      current = null;
+      document.getElementById("pvName").innerHTML = '<i class="fa-solid fa-building"></i> —';
+      document.getElementById("pvType").innerHTML = '<span class="pill gray">—</span>';
+      document.getElementById("pvStatus").innerHTML = '<span class="pill gray">—</span>';
+      document.getElementById("pvSegment").innerHTML = '<span class="pill gray">—</span>';
+      document.getElementById("pvRevenue").innerHTML = '<span class="pill gray">—</span>';
+      document.getElementById("pvContact").innerHTML = '<span class="tag"><i class="fa-solid fa-user"></i> —</span><span class="tag"><i class="fa-solid fa-phone"></i> —</span><span class="tag"><i class="fa-solid fa-envelope"></i> —</span>';
+    }
+
+    function setPreview(c){
+      current = c;
+      document.getElementById("pvName").innerHTML = '<i class="fa-solid ' + (c.type==="B2B" ? 'fa-building' : 'fa-user') + '"></i> ' + c.name;
+      document.getElementById("pvType").innerHTML = pillType(c.type);
+      document.getElementById("pvStatus").innerHTML = pillStatus(c.status);
+      document.getElementById("pvSegment").innerHTML = pillSeg(c.segment);
+      document.getElementById("pvRevenue").innerHTML = '<span class="pill gray"><i class="fa-solid fa-coins"></i> ' + c.revenue + '</span>';
+      document.getElementById("pvContact").innerHTML =
+        '<span class="tag"><i class="fa-solid fa-user"></i> ' + (c.contact.name||"—") + '</span>' +
+        '<span class="tag"><i class="fa-solid fa-phone"></i> ' + (c.contact.phone||"—") + '</span>' +
+        '<span class="tag"><i class="fa-solid fa-envelope"></i> ' + (c.contact.email||"—") + '</span>';
+    }
+
+    // Row click -> open detail + preview
+    tbody.addEventListener("click", (e) => {
+      const tr = e.target.closest("tr[data-id]");
+      if(!tr) return;
+      const id = tr.getAttribute("data-id");
+      const c = customers.find(x => x.id === id);
+      if(c) setPreview(c);
+
+      const actBtn = e.target.closest("[data-action]");
+      if(actBtn){
+        const act = actBtn.dataset.action;
+        if(act === "open"){
+          window.location.href = tr.getAttribute("data-page");
         }
-      };
+        e.stopPropagation();
+      }else{
+        window.location.href = tr.getAttribute("data-page");
+      }
     });
+
+    // Preview buttons
+    document.getElementById("btnOpenDetail").addEventListener("click", () => {
+      if(!current) return;
+      window.location.href = current.page;
+    });
+    document.getElementById("btnOpenEdit").addEventListener("click", () => {
+      window.location.href = "master_data_form.html";
+    });
+
+    // Filters binding
+    ["q","type","segment","range"].forEach(id => {
+      document.getElementById(id).addEventListener("input", render);
+      document.getElementById(id).addEventListener("change", render);
+    });
+
+    document.getElementById("btnRefresh").addEventListener("click", () => {
+      document.getElementById("updatedPill").innerHTML = '<i class="fa-regular fa-clock"></i> Cập nhật ' + new Date().toLocaleTimeString("vi-VN", {hour:"2-digit", minute:"2-digit"});
+      render();
+    });
+    document.getElementById("btnExport").addEventListener("click", () => {
+      alert("Export (mock) — sẽ xuất CSV theo filter hiện tại.");
+    });
+
+    render();
   </script>
 </body>
 </html>
